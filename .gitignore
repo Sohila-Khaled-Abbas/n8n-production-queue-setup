@@ -1,0 +1,42 @@
+# ============================================================
+# n8n Production Docker Stack — .gitignore
+# ============================================================
+
+# ─── Environment & Secrets ───────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# ─── n8n Runtime Data ────────────────────────────────────────
+# Local n8n data directory (mounted at D:\n8n in docker-compose)
+n8n-data/
+.n8n/
+
+# ─── Docker ──────────────────────────────────────────────────
+docker-compose.override.yml
+
+# ─── OS & Editor Artifacts ───────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# JetBrains IDEs
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json.example
+
+# ─── Logs ────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── Temp & Build Artifacts ──────────────────────────────────
+*.tmp
+*.bak
+*.swp

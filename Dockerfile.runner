@@ -1,0 +1,43 @@
+# ============================================================
+# n8n Python/JS External Task Runner — Custom Image
+# ============================================================
+#
+# PURPOSE
+#   Extends the official n8nio/runners base image with the
+#   Python data-engineering libraries required by Code nodes
+#   in this n8n deployment.
+#
+# CONFIG
+#   The task runner configuration (runner types, allowed envs,
+#   health-check ports) is injected at runtime via the Docker
+#   Compose volume mount:
+#     ./n8n-task-runners.json → /etc/n8n-task-runners.json:ro
+#   This means you can update runner settings without rebuilding
+#   this image.
+#
+# EXTENDING
+#   To add more Python packages, append them to the uv pip install
+#   command below, then rebuild:
+#     docker compose build n8n-python-runner
+#     docker compose up -d n8n-python-runner
+# ============================================================
+
+FROM n8nio/runners:latest
+
+USER root
+
+# ─── Runtime config (overridden by volume mount at runtime) ───
+# A fallback config is baked in; the live mount takes precedence.
+COPY n8n-task-runners.json /etc/n8n-task-runners.json
+
+# ─── Python Data-Engineering Libraries ────────────────────────
+# uv is pre-installed in the base image for fast, reproducible installs.
+RUN cd /opt/runners/task-runner-python \
+    && uv pip install --no-cache-dir \
+        pandas \
+        numpy \
+        pyarrow \
+        requests
+
+# Drop back to the unprivileged runner user
+USER runner
