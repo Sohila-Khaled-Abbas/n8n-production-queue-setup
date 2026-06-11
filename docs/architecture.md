@@ -48,11 +48,11 @@ Browser / Webhook
 │  │  (internal)  │   │  (internal)  │         │
 │  └──────────────┘   └──────────────┘         │
 │                                              │
-│  ┌──────────────┐   ┌──────────────┐         │
-│  │  Ollama      │   │  Qdrant      │         │
-│  │  :11434      │   │  :6333       │         │
-│  │  (local LLM) │   │  (Vector DB) │         │
-│  └──────────────┘   └──────────────┘         │
+│                     ┌──────────────┐         │
+│                     │  Qdrant      │         │
+│                     │  :6333       │         │
+│                     │  (Vector DB) │         │
+│                     └──────────────┘         │
 └──────────────────────────────────────────────┘
 ```
 
@@ -183,18 +183,7 @@ Redis is started with an explicit configuration file instead of the default sett
 
 ---
 
-### Ollama (Local LLM)
 
-| Attribute | Value |
-|---|---|
-| Image | `ollama/ollama:latest` |
-| Internal port | `11434` (Exposed to host for tools) |
-| Data volume | Named Docker volume `ollama_storage` |
-| GPU | NVIDIA GPU access configured via `reservations` |
-
-Ollama provides local, private Large Language Model inference. It is accessed by n8n nodes over the internal network (`http://ollama:11434`). It includes an init container (`ollama-pull-llama`) that automatically downloads the `llama3.2` model on first boot.
-
----
 
 ### Qdrant (Vector Database)
 
@@ -204,7 +193,7 @@ Ollama provides local, private Large Language Model inference. It is accessed by
 | Internal ports | `6333` (REST), `6334` (gRPC) |
 | Data volume | Named Docker volume `qdrant_storage` |
 
-Qdrant is a high-performance vector database used for Retrieval-Augmented Generation (RAG) and embedding storage. n8n vector store nodes interact with it over `http://qdrant:6333`.
+Qdrant is a high-performance vector database used for Retrieval-Augmented Generation (RAG) and embedding storage. n8n vector store nodes interact with it over `http://qdrant:6333`. It is highly recommended to pair this with an OpenRouter API embedding model to avoid overloading the local GPU.
 
 ---
 
