@@ -89,14 +89,14 @@ async function main() {
   // It succeeds once the DB is up and the credentials_entity table exists
   // (i.e., after n8n has run its schema migrations on first start).
   log('Waiting for n8n database to be ready...');
-  const deadline = Date.now() + 120_000;   // 2-minute timeout
+  const deadline = Date.now() + 300_000;   // 5-minute timeout
   let existing   = [];
 
   while (true) {
     try {
       execSync(`n8n export:credentials --all --output="${exportFile}"`, {
         stdio:   'pipe',
-        timeout: 15_000,
+        timeout: 60_000,
         env:     process.env,
       });
 
@@ -107,7 +107,7 @@ async function main() {
       break;   // success — proceed
     } catch (err) {
       if (Date.now() >= deadline) {
-        throw new Error('Database never became ready within 2 minutes. ' +
+        throw new Error('Database never became ready within 5 minutes. ' +
                         'Check postgres container logs.');
       }
       log('Database not ready yet — retrying in 3s...');
