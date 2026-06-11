@@ -144,7 +144,8 @@ The following flags are applied via the `command:` override in `docker-compose.y
 | `wal_buffers` | `16MB` | Reduces WAL write round-trips |
 | `max_wal_size` | `2GB` | Allows more WAL before triggering an early checkpoint |
 | `min_wal_size` | `512MB` | Prevents thrashing on low-traffic instances |
-| `log_min_duration_statement` | `1000ms` | Logs slow queries for visibility |
+| `synchronous_commit` | `local` | Writes WAL to the OS page cache before returning from COMMIT, but does **not** wait for the physical disk fsync. Eliminates multi-second COMMIT latency caused by Docker Desktop's virtualised I/O layer on Windows while still protecting against process crashes |
+| `log_min_duration_statement` | `2000ms` | Logs queries slower than 2 seconds for visibility |
 
 The healthcheck includes `start_period: 30s` so Compose does not declare Postgres unhealthy during the WAL recovery phase that follows an unclean shutdown.
 
@@ -186,6 +187,17 @@ redis     ──(healthy, start_period=10s)──►                           n
 ```
 
 All services include `restart: unless-stopped` so the stack recovers automatically after host reboots or transient failures.
+
+### Shutdown Grace Periods
+
+Docker's default stop timeout is **10 seconds** — too short for PostgreSQL to finish an in-progress checkpoint. Without explicit grace periods, every `docker compose down` or host reboot causes an unclean shutdown, which forces WAL recovery on the next start.
+
+| Service | `stop_grace_period` | Reason |
+|---|---|---|
+| `postgres` | `60s` | Completes the shutdown checkpoint + WAL flush before SIGKILL |
+| `redis` | `20s` | Flushes the AOF buffer to disk |
+| `n8n` | `30s` | Finishes in-flight HTTP requests |
+| `n8n-worker` | `30s` | Completes any currently-executing workflow node |
 
 ---
 

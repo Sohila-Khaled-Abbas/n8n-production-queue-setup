@@ -244,11 +244,33 @@ docker compose logs redis
 database system was not properly shut down; automatic recovery in progress
 ```
 
-**This is normal** after any unclean container stop (power loss, `docker kill`, host crash). PostgreSQL performs automatic WAL recovery and will print `database system is ready to accept connections` once complete. The `start_period: 30s` on the healthcheck gives it time to finish before n8n tries to connect.
+**Cause:** Docker killed the container before PostgreSQL finished writing its shutdown checkpoint. Docker's default stop timeout is 10 seconds — not long enough.
 
-Only investigate further if Postgres never reaches the ready state.
+**This is fixed in `docker-compose.yml`** by `stop_grace_period: 60s` on the `postgres` service, which gives it up to 60 seconds to flush WAL and write the shutdown record cleanly.
+
+If you still see this after the fix, it means the host was restarted abruptly (power loss, SIGKILL). PostgreSQL's WAL recovery is automatic and safe — just wait for `database system is ready to accept connections`.
+
+> Never investigate this message unless Postgres *fails to reach the ready state* afterwards.
 
 ---
+
+### Slow COMMIT warnings (`duration: Nms  statement: COMMIT`)
+
+```
+2026-06-11 11:50:25 UTC [248] LOG:  duration: 1153.883 ms  statement: COMMIT
+```
+
+**Cause:** On Docker Desktop for Windows, the virtualised disk layer adds significant fsync latency. By default, PostgreSQL waits for the OS to confirm the WAL was physically written to disk before returning from `COMMIT` — on Windows + Docker this can take 1–3 seconds.
+
+**Fixed by `synchronous_commit=local`** in `docker-compose.yml`. This setting tells Postgres to flush WAL to the OS page cache (protecting against process crashes) but not wait for the physical disk write confirmation. The result is sub-millisecond COMMIT responses while maintaining full protection against n8n crashes.
+
+**Durability trade-off:** With `synchronous_commit=local`, in the event of a *complete OS/hardware crash* (not just a process crash), the last ~1 second of committed transactions could theoretically be lost. For n8n workflow execution metadata this is an acceptable trade-off; for financial transactions it would not be.
+
+The `log_min_duration_statement` threshold is set to `2000ms` (2 seconds) so only genuinely slow queries (not fsync waits) appear in logs.
+
+---
+
+
 
 ### "password authentication failed for user"
 
