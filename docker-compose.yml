@@ -204,7 +204,7 @@ services:
   # Access from n8n nodes via: http://ollama:11434
   # ──────────────────────────────────────────────────────────
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.30.7  # Pinned stable release; upgrade intentionally
     container_name: ollama
     restart: unless-stopped
     networks:
@@ -213,13 +213,16 @@ services:
       - "11434:11434"          # Expose for host-level tools & testing
     volumes:
       - ollama_storage:/root/.ollama
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+    # GPU note: Requires CUDA 12+ drivers. Current system has CUDA 11.6 (driver 512.72).
+    # Ollama will automatically fall back to CPU mode.
+    # To enable GPU: update NVIDIA drivers to support CUDA 12 and uncomment below:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
 
   # ──────────────────────────────────────────────────────────
   # Ollama Init — One-shot: pulls llama3.2 on first run only.
@@ -227,7 +230,7 @@ services:
   # Safe to re-run — Ollama skips download if already present.
   # ──────────────────────────────────────────────────────────
   ollama-pull-llama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.30.7  # Keep in sync with the ollama service above
     container_name: ollama-pull-llama
     restart: "no"
     networks:
