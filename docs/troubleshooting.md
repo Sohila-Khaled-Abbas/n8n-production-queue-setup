@@ -345,6 +345,34 @@ docker compose up -d n8n-worker
 
 ---
 
+## AI Services
+
+### Local LLM nodes hang indefinitely
+
+**Cause:** The `ollama-pull-llama` init container is still downloading the multi-gigabyte LLaMA model in the background.
+
+**Diagnosis:**
+```bash
+docker compose logs -f ollama-pull-llama
+```
+
+**Fix:** Wait for the download to finish. It is only required on the first boot. Once complete, the container will exit successfully and Ollama will be ready for inference.
+
+---
+
+### n8n cannot connect to Ollama / Qdrant
+
+**Cause:** The internal Docker network addresses are incorrect or the containers crashed.
+
+**Fix:**
+1. In n8n credentials, ensure you are using `http://ollama:11434` for Ollama, and `http://qdrant:6333` for Qdrant. Do not use `localhost` (which resolves to the n8n container itself).
+2. Check container health:
+   ```bash
+   docker compose ps ollama qdrant
+   ```
+
+---
+
 ## Scaling Issues
 
 ### "Cannot start service n8n-worker: container name … is already in use"
