@@ -6,7 +6,7 @@
 
 **A production-grade, self-hosted n8n deployment with queue-mode scaling, PostgreSQL persistence, and an isolated Python/JavaScript code execution sidecar.**
 
-[![n8n Version](https://img.shields.io/badge/n8n-latest-FF6D5A?logo=n8n&logoColor=white)](https://hub.docker.com/r/n8nio/n8n)
+[![n8n Version](https://img.shields.io/badge/n8n-2.25.6-FF6D5A?logo=n8n&logoColor=white)](https://hub.docker.com/r/n8nio/n8n)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://hub.docker.com/_/postgres)
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)](https://hub.docker.com/_/redis)
 [![Docker Compose](https://img.shields.io/badge/Docker_Compose-v2-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
@@ -29,6 +29,9 @@
 | **Data-Engineering Ready** | `pandas`, `numpy`, `pyarrow`, `requests` pre-installed in the Python runner |
 | **Runtime Config Hot-Swap** | Update runner configuration without rebuilding the Docker image |
 | **Health Checks** | All dependencies are health-checked before n8n starts |
+| **Production-Tuned PostgreSQL** | `shared_buffers`, `wal_buffers`, `checkpoint_completion_target` pre-configured |
+| **AOF-Persistent Redis** | Redis uses append-only file persistence + memory cap — no data loss on restart |
+| **Pinned Image Versions** | All images are pinned to exact versions — no surprise upgrades |
 
 ---
 
@@ -36,7 +39,7 @@
 
 ```
                            ┌─────────────────────────────────────────┐
-                           │              Docker Network              │
+                           │         n8n-net (bridge network)        │
                            │                                          │
   Browser / Webhook ──────►│  n8n-main (port 80)                     │
                            │    ├── REST API & Editor UI              │
@@ -60,8 +63,8 @@
 
 | Container | Image | Role |
 |---|---|---|
-| `n8n-main` | `docker.n8n.io/n8nio/n8n:latest` | Editor UI, REST API, task broker |
-| `n8n-worker-1` | `docker.n8n.io/n8nio/n8n:latest` | Queue worker (scalable) |
+| `n8n-main` | `docker.n8n.io/n8nio/n8n:2.25.6` | Editor UI, REST API, task broker |
+| `n8n-worker-1` | `docker.n8n.io/n8nio/n8n:2.25.6` | Queue worker (scalable) |
 | `n8n-python-runner` | Custom (`Dockerfile.runner`) | Sandboxed code execution sidecar |
 | `n8n-postgres` | `postgres:16-alpine` | Persistent data store |
 | `n8n-redis` | `redis:7-alpine` | Queue broker & session cache |
@@ -131,12 +134,17 @@ All variables live in `.env` (never committed). The table below documents every 
 | `WEBHOOK_URL` | ✅ | `https://n8n.example.com` | Base URL for inbound webhooks |
 | `N8N_RELEASE_TYPE` | — | `stable` | Pin to `stable` or `next` |
 | `NODE_ENV` | — | `production` | Node.js environment |
+| `N8N_LOG_LEVEL` | — | `info` | Log verbosity: `error`, `warn`, `info`, `debug` |
+| `N8N_DIAGNOSTICS_ENABLED` | — | `false` | Disable telemetry & external API calls on startup |
+| `N8N_VERSION_NOTIFICATIONS_ENABLED` | — | `false` | Suppress version-check requests to `api.n8n.io` |
 
 #### Task Runners
 
 | Variable | Required | Description |
 |---|---|---|
 | `N8N_RUNNERS_AUTH_TOKEN` | ✅ | Shared secret between `n8n-main` and `n8n-python-runner`. Generate with `openssl rand -hex 32`. |
+
+> **Removed variable:** `N8N_RUNNERS_ENABLED` is **no longer needed** in n8n v2.25+ and must be removed from `.env`. Keeping it will produce a deprecation warning on every boot.
 
 #### Database
 
@@ -152,9 +160,41 @@ All variables live in `.env` (never committed). The table below documents every 
 #### Storage
 
 | Variable | Default | Description |
-|---|---|---|
+|---|---|---| 
 | `N8N_DATA_DIR` | `./n8n-data` | Host path for n8n user data (workflows, credentials, binary files) |
 | `N8N_DEFAULT_BINARY_DATA_MODE` | `filesystem` | Where binary execution data is stored (`filesystem` or `s3`) |
+
+### Redis Configuration (`redis.conf`)
+
+Redis is started with a dedicated `redis.conf` file (mounted read-only into the container). This replaces the noisy default configuration. Key settings:
+
+| Setting | Value | Reason |
+|---|---|---|
+| `appendonly yes` | AOF persistence | Durable writes; survives container crashes |
+| `appendfsync everysec` | 1-second fsync | Balance between durability and performance |
+| `maxmemory 256mb` | Memory cap | Prevents OOM from unbounded queue growth |
+| `maxmemory-policy allkeys-lru` | LRU eviction | Evicts oldest data when cap is reached |
+| `save 3600 1` | Hourly RDB snapshot | Safety net backup |
+
+To tune memory for your host, edit `redis.conf` and change `maxmemory`.  
+No container rebuild is needed — just restart Redis:
+
+```bash
+docker compose restart redis
+```
+
+### PostgreSQL Tuning
+
+The following flags are passed directly to the `postgres` process in `docker-compose.yml`:
+
+| Flag | Value | Reason |
+|---|---|---|
+| `shared_buffers` | `256MB` | Main read cache — reduces disk I/O |
+| `effective_cache_size` | `768MB` | Planner hint for index vs. seq scan |
+| `checkpoint_completion_target` | `0.9` | Spreads I/O across 90% of checkpoint interval (reduces I/O spikes) |
+| `wal_buffers` | `16MB` | Reduces WAL write latency |
+| `max_wal_size` | `2GB` | Allows more WAL before forcing a checkpoint |
+| `log_min_duration_statement` | `1000ms` | Logs queries slower than 1 second |
 
 ### Task Runner Config (`n8n-task-runners.json`)
 
@@ -242,20 +282,43 @@ docker compose logs -f n8n-python-runner
 # Restart a single service
 docker compose restart n8n
 
+# Update n8n to a new pinned version
+# 1. Edit docker-compose.yml: change both n8n image tags to the new version
+# 2. Pull and redeploy:
+docker compose pull n8n n8n-worker
+docker compose up -d n8n n8n-worker
+
 # Stop the stack (data is preserved in volumes)
 docker compose down
 
 # Destroy everything including volumes (⚠️ irreversible)
 docker compose down -v
-
-# Pull latest n8n image and redeploy
-docker compose pull n8n n8n-worker
-docker compose up -d n8n n8n-worker
 ```
 
 ---
 
 ## 🛠️ Troubleshooting
+
+### Deprecation warnings on startup
+
+```
+N8N_RUNNERS_ENABLED -> Remove this environment variable
+OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS -> ...
+```
+
+**Fix:** Ensure `N8N_RUNNERS_ENABLED` is **absent** from `.env`. `OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true` is already set in `docker-compose.yml` — do not set it to `false` in `.env`.
+
+---
+
+### MCP registry timeout on startup
+
+```
+Error fetching from Strapi API (https://api.n8n.io/api/mcp-servers): timeout of 6000ms exceeded
+```
+
+This is a non-critical informational fetch. It is suppressed in this stack by `N8N_DIAGNOSTICS_ENABLED=false`. If you see it again, verify that variable is set in `docker-compose.yml`.
+
+---
 
 ### Runner fails: "contains no task runners"
 
@@ -267,6 +330,8 @@ The launcher binary inside the container is reading a stale or differently-forma
 docker compose up -d n8n-python-runner
 ```
 
+---
+
 ### Runner fails: "missing required value: N8N_RUNNERS_AUTH_TOKEN"
 
 The `N8N_RUNNERS_AUTH_TOKEN` is not set in `.env`, or `.env` was not found.
@@ -275,6 +340,8 @@ The `N8N_RUNNERS_AUTH_TOKEN` is not set in `.env`, or `.env` was not found.
 # Verify the variable is loaded
 docker compose run --rm n8n-python-runner env | grep N8N_RUNNERS_AUTH_TOKEN
 ```
+
+---
 
 ### n8n-main never becomes healthy
 
@@ -286,6 +353,10 @@ docker compose logs postgres
 docker compose logs redis
 ```
 
+PostgreSQL logs `database system was not properly shut down` on first start after an unclean shutdown — this is normal. Wait for `database system is ready to accept connections` before investigating further. The `start_period: 30s` on the healthcheck gives it time to complete WAL recovery.
+
+---
+
 ### Workflows not executing
 
 In queue mode, at least one worker must be running. Verify:
@@ -296,6 +367,12 @@ docker compose ps n8n-worker
 
 ---
 
+### Node does not have any credentials set
+
+This is a runtime workflow warning — the node in your workflow has no API credentials attached. Fix it in the n8n UI under the node's **Credentials** dropdown, not in the Docker configuration.
+
+---
+
 ## 📁 Repository Structure
 
 ```
@@ -303,6 +380,7 @@ docker compose ps n8n-worker
 ├── docker-compose.yml          # Full service orchestration
 ├── Dockerfile.runner           # Custom Python/JS runner image
 ├── n8n-task-runners.json       # Runner launcher configuration
+├── redis.conf                  # Production Redis configuration
 ├── .env.example                # Environment variable template
 ├── .gitignore                  # Excludes secrets and runtime data
 ├── docs/
