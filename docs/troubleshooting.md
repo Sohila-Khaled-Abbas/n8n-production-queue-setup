@@ -21,6 +21,61 @@ docker stats --no-stream
 
 ---
 
+## Credentials & Encryption Issues
+
+### "Credentials could not be decrypted" / `error:1C800064:Provider routines::bad decrypt`
+
+**This is the most important issue to prevent.** It means n8n is trying to decrypt credentials with a different key than what was used to encrypt them.
+
+**Root cause — look for this line in `docker compose logs n8n`:**
+```
+No encryption key found - Auto-generating and saving to: /home/node/.n8n/config
+```
+
+If you see this, n8n generated a new random key because `N8N_ENCRYPTION_KEY` was not set in `.env`. Any credentials already stored in PostgreSQL from a previous session are now unreadable.
+
+**Fix — two parts:**
+
+**Part 1: Pin the key permanently in `.env`**
+
+Read the current key that n8n auto-generated:
+```bash
+# On Windows
+type n8n-data\config
+
+# On Linux/macOS
+cat n8n-data/config
+```
+
+This outputs something like:
+```json
+{
+    "encryptionKey": "MP81UEDl6uFA2UGE1oB/6XEz/iHmW7DL"
+}
+```
+
+Add that exact value to `.env`:
+```dotenv
+N8N_ENCRYPTION_KEY=MP81UEDl6uFA2UGE1oB/6XEz/iHmW7DL
+```
+
+Then recreate the n8n containers (not the DB):
+```bash
+docker compose up -d --force-recreate n8n n8n-worker
+```
+
+**Part 2: Re-enter your credentials in the UI**
+
+Credentials encrypted with an old/lost key cannot be recovered. You must:
+1. Open the n8n editor
+2. Go to **Credentials**
+3. Delete the broken credentials (they will show a decryption error)
+4. Re-create them from scratch by entering your API keys again
+
+> ⚠️ **Prevention:** Always set `N8N_ENCRYPTION_KEY` in `.env` *before* first launch. Generate with: `openssl rand -base64 24`. See `.env.example` for the required variable.
+
+---
+
 ## Runner Issues
 
 ### "contains no task runners"
@@ -86,15 +141,74 @@ Restart the stack: `docker compose up -d`
 
 **Diagnosis:**
 ```bash
-# Check runner health endpoints
-curl http://localhost:5681/healthz   # JS runner
-curl http://localhost:5682/healthz   # Python runner
+# Check runner health endpoints (from inside another container)
+docker compose exec n8n wget -qO- http://n8n-python-runner:5680/healthz
 ```
 
 **Fix:**
 ```bash
 docker compose restart n8n-python-runner
 docker compose logs -f n8n-python-runner
+```
+
+---
+
+### Runner WebSocket `i/o timeout` handshake error
+
+```
+ERROR [launcher:py] Failed to execute `launch` command:
+handshake failed: failed to read ws message: write tcp ...:5679: i/o timeout
+```
+
+**Cause:** The runner was idle too long and its WebSocket connection to the broker timed out. This is mitigated by `N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT=0` in `docker-compose.yml`, which keeps the runner alive indefinitely. If you still see it, the runner container was restarted while the broker was unavailable.
+
+**Fix:** Docker's `restart: unless-stopped` handles this automatically. If it persists:
+```bash
+docker compose restart n8n-python-runner
+```
+
+---
+
+### Worker: "Failed to start Python task runner in internal mode"
+
+```
+Failed to start Python task runner in internal mode. because Python 3 is missing
+```
+
+**Cause:** The worker is trying to start Python internally instead of using the external runner sidecar. This means `N8N_RUNNERS_MODE=external` is missing from the worker's environment.
+
+**Fix:** Verify `docker-compose.yml` has this in `n8n-worker`'s environment:
+```yaml
+- N8N_RUNNERS_MODE=external
+- N8N_RUNNERS_TASK_BROKER_URI=http://n8n:5679
+```
+
+---
+
+## Deprecation Warnings on Startup
+
+### `N8N_RUNNERS_ENABLED -> Remove this environment variable`
+
+Remove `N8N_RUNNERS_ENABLED` from `.env`. It is no longer recognized in n8n v2.25+.
+
+### `OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS`
+
+This is already set to `true` in `docker-compose.yml`. Do not set it in `.env`.
+
+---
+
+## MCP Registry Timeout
+
+```
+Error fetching from Strapi API (https://api.n8n.io/api/mcp-servers): timeout of 6000ms exceeded
+Failed to refresh MCP registry
+```
+
+**Cause:** n8n tries to reach `api.n8n.io` on startup. In restricted network environments this times out after 6 seconds.
+
+**Fix:** Already suppressed in this stack by `N8N_DIAGNOSTICS_ENABLED=false` in `docker-compose.yml`. If you see this again, verify the variable is present:
+```bash
+docker compose exec n8n env | grep N8N_DIAGNOSTICS_ENABLED
 ```
 
 ---
@@ -121,6 +235,18 @@ docker compose logs redis
 | `postgres` unhealthy | Check `DB_POSTGRESDB_PASSWORD` matches what Postgres was initialized with. If not, destroy the volume: `docker compose down -v` and restart |
 | `redis` unhealthy | Redis rarely fails. Check disk space: `df -h` |
 | Port conflict | Another Postgres/Redis is already running on the host. Change `DB_POSTGRESDB_PORT` / redis port in `docker-compose.yml` |
+
+---
+
+### PostgreSQL: "database system was not properly shut down"
+
+```
+database system was not properly shut down; automatic recovery in progress
+```
+
+**This is normal** after any unclean container stop (power loss, `docker kill`, host crash). PostgreSQL performs automatic WAL recovery and will print `database system is ready to accept connections` once complete. The `start_period: 30s` on the healthcheck gives it time to finish before n8n tries to connect.
+
+Only investigate further if Postgres never reaches the ready state.
 
 ---
 
@@ -219,7 +345,11 @@ docker compose up -d --scale n8n-worker=3
 
 ### High memory usage by PostgreSQL
 
-PostgreSQL defaults are conservative. For large workloads, tune `shared_buffers` and `work_mem` via environment variables or a mounted `postgresql.conf`.
+PostgreSQL is already tuned via command-line flags in `docker-compose.yml` (`shared_buffers=256MB`, `work_mem=16MB`). For heavier workloads, increase these values and redeploy:
+
+```bash
+docker compose up -d --force-recreate postgres
+```
 
 ### High Redis memory usage
 
@@ -227,6 +357,11 @@ If execution history grows large, configure n8n to prune old executions:
 ```dotenv
 EXECUTIONS_DATA_PRUNE=true
 EXECUTIONS_DATA_MAX_AGE=168   # hours (7 days)
+```
+
+Redis also has a hard memory cap (`maxmemory 256mb` in `redis.conf`). Raise this if needed and restart Redis:
+```bash
+docker compose restart redis
 ```
 
 ---
