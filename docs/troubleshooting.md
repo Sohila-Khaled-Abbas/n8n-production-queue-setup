@@ -347,28 +347,26 @@ docker compose up -d n8n-worker
 
 ## AI Services
 
-### Local LLM nodes hang indefinitely
+### Python Code nodes run out of memory (OOM)
 
-**Cause:** The `ollama-pull-llama` init container is still downloading the multi-gigabyte LLaMA model in the background.
+**Cause:** Processing large datasets (e.g. hundreds of megabytes of CSVs or Parquet files) using `pandas` or `pyarrow` inside the Python runner exceeds the container's memory limits.
 
-**Diagnosis:**
-```bash
-docker compose logs -f ollama-pull-llama
-```
-
-**Fix:** Wait for the download to finish. It is only required on the first boot. Once complete, the container will exit successfully and Ollama will be ready for inference.
+**Fix:** 
+1. **Streaming Data:** Instead of loading full files into memory, use `pandas` chunking (`chunksize` in `read_csv`) or `pyarrow.dataset` to stream data.
+2. **Pushdown to Data Warehouse:** If connected to BigQuery or Snowflake, perform joins and aggregations directly in the warehouse using SQL queries instead of downloading data to process in Python locally.
+3. **Increase limits:** If you have free RAM, consider explicitly assigning more memory to the `n8n-python-runner` in `docker-compose.yml`.
 
 ---
 
-### n8n cannot connect to Ollama / Qdrant
+### n8n cannot connect to Qdrant
 
-**Cause:** The internal Docker network addresses are incorrect or the containers crashed.
+**Cause:** The internal Docker network addresses are incorrect or the container crashed.
 
 **Fix:**
-1. In n8n credentials, ensure you are using `http://ollama:11434` for Ollama, and `http://qdrant:6333` for Qdrant. Do not use `localhost` (which resolves to the n8n container itself).
+1. In n8n credentials, ensure you are using `http://qdrant:6333` for Qdrant. Do not use `localhost` (which resolves to the n8n container itself).
 2. Check container health:
    ```bash
-   docker compose ps ollama qdrant
+   docker compose ps qdrant
    ```
 
 ---
