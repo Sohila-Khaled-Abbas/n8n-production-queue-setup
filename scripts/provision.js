@@ -1,55 +1,47 @@
 #!/usr/bin/env node
 /**
- * n8n Credential Provisioner
+ * n8n Credential Provisioner — CLI-based (no login required)
  * ─────────────────────────────────────────────────────────────────────────────
- * Runs as a one-shot Docker service after n8n-main starts.
- * Automatically creates PostgreSQL and Redis credentials in n8n.
+ * Uses `n8n export:credentials` and `n8n import:credentials` directly.
+ * Connects straight to PostgreSQL — n8n-main does NOT need to be running.
  *
- * Idempotent — checks whether each credential already exists before
- * creating it, so it is safe to run on every `docker compose up`.
+ * Behaviour:
+ *  - Adds missing credentials (PostgreSQL, Redis)
+ *  - NEVER modifies or deletes credentials that already exist
+ *  - Safe to run on every `docker compose up` (fully idempotent)
  *
- * Required env vars (inherited from .env via docker-compose):
- *   N8N_OWNER_EMAIL        — your n8n login e-mail
- *   N8N_OWNER_PASSWORD     — your n8n login password
- *   N8N_OWNER_FIRST_NAME   — (optional, default: Admin)
- *   N8N_OWNER_LAST_NAME    — (optional, default: User)
- *   DB_POSTGRESDB_HOST, DB_POSTGRESDB_PORT, DB_POSTGRESDB_DATABASE,
- *   DB_POSTGRESDB_USER, DB_POSTGRESDB_PASSWORD
+ * Required env vars (from .env):
+ *   N8N_ENCRYPTION_KEY       — the master encryption key
+ *   DB_POSTGRESDB_HOST/PORT/DATABASE/USER/PASSWORD
  *
- * To add more credentials, append an entry to the CREDENTIALS array below.
+ * To add more credentials: append an entry to CREDENTIALS below.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
 'use strict';
 
-const N8N_URL        = 'http://n8n:5678';
-const RETRY_MS       = 3_000;
-const MAX_WAIT_MS    = 120_000;  // give n8n up to 2 minutes to boot
+const { execSync }           = require('child_process');
+const { randomUUID }         = require('crypto');
+const fs                     = require('fs');
+const path                   = require('path');
+const os                     = require('os');
 
-// ── Read environment ──────────────────────────────────────────────────────────
+// ── Utilities ─────────────────────────────────────────────────────────────────
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const log   = (...a) => console.log('[provision]', ...a);
+const line  = ()     => console.log('[provision]', '─'.repeat(55));
+
+// ── Credential definitions ────────────────────────────────────────────────────
+// Data fields are PLAINTEXT — n8n encrypts them on import using N8N_ENCRYPTION_KEY.
+// Only modify 'name', 'type', and 'data'. Do not set 'id'.
 const {
-  N8N_OWNER_EMAIL,
-  N8N_OWNER_PASSWORD,
-  N8N_OWNER_FIRST_NAME = 'Admin',
-  N8N_OWNER_LAST_NAME  = 'User',
-  DB_POSTGRESDB_HOST       = 'postgres',
-  DB_POSTGRESDB_PORT       = '5432',
-  DB_POSTGRESDB_DATABASE   = 'n8n',
+  DB_POSTGRESDB_HOST     = 'postgres',
+  DB_POSTGRESDB_PORT     = '5432',
+  DB_POSTGRESDB_DATABASE = 'n8n',
   DB_POSTGRESDB_USER,
   DB_POSTGRESDB_PASSWORD,
 } = process.env;
 
-// ── Fail fast on missing required vars ───────────────────────────────────────
-if (!N8N_OWNER_EMAIL || !N8N_OWNER_PASSWORD) {
-  console.error(
-    '[provision] ✗ N8N_OWNER_EMAIL and N8N_OWNER_PASSWORD must be set in .env\n' +
-    '            These must match your n8n login credentials.',
-  );
-  process.exit(1);
-}
-
-// ── Credentials to provision ──────────────────────────────────────────────────
-// Add more entries here to provision additional credentials automatically.
 const CREDENTIALS = [
   // ── PostgreSQL ──────────────────────────────────────────────────────────────
   {
@@ -61,7 +53,7 @@ const CREDENTIALS = [
       database:              DB_POSTGRESDB_DATABASE,
       user:                  DB_POSTGRESDB_USER,
       password:              DB_POSTGRESDB_PASSWORD,
-      ssl:                   'disable',        // internal Docker network — no TLS needed
+      ssl:                   'disable',       // internal Docker network — no TLS
       allowUnauthorizedCerts: false,
       sshTunnel:             false,
     },
@@ -74,164 +66,90 @@ const CREDENTIALS = [
     data: {
       host:     'redis',
       port:     6379,
-      password: '',    // no password — access is restricted to the n8n-net bridge
+      password: '',     // no password — access restricted to n8n-net bridge
       database: 0,
       ssl:      false,
     },
   },
 ];
 
-// ── Utilities ─────────────────────────────────────────────────────────────────
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-const log   = (...a) => console.log('[provision]', ...a);
-const warn  = (...a) => console.warn('[provision] ⚠', ...a);
-
-// Collect all Set-Cookie values from a fetch Response into one Cookie header.
-function extractCookie(response) {
-  // Node 20+ supports getSetCookie(); older runtimes fall back to get().
-  const raw = typeof response.headers.getSetCookie === 'function'
-    ? response.headers.getSetCookie()
-    : [response.headers.get('set-cookie') ?? ''].filter(Boolean);
-
-  return raw.map(c => c.split(';')[0]).join('; ');
-}
-
-// ── Step 1: Wait for n8n to pass its health check ────────────────────────────
-async function waitForN8n() {
-  log('Waiting for n8n...');
-  const deadline = Date.now() + MAX_WAIT_MS;
-
-  while (Date.now() < deadline) {
-    try {
-      const res = await fetch(`${N8N_URL}/healthz`);
-      if (res.ok) { log('n8n is ready.'); return; }
-    } catch { /* still booting — keep waiting */ }
-    await sleep(RETRY_MS);
-  }
-
-  throw new Error(`n8n did not become ready within ${MAX_WAIT_MS / 1000}s`);
-}
-
-// ── Step 2: Create owner account if this is a fresh instance ─────────────────
-// The /api/v1/owner/setup endpoint returns 4xx when the account already exists.
-// We treat any non-fatal error here as "already configured" and continue.
-async function ensureOwner() {
-  log('Ensuring owner account exists...');
-  try {
-    const res = await fetch(`${N8N_URL}/api/v1/owner/setup`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({
-        email:     N8N_OWNER_EMAIL,
-        firstName: N8N_OWNER_FIRST_NAME,
-        lastName:  N8N_OWNER_LAST_NAME,
-        password:  N8N_OWNER_PASSWORD,
-      }),
-    });
-    if (res.ok) log('Owner account created (first run).');
-    else        log(`Owner setup returned ${res.status} — account already configured.`);
-  } catch (err) {
-    warn('ensureOwner (non-fatal):', err.message);
-  }
-}
-
-// ── Step 3: Login and return session cookie ───────────────────────────────────
-async function login() {
-  log(`Logging in as ${N8N_OWNER_EMAIL}...`);
-  const res = await fetch(`${N8N_URL}/rest/login`, {
-    method:  'POST',
-    headers: {
-      'Content-Type':     'application/json',
-      'X-Requested-With': 'XMLHttpRequest',
-    },
-    // n8n 2.x uses 'emailOrLdapLoginId' as the email field name
-    body: JSON.stringify({ emailOrLdapLoginId: N8N_OWNER_EMAIL, password: N8N_OWNER_PASSWORD }),
-  });
-
-  if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    throw new Error(
-      `Login failed (HTTP ${res.status}).\n` +
-      `  Check that N8N_OWNER_EMAIL / N8N_OWNER_PASSWORD in .env\n` +
-      `  match your n8n login credentials.\n` +
-      `  Server said: ${body}`,
-    );
-  }
-
-  const cookie = extractCookie(res);
-  if (!cookie) throw new Error('Login succeeded but no session cookie was returned.');
-
-  log('Login successful.');
-  return cookie;
-}
-
-// ── Step 4: Fetch set of existing credential names ────────────────────────────
-async function getExistingNames(cookie) {
-  const res = await fetch(`${N8N_URL}/rest/credentials`, {
-    headers: {
-      'Cookie':           cookie,
-      'X-Requested-With': 'XMLHttpRequest',
-    },
-  });
-
-  if (!res.ok) throw new Error(`Could not list credentials (HTTP ${res.status})`);
-
-  const json  = await res.json();
-  const items = Array.isArray(json) ? json : (json.data ?? []);
-  return new Set(items.map(c => c.name));
-}
-
-// ── Step 5: Create a single credential ───────────────────────────────────────
-async function createCredential(cookie, cred) {
-  const res = await fetch(`${N8N_URL}/rest/credentials`, {
-    method:  'POST',
-    headers: {
-      'Content-Type':     'application/json',
-      'Cookie':           cookie,
-      'X-Requested-With': 'XMLHttpRequest',
-    },
-    body: JSON.stringify({ name: cred.name, type: cred.type, data: cred.data }),
-  });
-
-  if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    throw new Error(`Failed to create "${cred.name}" (HTTP ${res.status}): ${body}`);
-  }
-
-  log(`✓ Created: "${cred.name}" (type: ${cred.type})`);
-}
-
 // ── Main ──────────────────────────────────────────────────────────────────────
 async function main() {
-  log('─'.repeat(60));
-  log('n8n Credential Provisioner starting...');
-  log('─'.repeat(60));
+  line();
+  log('n8n Credential Provisioner starting (CLI mode)');
+  log('Will ONLY add missing credentials — existing ones are never touched.');
+  line();
 
-  await waitForN8n();
-  await ensureOwner();
+  const tmpDir      = os.tmpdir();
+  const exportFile  = path.join(tmpDir, 'n8n-existing-creds.json');
+  const importFile  = path.join(tmpDir, 'n8n-import-creds.json');
 
-  const cookie   = await login();
-  const existing = await getExistingNames(cookie);
+  // ── Step 1: Wait for the database + n8n migrations to be ready ─────────────
+  // We run `n8n export:credentials` in a retry loop.
+  // It succeeds once the DB is up and the credentials_entity table exists
+  // (i.e., after n8n has run its schema migrations on first start).
+  log('Waiting for n8n database to be ready...');
+  const deadline = Date.now() + 120_000;   // 2-minute timeout
+  let existing   = [];
 
-  log(`Found ${existing.size} existing credential(s) in n8n.`);
-  log(`Provisioning ${CREDENTIALS.length} credential(s)...`);
+  while (true) {
+    try {
+      execSync(`n8n export:credentials --all --output="${exportFile}"`, {
+        stdio:   'pipe',
+        timeout: 15_000,
+        env:     process.env,
+      });
 
-  let created = 0;
-  let skipped = 0;
-
-  for (const cred of CREDENTIALS) {
-    if (existing.has(cred.name)) {
-      log(`→ Skipped  "${cred.name}" — already exists.`);
-      skipped++;
-    } else {
-      await createCredential(cookie, cred);
-      created++;
+      const raw = fs.existsSync(exportFile)
+        ? fs.readFileSync(exportFile, 'utf8').trim()
+        : '';
+      existing = raw ? JSON.parse(raw) : [];
+      break;   // success — proceed
+    } catch (err) {
+      if (Date.now() >= deadline) {
+        throw new Error('Database never became ready within 2 minutes. ' +
+                        'Check postgres container logs.');
+      }
+      log('Database not ready yet — retrying in 3s...');
+      await sleep(3_000);
     }
   }
 
-  log('─'.repeat(60));
-  log(`Done. Created: ${created}  Skipped: ${skipped}`);
-  log('─'.repeat(60));
+  // ── Step 2: Determine what to create ─────────────────────────────────────
+  const existingNames = new Set(existing.map(c => c.name));
+
+  if (existingNames.size > 0) {
+    log(`Found ${existingNames.size} existing credential(s):`);
+    for (const name of existingNames) log(`  • ${name}`);
+  } else {
+    log('No existing credentials found.');
+  }
+
+  const toCreate = CREDENTIALS.filter(c => !existingNames.has(c.name));
+
+  if (toCreate.length === 0) {
+    log('All target credentials already exist — nothing to do.');
+    line();
+    return;
+  }
+
+  log(`Need to create ${toCreate.length} credential(s):`);
+  for (const c of toCreate) log(`  + ${c.name}  (type: ${c.type})`);
+
+  // ── Step 3: Write import file and run n8n import:credentials ─────────────
+  // n8n's credentials_entity.id is NOT NULL — each credential must carry a UUID.
+  const toCreateWithIds = toCreate.map(c => ({ id: randomUUID(), ...c }));
+  fs.writeFileSync(importFile, JSON.stringify(toCreateWithIds, null, 2), 'utf8');
+
+  execSync(`n8n import:credentials --input="${importFile}"`, {
+    stdio:   'inherit',   // show n8n's own output
+    timeout: 30_000,
+    env:     process.env,
+  });
+
+  line();
+  log(`Done. Created: ${toCreate.length}  Skipped: ${existingNames.size}`);
+  line();
 }
 
 main().catch(err => {

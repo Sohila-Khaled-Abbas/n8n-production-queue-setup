@@ -171,15 +171,15 @@ services:
 
   # ──────────────────────────────────────────────────────────
   # n8n Init — One-shot credential provisioner
-  # Runs on every `docker compose up`. Idempotent — skips
-  # credentials that already exist.
-  # Requires N8N_OWNER_EMAIL + N8N_OWNER_PASSWORD in .env.
+  # Runs on every `docker compose up`. Idempotent:
+  #   - ADDS missing credentials (PostgreSQL, Redis)
+  #   - NEVER modifies or deletes existing credentials
+  # Does NOT require n8n-main to be running — talks directly
+  # to PostgreSQL using the n8n CLI + encryption key.
   # ──────────────────────────────────────────────────────────
   n8n-init:
     image: docker.n8n.io/n8nio/n8n:2.25.6
     container_name: n8n-init
-    # One-shot: run once and exit. Not restarted automatically.
-    # docker compose up will re-run it each time, but the script is idempotent.
     restart: "no"
     networks:
       - n8n-net
@@ -188,6 +188,10 @@ services:
     entrypoint: ["node", "/scripts/provision.js"]
     volumes:
       - ./scripts:/scripts:ro
+      # Mount n8n-data so the CLI can find any local config it needs
+      - ${N8N_DATA_DIR:-./n8n-data}:/home/node/.n8n
     depends_on:
-      n8n:
-        condition: service_started
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
