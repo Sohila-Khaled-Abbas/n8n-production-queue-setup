@@ -82,7 +82,7 @@ services:
   # n8n Main — Editor UI, REST API, and task broker
   # ──────────────────────────────────────────────────────────
   n8n:
-    image: docker.n8n.io/n8nio/n8n:2.25.6
+    image: docker.n8n.io/n8nio/n8n:latest
     container_name: n8n-main-server
     restart: unless-stopped
     # Allow n8n to finish in-flight requests before the container is killed
