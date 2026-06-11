@@ -6,7 +6,7 @@ This document expands on the high-level overview in the [README](../README.md) a
 
 ## Overview
 
-The stack is composed of five Docker containers that communicate exclusively over an isolated Docker bridge network (`n8n-net`). No container port is exposed to the host except `n8n-main:80`.
+The stack is composed of seven Docker containers that communicate exclusively over an isolated Docker bridge network (`n8n-net`). No container port is exposed to the host except `n8n-main:80`, `ollama:11434`, and `qdrant:6333` (for host-level access to AI services).
 
 ```
 Browser / Webhook
@@ -42,11 +42,17 @@ Browser / Webhook
 │  │  • Health check      (:5680)       │     │
 │  └─────────────────────────────────────┘     │
 │                                              │
-│  ┌──────────────┐   ┌────────────────────┐   │
-│  │  PostgreSQL  │   │  Redis             │   │
-│  │  :5432       │   │  :6379             │   │
-│  │  (internal)  │   │  (internal)        │   │
-│  └──────────────┘   └────────────────────┘   │
+│  ┌──────────────┐   ┌──────────────┐         │
+│  │  PostgreSQL  │   │  Redis       │         │
+│  │  :5432       │   │  :6379       │         │
+│  │  (internal)  │   │  (internal)  │         │
+│  └──────────────┘   └──────────────┘         │
+│                                              │
+│  ┌──────────────┐   ┌──────────────┐         │
+│  │  Ollama      │   │  Qdrant      │         │
+│  │  :11434      │   │  :6333       │         │
+│  │  (local LLM) │   │  (Vector DB) │         │
+│  └──────────────┘   └──────────────┘         │
 └──────────────────────────────────────────────┘
 ```
 
@@ -174,6 +180,31 @@ Redis is started with an explicit configuration file instead of the default sett
 | `maxmemory` | Unlimited | `256mb` — prevents OOM from queue growth |
 | `maxmemory-policy` | `noeviction` | `allkeys-lru` — graceful eviction |
 | Slow log | Disabled | Enabled at 10ms threshold for visibility |
+
+---
+
+### Ollama (Local LLM)
+
+| Attribute | Value |
+|---|---|
+| Image | `ollama/ollama:latest` |
+| Internal port | `11434` (Exposed to host for tools) |
+| Data volume | Named Docker volume `ollama_storage` |
+| GPU | NVIDIA GPU access configured via `reservations` |
+
+Ollama provides local, private Large Language Model inference. It is accessed by n8n nodes over the internal network (`http://ollama:11434`). It includes an init container (`ollama-pull-llama`) that automatically downloads the `llama3.2` model on first boot.
+
+---
+
+### Qdrant (Vector Database)
+
+| Attribute | Value |
+|---|---|
+| Image | `qdrant/qdrant:latest` |
+| Internal ports | `6333` (REST), `6334` (gRPC) |
+| Data volume | Named Docker volume `qdrant_storage` |
+
+Qdrant is a high-performance vector database used for Retrieval-Augmented Generation (RAG) and embedding storage. n8n vector store nodes interact with it over `http://qdrant:6333`.
 
 ---
 

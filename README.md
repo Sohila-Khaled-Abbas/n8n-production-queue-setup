@@ -2,11 +2,11 @@
 
 <img src="https://n8n.io/n8n-logo.png" alt="n8n Logo" width="120" />
 
-# n8n Production Stack
+# n8n Production AI Stack
 
-**A production-grade, self-hosted n8n deployment with queue-mode scaling, PostgreSQL persistence, and an isolated Python/JavaScript code execution sidecar.**
+**A production-grade, self-hosted n8n deployment with built-in AI capabilities (Ollama + Qdrant), queue-mode scaling, PostgreSQL persistence, and an isolated Python/JavaScript code execution sidecar.**
 
-[![n8n Version](https://img.shields.io/badge/n8n-2.25.6-FF6D5A?logo=n8n&logoColor=white)](https://hub.docker.com/r/n8nio/n8n)
+[![n8n Version](https://img.shields.io/badge/n8n-latest-FF6D5A?logo=n8n&logoColor=white)](https://hub.docker.com/r/n8nio/n8n)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://hub.docker.com/_/postgres)
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)](https://hub.docker.com/_/redis)
 [![Docker Compose](https://img.shields.io/badge/Docker_Compose-v2-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
@@ -32,6 +32,8 @@
 | **Production-Tuned PostgreSQL** | `shared_buffers`, `wal_buffers`, `checkpoint_completion_target` pre-configured |
 | **AOF-Persistent Redis** | Redis uses append-only file persistence + memory cap — no data loss on restart |
 | **Pinned Image Versions** | All images are pinned to exact versions — no surprise upgrades |
+| **Local LLM Inference** | Ollama provides local, private AI inference powered by your GPU/CPU |
+| **Vector Database** | Qdrant included for high-performance RAG and embeddings |
 
 ---
 
@@ -56,6 +58,8 @@
                            │                                          │
                            │  PostgreSQL (port 5432, internal)        │
                            │  Redis      (port 6379, internal)        │
+                           │  Ollama     (port 11434, local LLM)      │
+                           │  Qdrant     (port 6333, vector DB)       │
                            └─────────────────────────────────────────┘
 ```
 
@@ -63,11 +67,13 @@
 
 | Container | Image | Role |
 |---|---|---|
-| `n8n-main` | `docker.n8n.io/n8nio/n8n:2.25.6` | Editor UI, REST API, task broker |
-| `n8n-worker-1` | `docker.n8n.io/n8nio/n8n:2.25.6` | Queue worker (scalable) |
+| `n8n-main` | `docker.n8n.io/n8nio/n8n:latest` | Editor UI, REST API, task broker |
+| `n8n-worker-1` | `docker.n8n.io/n8nio/n8n:latest` | Queue worker (scalable) |
 | `n8n-python-runner` | Custom (`Dockerfile.runner`) | Sandboxed code execution sidecar |
 | `n8n-postgres` | `postgres:16-alpine` | Persistent data store |
 | `n8n-redis` | `redis:7-alpine` | Queue broker & session cache |
+| `ollama` | `ollama/ollama:latest` | Local LLM Inference server |
+| `qdrant` | `qdrant/qdrant:latest` | Vector Database for embeddings |
 
 ---
 
@@ -118,6 +124,8 @@ docker compose up -d
 
 Navigate to `http://localhost` (or your public URL). Create your owner account on first launch.
 
+> **Note:** On the very first run, the `ollama-pull-llama` init container will download the `llama3.2` model (several gigabytes). You can use n8n immediately, but local LLM nodes will wait until the download finishes.
+
 ---
 
 ## ⚙️ Configuration
@@ -163,6 +171,12 @@ All variables live in `.env` (never committed). The table below documents every 
 |---|---|---| 
 | `N8N_DATA_DIR` | `./n8n-data` | Host path for n8n user data (workflows, credentials, binary files) |
 | `N8N_DEFAULT_BINARY_DATA_MODE` | `filesystem` | Where binary execution data is stored (`filesystem` or `s3`) |
+
+#### AI Services
+
+| Variable | Default | Description |
+|---|---|---|
+| `OLLAMA_HOST` | `ollama:11434` | Address of the Ollama server. Override to `host.docker.internal:11434` if running Ollama outside Docker. |
 
 ### Redis Configuration (`redis.conf`)
 
