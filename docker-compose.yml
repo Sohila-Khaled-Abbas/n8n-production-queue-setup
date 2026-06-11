@@ -154,9 +154,7 @@ services:
     env_file:
       - .env
     environment:
-      # URI of the task broker port on the main n8n instance
       - N8N_RUNNERS_TASK_BROKER_URI=http://n8n:5679
-      # Increase handshake timeout to avoid i/o timeout errors seen in logs
       - N8N_RUNNERS_LAUNCHER_HEARTBEAT_INTERVAL=30
       - N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT=0
     volumes:
@@ -170,3 +168,26 @@ services:
       timeout: 10s
       retries: 5
       start_period: 20s
+
+  # ──────────────────────────────────────────────────────────
+  # n8n Init — One-shot credential provisioner
+  # Runs on every `docker compose up`. Idempotent — skips
+  # credentials that already exist.
+  # Requires N8N_OWNER_EMAIL + N8N_OWNER_PASSWORD in .env.
+  # ──────────────────────────────────────────────────────────
+  n8n-init:
+    image: docker.n8n.io/n8nio/n8n:2.25.6
+    container_name: n8n-init
+    # One-shot: run once and exit. Not restarted automatically.
+    # docker compose up will re-run it each time, but the script is idempotent.
+    restart: "no"
+    networks:
+      - n8n-net
+    env_file:
+      - .env
+    entrypoint: ["node", "/scripts/provision.js"]
+    volumes:
+      - ./scripts:/scripts:ro
+    depends_on:
+      n8n:
+        condition: service_started
