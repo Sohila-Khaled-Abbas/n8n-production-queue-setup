@@ -2,6 +2,8 @@ volumes:
   postgres_data:
   redis_data:
   qdrant_storage:    # Persists vector embeddings
+  metabase_data:     # Persists Metabase dashboards and configs
+  jupyter_data:      # Persists Jupyter notebooks and data
 
 networks:
   n8n-net:
@@ -213,3 +215,50 @@ services:
       - "6334:6334"            # gRPC API
     volumes:
       - qdrant_storage:/qdrant/storage
+
+  # ──────────────────────────────────────────────────────────
+  # JupyterLab — Exploratory Data Analysis & Python Scripting
+  # ──────────────────────────────────────────────────────────
+  jupyter:
+    image: jupyter/minimal-notebook:latest
+    container_name: jupyter
+    restart: unless-stopped
+    networks:
+      - n8n-net
+    ports:
+      - "8888:8888"
+    volumes:
+      - jupyter_data:/home/jovyan/work
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=dataengineering
+
+  # ──────────────────────────────────────────────────────────
+  # Metabase — Business Intelligence & Dashboards
+  # ──────────────────────────────────────────────────────────
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    restart: unless-stopped
+    networks:
+      - n8n-net
+    ports:
+      - "3000:3000"
+    volumes:
+      - metabase_data:/metabase-data
+    environment:
+      - MB_DB_FILE=/metabase-data/metabase.db
+      # Memory limit to protect n8n on constrained systems
+      - JAVA_OPTS=-Xmx512m -Xms512m
+
+  # ──────────────────────────────────────────────────────────
+  # Adminer — Lightweight Database Management UI
+  # ──────────────────────────────────────────────────────────
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    restart: unless-stopped
+    networks:
+      - n8n-net
+    ports:
+      - "8081:8080"
