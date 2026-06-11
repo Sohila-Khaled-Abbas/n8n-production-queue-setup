@@ -80,15 +80,15 @@ services:
   # n8n Main — Editor UI, REST API, and task broker
   # ──────────────────────────────────────────────────────────
   n8n:
-    image: docker.n8n.io/n8nio/n8n:latest
-    container_name: n8n-main
+    image: docker.n8n.io/n8nio/n8n:2.25.6
+    container_name: n8n-main-server
     restart: unless-stopped
     # Allow n8n to finish in-flight requests before the container is killed
     stop_grace_period: 30s
     networks:
       - n8n-net
     ports:
-      - "8080:5678"
+      - "80:5678"
     env_file:
       - .env
     environment:
