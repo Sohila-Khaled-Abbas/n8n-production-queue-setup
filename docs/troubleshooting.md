@@ -180,7 +180,12 @@ Failed to start Python task runner in internal mode. because Python 3 is missing
 **Fix:** Verify `docker-compose.yml` has this in `n8n-worker`'s environment:
 ```yaml
 - N8N_RUNNERS_MODE=external
-- N8N_RUNNERS_TASK_BROKER_URI=http://n8n:5679
+- N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0
+```
+
+Also verify that `n8n-python-runner` points to the worker:
+```yaml
+- N8N_RUNNERS_TASK_BROKER_URI=http://n8n-worker:5679
 ```
 
 ---

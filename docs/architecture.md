@@ -21,15 +21,15 @@ Browser / Webhook
 │  │  • Editor UI  (HTTP)               │     │
 │  │  • REST API   (/api/v1/*)          │     │
 │  │  • Webhook receiver                │     │
-│  │  • Task Broker   (:5679 internal)  │     │
 │  │  • Enqueues executions → Redis     │     │
 │  └───────────────┬─────────────────────┘     │
 │                  │ Bull queue                │
 │                  ▼                           │
 │  ┌─────────────────────────────────────┐     │
 │  │  n8n-worker (scalable replicas)    │     │
+│  │  ─────────────────────────────────  │     │
 │  │  • Dequeues & executes workflows   │     │
-│  │  • Sends code tasks → broker       │     │
+│  │  • Task Broker   (:5679 internal)  │     │
 │  │  • N8N_RUNNERS_MODE=external       │     │
 │  └───────────────┬─────────────────────┘     │
 │                  │ Task Runner Protocol      │
@@ -66,10 +66,10 @@ Browser / Webhook
 |---|---|
 | Image | `docker.n8n.io/n8nio/n8n:2.25.6` |
 | Exposed port | `80` (maps to internal `5678`) |
-| Role | Editor UI, REST API, task broker, webhook ingress |
+| Role | Editor UI, REST API, webhook ingress |
 | Queue mode | `EXECUTIONS_MODE=queue` |
 
-`n8n-main` runs in **queue mode**, which means it never directly executes workflow nodes. Instead it enqueues execution jobs into Redis via the [Bull](https://github.com/OptimalBits/bull) library and delegates task runner operations to the internal broker endpoint (`:5679`).
+`n8n-main` runs in **queue mode**, which means it never directly executes workflow nodes. Instead it enqueues execution jobs into Redis via the [Bull](https://github.com/OptimalBits/bull) library.
 
 Manual executions are offloaded to workers via `OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true` — this is the recommended setting in n8n v2.25+ to avoid overloading the main process.
 
@@ -90,7 +90,7 @@ Manual executions are offloaded to workers via `OFFLOAD_MANUAL_EXECUTIONS_TO_WOR
 
 Workers are **stateless** — they share no disk with each other. All state lives in PostgreSQL (workflow definitions, credentials) and Redis (queue, locks). This makes horizontal scaling trivial.
 
-The worker is explicitly configured with `N8N_RUNNERS_MODE=external` and pointed at the main instance's task broker (`N8N_RUNNERS_TASK_BROKER_URI=http://n8n:5679`). Without this, the worker tries to start a Python runner internally and fails because Python is not installed in the base n8n image.
+The worker is explicitly configured with `N8N_RUNNERS_MODE=external` and runs its own Task Broker (listening on `0.0.0.0:5679` via `N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0`) so that external runners can connect to it. Without this, the worker tries to start a Python runner internally and fails because Python is not installed in the base n8n image.
 
 > **Important:** Remove `container_name: n8n-worker-1` from `docker-compose.yml` before scaling to multiple replicas, as Docker Compose cannot assign a fixed name to multiple containers.
 
@@ -106,7 +106,7 @@ The worker is explicitly configured with `N8N_RUNNERS_MODE=external` and pointed
 | Health check | `GET http://localhost:5680/healthz` |
 
 This sidecar runs the **n8n launcher binary**, which spawns and supervises both a JavaScript and a Python sub-process. Each sub-process:
-1. Connects back to the broker inside `n8n-main` over `:5679`.
+1. Connects back to the broker inside `n8n-worker` over `:5679`.
 2. Receives isolated task payloads (code + input items).
 3. Executes the code in a sandboxed environment.
 4. Streams results back to the broker.
@@ -250,9 +250,9 @@ All services are attached to the named bridge network `n8n-net` defined in `dock
 1. User triggers workflow  →  n8n-main receives trigger
 2. n8n-main enqueues job   →  Redis (Bull queue)
 3. n8n-worker dequeues job →  executes non-code nodes locally
-4. Worker hits Code node   →  sends task to n8n-main broker (:5679)
-5. Broker dispatches task  →  n8n-python-runner (JS or Python runner)
-6. Runner executes code    →  streams result back to broker
+4. Worker hits Code node   →  submits task to its internal task broker (:5679)
+5. Broker dispatches task  →  n8n-python-runner (connected via WebSocket)
+6. Runner executes code    →  streams result back to worker's broker
 7. Broker returns result   →  worker continues workflow
 8. Worker writes result    →  PostgreSQL (execution history)
 ```
