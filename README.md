@@ -86,7 +86,7 @@
 ### 1 · Clone
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/n8n-production-stack.git
+git clone https://github.com/Sohila-Khaled-Abbas/n8n-production-stack.git
 cd n8n-production-stack
 ```
 
@@ -168,11 +168,9 @@ All variables live in `.env` (never committed). The table below documents every 
 #### Storage
 
 | Variable | Default | Description |
-|---|---|---| 
+|---|---|---|
 | `N8N_DATA_DIR` | `./n8n-data` | Host path for n8n user data (workflows, credentials, binary files) |
 | `N8N_DEFAULT_BINARY_DATA_MODE` | `filesystem` | Where binary execution data is stored (`filesystem` or `s3`) |
-
-
 
 ### Redis Configuration (`redis.conf`)
 
@@ -254,13 +252,16 @@ The `n8n-python-runner` image extends `n8nio/runners:latest` with the following 
 ### Adding More Libraries
 
 1. Edit `Dockerfile.runner` and append your package(s):
+
    ```dockerfile
    RUN cd /opt/runners/task-runner-python \
        && uv pip install --no-cache-dir \
            pandas numpy pyarrow requests \
            scikit-learn   # ← add here
    ```
+
 2. Rebuild and restart:
+
    ```bash
    docker compose build n8n-python-runner
    docker compose up -d n8n-python-runner
