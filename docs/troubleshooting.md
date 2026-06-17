@@ -76,6 +76,32 @@ Credentials encrypted with an old/lost key cannot be recovered. You must:
 
 ---
 
+## Reverse Proxy Issues
+
+### "ValidationError: The 'X-Forwarded-For' header is set but the Express 'trust proxy' setting is false"
+
+**Cause:** n8n's rate-limiting middleware is receiving proxy headers (e.g., from ngrok, Nginx, or Traefik) but n8n is not configured to trust them.
+
+**Fix:** Tell n8n how many reverse proxy layers are in front of it. Add the following to `.env`:
+```dotenv
+N8N_PROXY_HOPS=1
+```
+(Increase the number if you have a multi-tier proxy, e.g., Cloudflare -> Nginx -> n8n).
+
+Restart the stack after changing the configuration:
+```bash
+docker compose down
+docker compose up -d
+```
+
+### "Error connecting to n8n. Could not connect to server. Refresh to try again"
+
+**Cause:** The frontend lost its WebSocket / Push connection to the backend. This frequently occurs when you restart the n8n Docker containers in the background while the browser tab is still open.
+
+**Fix:** A simple browser hard-refresh (Ctrl+F5 or Cmd+Shift+R) will reconnect the frontend. If it persists across hard refreshes, ensure your reverse proxy properly supports WebSocket connections and that `N8N_EDITOR_BASE_URL` matches your access URL perfectly.
+
+---
+
 ## Runner Issues
 
 ### "contains no task runners"

@@ -139,6 +139,7 @@ All variables live in `.env` (never committed). The table below documents every 
 |---|---|---|---|
 | `N8N_EDITOR_BASE_URL` | ✅ | `https://n8n.example.com` | Public URL of the n8n editor |
 | `WEBHOOK_URL` | ✅ | `https://n8n.example.com` | Base URL for inbound webhooks |
+| `N8N_PROXY_HOPS` | — | `1` | Number of reverse proxies (e.g., ngrok, nginx) in front of n8n. Fixes `X-Forwarded-For` rate-limit errors. |
 | `N8N_RELEASE_TYPE` | — | `stable` | Pin to `stable` or `next` |
 | `NODE_ENV` | — | `production` | Node.js environment |
 | `N8N_LOG_LEVEL` | — | `info` | Log verbosity: `error`, `warn`, `info`, `debug` |
