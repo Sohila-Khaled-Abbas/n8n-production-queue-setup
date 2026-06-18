@@ -110,7 +110,9 @@ async function main() {
         throw new Error('Database never became ready within 5 minutes. ' +
                         'Check postgres container logs.');
       }
-      log('Database not ready yet — retrying in 3s...');
+      log(`Database not ready yet — retrying in 3s... Error: ${err.message}`);
+      if (err.stdout) log('stdout:', err.stdout.toString());
+      if (err.stderr) log('stderr:', err.stderr.toString());
       await sleep(3_000);
     }
   }

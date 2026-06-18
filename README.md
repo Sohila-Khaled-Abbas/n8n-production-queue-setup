@@ -57,6 +57,9 @@
                            │    └── Python runner (health: 5682)      │
                            │         Connects to broker at :5679      │
                            │                                          │
+                           │  n8n-init (One-Shot) ─────────────────── │
+                           │    └── Seeds DB credentials              │
+                           │                                          │
                            │  PostgreSQL (port 5432, internal)        │
                            │  Redis      (port 6379, internal)        │
                            │  Qdrant     (port 6333, vector DB)       │
@@ -70,6 +73,7 @@
 | `n8n-main` | `docker.n8n.io/n8nio/n8n:latest` | Editor UI, REST API, task broker |
 | `n8n-worker-1` | `docker.n8n.io/n8nio/n8n:latest` | Queue worker (scalable) |
 | `n8n-python-runner` | Custom (`Dockerfile.runner`) | Sandboxed code execution sidecar |
+| `n8n-init` | `docker.n8n.io/n8nio/n8n:latest` | One-shot credential provisioning script |
 | `n8n-postgres` | `postgres:16-alpine` | Persistent data store |
 | `n8n-redis` | `redis:7-alpine` | Queue broker & session cache |
 | `qdrant` | `qdrant/qdrant:latest` | Vector Database for embeddings |

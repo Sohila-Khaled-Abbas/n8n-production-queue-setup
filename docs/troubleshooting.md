@@ -102,6 +102,20 @@ docker compose up -d
 
 ---
 
+### "ERR_NGROK_3004" or "Uncaught SyntaxError: Unexpected end of input"
+
+**Cause:** On Windows, Docker Desktop sometimes has IPv6 resolution conflicts with the default `localhost` target, causing `ngrok` to drop connections mid-transfer. When a connection drops during an asset download, the browser may cache the truncated file, leading to syntax errors in the UI.
+
+**Fix:**
+1. Stop your current `ngrok` session.
+2. Restart it using the explicit IPv4 address and host-header rewrite:
+   ```bash
+   ngrok http 127.0.0.1:80 --host-header=rewrite
+   ```
+3. **Crucial:** You must hard refresh your browser (Ctrl+F5 or Cmd+Shift+R) or right-click the refresh button with DevTools open and select **Empty Cache and Hard Reload** to clear the corrupted files.
+
+---
+
 ## Runner Issues
 
 ### "contains no task runners"
@@ -266,6 +280,22 @@ docker compose logs redis
 | `postgres` unhealthy | Check `DB_POSTGRESDB_PASSWORD` matches what Postgres was initialized with. If not, destroy the volume: `docker compose down -v` and restart |
 | `redis` unhealthy | Redis rarely fails. Check disk space: `df -h` |
 | Port conflict | Another Postgres/Redis is already running on the host. Change `DB_POSTGRESDB_PORT` / redis port in `docker-compose.yml` |
+
+---
+
+### Database initialization / n8n-init fails
+
+**Symptom:** The `n8n-init` container exits with `Fatal error: Database never became ready` or fails to import credentials.
+
+**Cause:** The `n8n-init` script waits for PostgreSQL to be ready before running `n8n CLI` commands. If PostgreSQL is stuck, `n8n-init` will timeout. Alternatively, you might have invalid JSON/environment variables in `.env`.
+
+**Fix:** 
+1. Check postgres logs (`docker compose logs postgres`).
+2. If the postgres credentials are correct and postgres is healthy, check the `n8n-init` logs:
+   ```bash
+   docker compose logs n8n-init
+   ```
+   It will output any parsing errors or missing variables from your `.env` file during credential creation.
 
 ---
 

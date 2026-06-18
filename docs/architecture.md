@@ -42,6 +42,11 @@ Browser / Webhook
 │  │  • Health check      (:5680)       │     │
 │  └─────────────────────────────────────┘     │
 │                                              │
+│  ┌─────────────────────────────────────┐     │
+│  │  n8n-init (One-Shot)               │     │
+│  │  • Seeds DB credentials            │     │
+│  └─────────────────────────────────────┘     │
+│                                              │
 │  ┌──────────────┐   ┌──────────────┐         │
 │  │  PostgreSQL  │   │  Redis       │         │
 │  │  :5432       │   │  :6379       │         │
@@ -123,6 +128,20 @@ The launcher reads its configuration from `/etc/n8n-task-runners.json` (mounted 
 | `numpy` | Vectorised numeric operations |
 | `pyarrow` | Parquet & columnar I/O |
 | `requests` | Outbound HTTP calls from Python code nodes |
+
+---
+
+### n8n-init (Credential Provisioner)
+
+| Attribute | Value |
+|---|---|
+| Image | `docker.n8n.io/n8nio/n8n:2.25.6` |
+| Command | `node /scripts/provision.js` |
+| Role | One-shot execution (exits after completion) |
+
+`n8n-init` runs briefly during stack startup. It waits for PostgreSQL to become healthy, then uses the `n8n CLI` to idempotently import API credentials (such as OpenRouter, Postgres, GitHub, etc.) from `.env` directly into the database. 
+
+It never overwrites existing credentials. Once the sync is complete, the container exits gracefully.
 
 ---
 

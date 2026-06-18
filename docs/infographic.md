@@ -23,3 +23,4 @@ A high-resolution PNG format suitable for presentation slides and documentation 
 5. **PostgreSQL**: Stores persistent data: credentials, workflow history, user accounts, and execution results.
 6. **Sidecar (Task Runners)**: The sandboxed environment executing custom Python and JS scripts isolated from core n8n logic.
 7. **Ollama & Qdrant**: The AI layer. Prompts are routed locally to Ollama (leveraging your Nvidia GPU), and text search embedding vectors are stored and indexed in Qdrant for RAG-based workflows.
+8. **n8n-init (One-Shot Provisioner)**: Runs briefly on stack startup to seed PostgreSQL with predefined workflow credentials securely, then exits.

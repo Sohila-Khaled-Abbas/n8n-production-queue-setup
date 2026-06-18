@@ -1,1 +1,332 @@
-<svg id="mermaid-svg" width="100%" xmlns="http://www.w3.org/2000/svg" class="flowchart" style="max-width: 1322.78125px;" viewBox="0 0 1322.78125 867.6414184570312" role="graphics-document document" aria-roledescription="flowchart-v2" xmlns:xlink="http://www.w3.org/1999/xlink"><style xmlns="http://www.w3.org/1999/xhtml">@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css");</style><style>#mermaid-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-svg .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-svg .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-svg .error-icon{fill:#552222;}#mermaid-svg .error-text{fill:#552222;stroke:#552222;}#mermaid-svg .edge-thickness-normal{stroke-width:1px;}#mermaid-svg .edge-thickness-thick{stroke-width:3.5px;}#mermaid-svg .edge-pattern-solid{stroke-dasharray:0;}#mermaid-svg .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-svg .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-svg .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-svg .marker{fill:#333333;stroke:#333333;}#mermaid-svg .marker.cross{stroke:#333333;}#mermaid-svg svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#mermaid-svg p{margin:0;}#mermaid-svg .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#333;}#mermaid-svg .cluster-label text{fill:#333;}#mermaid-svg .cluster-label span{color:#333;}#mermaid-svg .cluster-label span p{background-color:transparent;}#mermaid-svg .label text,#mermaid-svg span{fill:#333;color:#333;}#mermaid-svg .node rect,#mermaid-svg .node circle,#mermaid-svg .node ellipse,#mermaid-svg .node polygon,#mermaid-svg .node path{fill:#ECECFF;stroke:#9370DB;stroke-width:1px;}#mermaid-svg .rough-node .label text,#mermaid-svg .node .label text,#mermaid-svg .image-shape .label,#mermaid-svg .icon-shape .label{text-anchor:middle;}#mermaid-svg .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mermaid-svg .rough-node .label,#mermaid-svg .node .label,#mermaid-svg .image-shape .label,#mermaid-svg .icon-shape .label{text-align:center;}#mermaid-svg .node.clickable{cursor:pointer;}#mermaid-svg .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#mermaid-svg .arrowheadPath{fill:#333333;}#mermaid-svg .edgePath .path{stroke:#333333;stroke-width:2.0px;}#mermaid-svg .flowchart-link{stroke:#333333;fill:none;}#mermaid-svg .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#mermaid-svg .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#mermaid-svg .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#mermaid-svg .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#mermaid-svg .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#mermaid-svg .cluster text{fill:#333;}#mermaid-svg .cluster span{color:#333;}#mermaid-svg div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#mermaid-svg .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#mermaid-svg rect.text{fill:none;stroke-width:0;}#mermaid-svg .icon-shape,#mermaid-svg .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#mermaid-svg .icon-shape p,#mermaid-svg .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#mermaid-svg .icon-shape rect,#mermaid-svg .image-shape rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#mermaid-svg .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#mermaid-svg .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#mermaid-svg :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}#mermaid-svg .default&gt;*{fill:#111827!important;stroke:#374151!important;stroke-width:1px!important;color:#f3f4f6!important;font-family:ui-sans-serif!important;}#mermaid-svg .default span{fill:#111827!important;stroke:#374151!important;stroke-width:1px!important;color:#f3f4f6!important;font-family:ui-sans-serif!important;}#mermaid-svg .default tspan{fill:#f3f4f6!important;}#mermaid-svg .ext&gt;*{fill:#1f2937!important;stroke:#4b5563!important;stroke-width:1px!important;stroke-dasharray:4 4!important;color:#9ca3af!important;}#mermaid-svg .ext span{fill:#1f2937!important;stroke:#4b5563!important;stroke-width:1px!important;stroke-dasharray:4 4!important;color:#9ca3af!important;}#mermaid-svg .ext tspan{fill:#9ca3af!important;}#mermaid-svg .core&gt;*{fill:#111827!important;stroke:#ff6d5a!important;stroke-width:2px!important;color:#ffe2dd!important;}#mermaid-svg .core span{fill:#111827!important;stroke:#ff6d5a!important;stroke-width:2px!important;color:#ffe2dd!important;}#mermaid-svg .core tspan{fill:#ffe2dd!important;}#mermaid-svg .db&gt;*{fill:#111827!important;stroke:#10b981!important;stroke-width:2px!important;color:#dcfce7!important;}#mermaid-svg .db span{fill:#111827!important;stroke:#10b981!important;stroke-width:2px!important;color:#dcfce7!important;}#mermaid-svg .db tspan{fill:#dcfce7!important;}#mermaid-svg .ai&gt;*{fill:#111827!important;stroke:#0ea5e9!important;stroke-width:2px!important;color:#e0f2fe!important;}#mermaid-svg .ai span{fill:#111827!important;stroke:#0ea5e9!important;stroke-width:2px!important;color:#e0f2fe!important;}#mermaid-svg .ai tspan{fill:#e0f2fe!important;}#mermaid-svg .sandbox&gt;*{fill:#111827!important;stroke:#d97706!important;stroke-width:2px!important;color:#fef3c7!important;}#mermaid-svg .sandbox span{fill:#111827!important;stroke:#d97706!important;stroke-width:2px!important;color:#fef3c7!important;}#mermaid-svg .sandbox tspan{fill:#fef3c7!important;}</style><g><marker id="mermaid-svg_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-svg_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-svg_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-svg_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-svg_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mermaid-svg_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><g class="root"><g class="clusters"/><g class="edgePaths"/><g class="edgeLabels"/><g class="nodes"><g class="root" transform="translate(0, 0)"><g class="clusters"><g class="cluster " id="Host" data-look="classic"><rect style="" x="8" y="8" width="1306.78125" height="851.6413917541504"/><g class="cluster-label " transform="translate(585.5859375, 8)"><foreignObject width="151.609375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel "><p>🌐 Host Environment</p></span></div></foreignObject></g></g><g class="cluster " id="Net" data-look="classic"><rect style="" x="469.296875" y="28" width="807.984375" height="811.6413917541504"/><g class="cluster-label " transform="translate(773.2890625, 28)"><foreignObject width="200" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel "><p>🐳 Docker Bridge Network (n8n-net)</p></span></div></foreignObject></g></g><g class="cluster " id="Ext" data-look="classic"><rect style="" x="45.5" y="500.1483345031738" width="297.203125" height="124"/><g class="cluster-label " transform="translate(136.296875, 500.1483345031738)"><foreignObject width="115.609375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel "><p>External Ingress</p></span></div></foreignObject></g></g><g class="cluster " id="Services" data-look="classic"><rect style="" x="971.875" y="48" width="267.90625" height="439.4286880493164"/><g class="cluster-label " transform="translate(1056.46875, 48)"><foreignObject width="98.71875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel "><p>Compute &amp; AI</p></span></div></foreignObject></g></g><g class="cluster " id="Persistence" data-look="classic"><rect style="" x="971.875" y="507.4286880493164" width="267.90625" height="312.212703704834"/><g class="cluster-label " transform="translate(1053.34375, 507.4286880493164)"><foreignObject width="104.96875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel "><p>State &amp; Queue</p></span></div></foreignObject></g></g><g class="cluster " id="App" data-look="classic"><rect style="" x="506.796875" y="66.9378547668457" width="272.953125" height="737.0587997436523"/><g class="cluster-label " transform="translate(589.0078125, 66.9378547668457)"><foreignObject width="108.53125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel "><p>n8n Application</p></span></div></foreignObject></g></g></g><g class="edgePaths"><path d="M305.203,562.148L311.453,562.148C317.703,562.148,330.203,562.148,347.003,562.148C363.802,562.148,384.901,562.148,406,562.148C427.099,562.148,448.198,562.148,464.997,562.148C481.797,562.148,494.297,562.148,506.13,562.148C517.964,562.148,529.13,562.148,534.714,562.148L540.297,562.148" id="L_Client_Main_0" class=" edge-thickness-thick edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Client_Main_0" data-points="W3sieCI6MzA1LjIwMzEyNSwieSI6NTYyLjE0ODMzNDUwMzE3Mzh9LHsieCI6MzQyLjcwMzEyNSwieSI6NTYyLjE0ODMzNDUwMzE3Mzh9LHsieCI6NDA2LCJ5Ijo1NjIuMTQ4MzM0NTAzMTczOH0seyJ4Ijo0NjkuMjk2ODc1LCJ5Ijo1NjIuMTQ4MzM0NTAzMTczOH0seyJ4Ijo1MDYuNzk2ODc1LCJ5Ijo1NjIuMTQ4MzM0NTAzMTczOH0seyJ4Ijo1NDQuMjk2ODc1LCJ5Ijo1NjIuMTQ4MzM0NTAzMTczOH1d" marker-end="url(#mermaid-svg_flowchart-v2-pointEnd)"/><path d="M711.321,601.148L722.726,607.685C734.131,614.221,756.94,627.294,784.356,633.83C811.771,640.367,843.792,640.367,875.813,640.367C907.833,640.367,939.854,640.367,971.279,634.54C1002.703,628.714,1033.532,617.062,1048.946,611.236L1064.36,605.41" id="L_Main_Queue_0" class=" edge-thickness-thick edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Main_Queue_0" data-points="W3sieCI6NzExLjMyMTM1MTgxOTQxMDEsInkiOjYwMS4xNDgzMzQ1MDMxNzM4fSx7IngiOjc3OS43NSwieSI6NjQwLjM2NjU0MjgxNjE2MjF9LHsieCI6ODc1LjgxMjUsInkiOjY0MC4zNjY1NDI4MTYxNjIxfSx7IngiOjk3MS44NzUsInkiOjY0MC4zNjY1NDI4MTYxNjIxfSx7IngiOjEwNjguMTAxNTYyNSwieSI6NjAzLjk5NTg5NzQzMzAzMjd9XQ==" marker-end="url(#mermaid-svg_flowchart-v2-pointEnd)"/><path d="M668.177,393.011L686.773,422.132C705.368,451.253,742.559,509.495,777.165,538.615C811.771,567.736,843.792,567.736,875.813,567.736C907.833,567.736,939.854,567.736,971.244,570.262C1002.635,572.788,1033.395,577.84,1048.775,580.366L1064.154,582.892" id="L_Worker_Queue_0" class=" edge-thickness-thick edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Worker_Queue_0" data-points="W3sieCI6NjY4LjE3NzI2NDU4MTEwMTgsInkiOjM5My4wMTA4MDg5NDQ3MDIxNX0seyJ4Ijo3NzkuNzUsInkiOjU2Ny43MzY0MzExMjE4MjYyfSx7IngiOjg3NS44MTI1LCJ5Ijo1NjcuNzM2NDMxMTIxODI2Mn0seyJ4Ijo5NzEuODc1LCJ5Ijo1NjcuNzM2NDMxMTIxODI2Mn0seyJ4IjoxMDY4LjEwMTU2MjUsInkiOjU4My41NDAzNTA0MDMyOTEyfV0=" marker-end="url(#mermaid-svg_flowchart-v2-pointEnd)"/><path d="M670.59,601.148L688.783,627.123C706.977,653.098,743.363,705.047,777.567,731.022C811.771,756.997,843.792,756.997,875.813,756.997C907.833,756.997,939.854,756.997,967.763,755.043C995.671,753.088,1019.468,749.18,1031.366,747.226L1043.264,745.272" id="L_Main_DB_0" class=" edge-thickness-thick edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Main_DB_0" data-points="W3sieCI6NjcwLjU4OTk5ODA4MDU1NzgsInkiOjYwMS4xNDgzMzQ1MDMxNzM4fSx7IngiOjc3OS43NSwieSI6NzU2Ljk5NjY1NDUxMDQ5OH0seyJ4Ijo4NzUuODEyNSwieSI6NzU2Ljk5NjY1NDUxMDQ5OH0seyJ4Ijo5NzEuODc1LCJ5Ijo3NTYuOTk2NjU0NTEwNDk4fSx7IngiOjEwNDcuMjEwOTM3NSwieSI6NzQ0LjYyMzczOTU0NDkwODR9XQ==" marker-end="url(#mermaid-svg_flowchart-v2-pointEnd)"/><path d="M659.385,393.011L679.446,441.57C699.507,490.129,739.628,587.248,775.7,635.807C811.771,684.367,843.792,684.367,875.813,684.367C907.833,684.367,939.854,684.367,967.797,688.877C995.74,693.387,1019.605,702.407,1031.537,706.917L1043.469,711.427" id="L_Worker_DB_0" class=" edge-thickness-thick edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Worker_DB_0" data-points="W3sieCI6NjU5LjM4NTExNzcwMzQxMDYsInkiOjM5My4wMTA4MDg5NDQ3MDIxNX0seyJ4Ijo3NzkuNzUsInkiOjY4NC4zNjY1NDI4MTYxNjIxfSx7IngiOjg3NS44MTI1LCJ5Ijo2ODQuMzY2NTQyODE2MTYyMX0seyJ4Ijo5NzEuODc1LCJ5Ijo2ODQuMzY2NTQyODE2MTYyMX0seyJ4IjoxMDQ3LjIxMDkzNzUsInkiOjcxMi44NDExODIyMTEyNjc4fV0=" marker-end="url(#mermaid-svg_flowchart-v2-pointEnd)"/><path d="M666.215,315.011L685.137,282.842C704.06,250.674,741.905,186.337,776.838,154.168C811.771,122,843.792,122,875.813,122C907.833,122,939.854,122,961.448,122C983.042,122,994.208,122,999.792,122L1005.375,122" id="L_Worker_Sandbox_0" class=" edge-thickness-thick edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Worker_Sandbox_0" data-points="W3sieCI6NjY2LjIxNDU0OTQzMjI4MzMsInkiOjMxNS4wMTA4MDg5NDQ3MDIxNX0seyJ4Ijo3NzkuNzUsInkiOjEyMn0seyJ4Ijo4NzUuODEyNSwieSI6MTIyfSx7IngiOjk3MS44NzUsInkiOjEyMn0seyJ4IjoxMDA5LjM3NSwieSI6MTIyfV0=" marker-end="url(#mermaid-svg_flowchart-v2-pointEnd)"/><path d="M662.215,523.148L681.804,482.816C701.394,442.483,740.572,361.819,776.171,321.486C811.771,281.154,843.792,281.154,875.813,281.154C907.833,281.154,939.854,281.154,969.211,278.962C998.567,276.77,1025.259,272.386,1038.605,270.194L1051.951,268.002" id="L_Main_Ollama_0" class=" edge-thickness-thick edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Main_Ollama_0" data-points="W3sieCI6NjYyLjIxNTM4MTg5NzkzMjYsInkiOjUyMy4xNDgzMzQ1MDMxNzM4fSx7IngiOjc3OS43NSwieSI6MjgxLjE1MzYzNjkzMjM3MzA1fSx7IngiOjg3NS44MTI1LCJ5IjoyODEuMTUzNjM2OTMyMzczMDV9LHsieCI6OTcxLjg3NSwieSI6MjgxLjE1MzYzNjkzMjM3MzA1fSx7IngiOjEwNTUuODk4NDM3NSwieSI6MjY3LjM1MzkxNjg4MTA0OTE0fV0=" marker-end="url(#mermaid-svg_flowchart-v2-pointEnd)"/><path d="M680.906,315.011L697.38,297.938C713.854,280.866,746.802,246.721,779.286,229.649C811.771,212.577,843.792,212.577,875.813,212.577C907.833,212.577,939.854,212.577,969.239,217.227C998.623,221.878,1025.372,231.178,1038.746,235.829L1052.12,240.479" id="L_Worker_Ollama_0" class=" edge-thickness-thick edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Worker_Ollama_0" data-points="W3sieCI6NjgwLjkwNjQ0MTU1NzE3MiwieSI6MzE1LjAxMDgwODk0NDcwMjE1fSx7IngiOjc3OS43NSwieSI6MjEyLjU3NjgxODQ2NjE4NjUyfSx7IngiOjg3NS44MTI1LCJ5IjoyMTIuNTc2ODE4NDY2MTg2NTJ9LHsieCI6OTcxLjg3NSwieSI6MjEyLjU3NjgxODQ2NjE4NjUyfSx7IngiOjEwNTUuODk4NDM3NSwieSI6MjQxLjc5MjU5MzcyNTk0Nn1d" marker-end="url(#mermaid-svg_flowchart-v2-pointEnd)"/><path d="M685.516,523.148L701.222,508.648C716.927,494.148,748.339,465.148,780.055,450.648C811.771,436.148,843.792,436.148,875.813,436.148C907.833,436.148,939.854,436.148,969.738,432.909C999.621,429.669,1027.367,423.19,1041.24,419.95L1055.113,416.711" id="L_Main_Qdrant_0" class=" edge-thickness-thick edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Main_Qdrant_0" data-points="W3sieCI6Njg1LjUxNjE4MzAzNTcxNDMsInkiOjUyMy4xNDgzMzQ1MDMxNzM4fSx7IngiOjc3OS43NSwieSI6NDM2LjE0ODMzNDUwMzE3Mzh9LHsieCI6ODc1LjgxMjUsInkiOjQzNi4xNDgzMzQ1MDMxNzM4fSx7IngiOjk3MS44NzUsInkiOjQzNi4xNDgzMzQ1MDMxNzM4fSx7IngiOjEwNTkuMDA3ODEyNSwieSI6NDE1LjgwMTMyNzQ0MDI5NDUzfV0=" marker-end="url(#mermaid-svg_flowchart-v2-pointEnd)"/><path d="M722.594,354.011L732.12,354.011C741.646,354.011,760.698,354.011,786.234,354.011C811.771,354.011,843.792,354.011,875.813,354.011C907.833,354.011,939.854,354.011,969.763,359.288C999.673,364.565,1027.471,375.118,1041.369,380.395L1055.268,385.672" id="L_Worker_Qdrant_0" class=" edge-thickness-thick edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Worker_Qdrant_0" data-points="W3sieCI6NzIyLjU5Mzc1LCJ5IjozNTQuMDEwODA4OTQ0NzAyMTV9LHsieCI6Nzc5Ljc1LCJ5IjozNTQuMDEwODA4OTQ0NzAyMTV9LHsieCI6ODc1LjgxMjUsInkiOjM1NC4wMTA4MDg5NDQ3MDIxNX0seyJ4Ijo5NzEuODc1LCJ5IjozNTQuMDEwODA4OTQ0NzAyMTV9LHsieCI6MTA1OS4wMDc4MTI1LCJ5IjozODcuMDkxOTk2MzYxNzk2OX1d" marker-end="url(#mermaid-svg_flowchart-v2-pointEnd)"/></g><g class="edgeLabels"><g class="edgeLabel" transform="translate(406, 562.1483345031738)"><g class="label" data-id="L_Client_Main_0" transform="translate(-25.796875, -12)"><foreignObject width="51.59375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel "><p>Port 80</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(875.8125, 640.3665428161621)"><g class="label" data-id="L_Main_Queue_0" transform="translate(-58.5625, -12)"><foreignObject width="117.125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel "><p>Enqueues Tasks</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(875.8125, 567.7364311218262)"><g class="label" data-id="L_Worker_Queue_0" transform="translate(-39.8671875, -12)"><foreignObject width="79.734375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel "><p>Pulls Tasks</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(875.8125, 756.996654510498)"><g class="label" data-id="L_Main_DB_0" transform="translate(-39.8671875, -12)"><foreignObject width="79.734375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel "><p>Read/Write</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(875.8125, 684.3665428161621)"><g class="label" data-id="L_Worker_DB_0" transform="translate(-39.8671875, -12)"><foreignObject width="79.734375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel "><p>Read/Write</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(875.8125, 122)"><g class="label" data-id="L_Worker_Sandbox_0" transform="translate(-54.2578125, -12)"><foreignObject width="108.515625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel "><p>Executes Code</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(875.8125, 281.15363693237305)"><g class="label" data-id="L_Main_Ollama_0" transform="translate(-39.5703125, -12)"><foreignObject width="79.140625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel "><p>AI Prompts</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(875.8125, 212.57681846618652)"><g class="label" data-id="L_Worker_Ollama_0" transform="translate(-39.5703125, -12)"><foreignObject width="79.140625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel "><p>AI Prompts</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(875.8125, 436.1483345031738)"><g class="label" data-id="L_Main_Qdrant_0" transform="translate(-41.34375, -12)"><foreignObject width="82.6875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel "><p>RAG Query</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(875.8125, 354.01080894470215)"><g class="label" data-id="L_Worker_Qdrant_0" transform="translate(-41.34375, -12)"><foreignObject width="82.6875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel "><p>RAG Query</p></span></div></foreignObject></g></g></g><g class="nodes"><g class="node default sandbox " id="flowchart-Sandbox-5" transform="translate(1105.828125, 122)"><rect class="basic label-container" style="fill:#111827 !important;stroke:#d97706 !important;stroke-width:2px !important" x="-96.453125" y="-39" width="192.90625" height="78"/><g class="label" style="color:#fef3c7 !important;font-family:ui-sans-serif !important" transform="translate(-66.453125, -24)"><rect/><foreignObject width="132.90625" height="48"><div style="color: rgb(254, 243, 199) !important; font-family: ui-sans-serif !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="color:#fef3c7 !important;font-family:ui-sans-serif !important" class="nodeLabel "><p>🚀 Sidecar<br />(Python/JS Runners)</p></span></div></foreignObject></g></g><g class="node default ext " id="flowchart-Client-0" transform="translate(194.1015625, 562.1483345031738)"><rect class="basic label-container" style="fill:#1f2937 !important;stroke:#4b5563 !important;stroke-width:1px !important;stroke-dasharray:4 4 !important" x="-111.1015625" y="-27" width="222.203125" height="54"/><g class="label" style="color:#9ca3af !important;font-family:ui-sans-serif !important" transform="translate(-81.1015625, -12)"><rect/><foreignObject width="162.203125" height="24"><div style="color: rgb(156, 163, 175) !important; font-family: ui-sans-serif !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="color:#9ca3af !important;font-family:ui-sans-serif !important" class="nodeLabel "><p>💻 Client (Browser/API)</p></span></div></foreignObject></g></g><g class="node default core " id="flowchart-Main-1" transform="translate(643.2734375, 562.1483345031738)"><rect class="basic label-container" style="fill:#111827 !important;stroke:#ff6d5a !important;stroke-width:2px !important" x="-98.9765625" y="-39" width="197.953125" height="78"/><g class="label" style="color:#ffe2dd !important;font-family:ui-sans-serif !important" transform="translate(-68.9765625, -24)"><rect/><foreignObject width="137.953125" height="48"><div style="color: rgb(255, 226, 221) !important; font-family: ui-sans-serif !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="color:#ffe2dd !important;font-family:ui-sans-serif !important" class="nodeLabel "><p>🖥️ n8n-main<br />(Editor &amp; Webhooks)</p></span></div></foreignObject></g></g><g class="node default db " id="flowchart-Queue-3" transform="translate(1105.828125, 589.7364311218262)"><path d="M0,9.410320367916439 a37.7265625,9.410320367916439 0,0,0 75.453125,0 a37.7265625,9.410320367916439 0,0,0 -75.453125,0 l0,72.41032036791644 a37.7265625,9.410320367916439 0,0,0 75.453125,0 l0,-72.41032036791644" class="basic label-container" style="fill:#111827 !important;stroke:#10b981 !important;stroke-width:2px !important" label-offset-y="9.410320367916439" transform="translate(-37.7265625, -45.61548055187466)"/><g class="label" style="color:#dcfce7 !important;font-family:ui-sans-serif !important" transform="translate(-30.2265625, -14)"><rect/><foreignObject width="60.453125" height="48"><div style="color: rgb(220, 252, 231) !important; font-family: ui-sans-serif !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="color:#dcfce7 !important;font-family:ui-sans-serif !important" class="nodeLabel "><p>🔴 Redis<br />(Broker)</p></span></div></foreignObject></g></g><g class="node default core " id="flowchart-Worker-2" transform="translate(643.2734375, 354.01080894470215)"><rect class="basic label-container" style="fill:#111827 !important;stroke:#ff6d5a !important;stroke-width:2px !important" x="-79.3203125" y="-39" width="158.640625" height="78"/><g class="label" style="color:#ffe2dd !important;font-family:ui-sans-serif !important" transform="translate(-49.3203125, -24)"><rect/><foreignObject width="98.640625" height="48"><div style="color: rgb(255, 226, 221) !important; font-family: ui-sans-serif !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="color:#ffe2dd !important;font-family:ui-sans-serif !important" class="nodeLabel "><p>⚙️ n8n-worker<br />(Execution)</p></span></div></foreignObject></g></g><g class="node default db " id="flowchart-DB-4" transform="translate(1105.828125, 734.996654510498)"><path d="M0,12.099271108817648 a58.6171875,12.099271108817648 0,0,0 117.234375,0 a58.6171875,12.099271108817648 0,0,0 -117.234375,0 l0,75.09927110881765 a58.6171875,12.099271108817648 0,0,0 117.234375,0 l0,-75.09927110881765" class="basic label-container" style="fill:#111827 !important;stroke:#10b981 !important;stroke-width:2px !important" label-offset-y="12.099271108817648" transform="translate(-58.6171875, -49.64890666322647)"/><g class="label" style="color:#dcfce7 !important;font-family:ui-sans-serif !important" transform="translate(-51.1171875, -14)"><rect/><foreignObject width="102.234375" height="48"><div style="color: rgb(220, 252, 231) !important; font-family: ui-sans-serif !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="color:#dcfce7 !important;font-family:ui-sans-serif !important" class="nodeLabel "><p>🐘 PostgreSQL<br />(Database)</p></span></div></foreignObject></g></g><g class="node default ai " id="flowchart-Ollama-6" transform="translate(1105.828125, 259.15363693237305)"><path d="M0,11.10242512681537 a49.9296875,11.10242512681537 0,0,0 99.859375,0 a49.9296875,11.10242512681537 0,0,0 -99.859375,0 l0,74.10242512681538 a49.9296875,11.10242512681537 0,0,0 99.859375,0 l0,-74.10242512681538" class="basic label-container" style="fill:#111827 !important;stroke:#0ea5e9 !important;stroke-width:2px !important" label-offset-y="11.10242512681537" transform="translate(-49.9296875, -48.15363769022306)"/><g class="label" style="color:#e0f2fe !important;font-family:ui-sans-serif !important" transform="translate(-42.4296875, -14)"><rect/><foreignObject width="84.859375" height="48"><div style="color: rgb(224, 242, 254) !important; font-family: ui-sans-serif !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="color:#e0f2fe !important;font-family:ui-sans-serif !important" class="nodeLabel "><p>🦙 Ollama<br />(Local LLM)</p></span></div></foreignObject></g></g><g class="node default ai " id="flowchart-Qdrant-7" transform="translate(1105.828125, 404.86798095703125)"><path d="M0,10.707139283927678 a46.8203125,10.707139283927678 0,0,0 93.640625,0 a46.8203125,10.707139283927678 0,0,0 -93.640625,0 l0,73.70713928392767 a46.8203125,10.707139283927678 0,0,0 93.640625,0 l0,-73.70713928392767" class="basic label-container" style="fill:#111827 !important;stroke:#0ea5e9 !important;stroke-width:2px !important" label-offset-y="10.707139283927678" transform="translate(-46.8203125, -47.56070892589152)"/><g class="label" style="color:#e0f2fe !important;font-family:ui-sans-serif !important" transform="translate(-39.3203125, -14)"><rect/><foreignObject width="78.640625" height="48"><div style="color: rgb(224, 242, 254) !important; font-family: ui-sans-serif !important; display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="color:#e0f2fe !important;font-family:ui-sans-serif !important" class="nodeLabel "><p>🎯 Qdrant<br />(Vector DB)</p></span></div></foreignObject></g></g></g></g></g></g></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 920" width="1400" height="920" font-family="'Segoe UI', system-ui, -apple-system, sans-serif">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0e1a"/>
+      <stop offset="100%" style="stop-color:#0f1523"/>
+    </linearGradient>
+    <!-- Grid pattern -->
+    <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#1a2035" stroke-width="0.5"/>
+    </pattern>
+    <!-- Glows -->
+    <filter id="glowRed" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowGreen" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowBlue" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowAmber" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Arrow markers -->
+    <marker id="arrowOrange" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#f97316"/>
+    </marker>
+    <marker id="arrowRed" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#ff6d5a"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#10b981"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#0ea5e9"/>
+    </marker>
+    <marker id="arrowAmber" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#f59e0b"/>
+    </marker>
+    <!-- Cylinder top ellipses -->
+  </defs>
+
+  <!-- Background -->
+  <rect width="1400" height="920" fill="url(#bgGrad)"/>
+  <rect width="1400" height="920" fill="url(#grid)"/>
+
+  <!-- Title -->
+  <text x="700" y="42" text-anchor="middle" font-size="22" font-weight="700" fill="#ffffff" letter-spacing="1">n8n AI Production Stack — Architecture</text>
+  <text x="700" y="62" text-anchor="middle" font-size="13" fill="#4b5fa0">Self-hosted · Queue Mode · External Task Runners · Vector RAG</text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- EXTERNAL ACCESS GROUP -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <rect x="200" y="82" width="380" height="100" rx="10" ry="10" fill="#0d1220" stroke="#2d3a55" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="390" y="100" text-anchor="middle" font-size="11" fill="#4b5fa0" font-weight="600" letter-spacing="1">🌐  EXTERNAL INGRESS</text>
+
+  <!-- Browser box -->
+  <rect x="220" y="108" width="150" height="58" rx="8" fill="#111827" stroke="#374151" stroke-width="1.5"/>
+  <text x="295" y="130" text-anchor="middle" font-size="18">💻</text>
+  <text x="295" y="148" text-anchor="middle" font-size="11" fill="#9ca3af">Browser / API Client</text>
+  <text x="295" y="161" text-anchor="middle" font-size="10" fill="#6b7280">Human Workflows</text>
+
+  <!-- Webhook box -->
+  <rect x="410" y="108" width="150" height="58" rx="8" fill="#111827" stroke="#374151" stroke-width="1.5"/>
+  <text x="485" y="130" text-anchor="middle" font-size="18">🔗</text>
+  <text x="485" y="148" text-anchor="middle" font-size="11" fill="#9ca3af">Webhook Triggers</text>
+  <text x="485" y="161" text-anchor="middle" font-size="10" fill="#6b7280">External Integrations</text>
+
+  <!-- Arrow from External to n8n-main with label -->
+  <line x1="295" y1="166" x2="295" y2="218" stroke="#f97316" stroke-width="2" marker-end="url(#arrowOrange)"/>
+  <line x1="485" y1="166" x2="485" y2="218" stroke="#f97316" stroke-width="2" marker-end="url(#arrowOrange)"/>
+  <rect x="342" y="174" width="76" height="20" rx="4" fill="#1c1a14"/>
+  <text x="380" y="187" text-anchor="middle" font-size="10" fill="#f97316" font-weight="600">HTTP · Port 80</text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- DOCKER NETWORK CONTAINER -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <rect x="30" y="196" width="1340" height="658" rx="14" fill="#0c1118" stroke="#1e2d45" stroke-width="1.5"/>
+  <text x="56" y="218" font-size="11" fill="#2d4a6e" font-weight="700" letter-spacing="1">🐳  DOCKER BRIDGE NETWORK · n8n-net</text>
+
+  <!-- ─────────────────────────────────────────────────────── -->
+  <!-- COLUMN 1: n8n Application Layer -->
+  <!-- ─────────────────────────────────────────────────────── -->
+  <rect x="52" y="226" width="560" height="608" rx="10" fill="#0f1520" stroke="#ff6d5a" stroke-width="1.5" opacity="0.4"/>
+  <text x="332" y="246" text-anchor="middle" font-size="11" fill="#ff6d5a" font-weight="700" letter-spacing="1">n8n APPLICATION LAYER</text>
+
+  <!-- n8n-main -->
+  <rect x="72" y="256" width="520" height="110" rx="10" fill="#111827" stroke="#ff6d5a" stroke-width="2" filter="url(#glowRed)"/>
+  <text x="180" y="280" font-size="20">🖥️</text>
+  <text x="210" y="280" font-size="15" fill="#ffe2dd" font-weight="700">n8n-main</text>
+  <text x="210" y="296" font-size="11" fill="#6b7280">Editor UI · REST API · Webhook Ingress</text>
+  <line x1="72" y1="305" x2="592" y2="305" stroke="#1f2937" stroke-width="1"/>
+  <text x="90" y="322" font-size="10" fill="#9ca3af">• EXECUTIONS_MODE=queue</text>
+  <text x="90" y="337" font-size="10" fill="#9ca3af">• OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true</text>
+  <text x="90" y="352" font-size="10" fill="#9ca3af">• N8N_DIAGNOSTICS_ENABLED=false · Task Broker :5679</text>
+  <!-- Port badge -->
+  <rect x="494" y="260" width="90" height="20" rx="4" fill="#7c1a0e"/>
+  <text x="539" y="274" text-anchor="middle" font-size="10" fill="#fca5a5" font-weight="600">PORT 80 → 5678</text>
+
+  <!-- Arrow: n8n-main → n8n-worker -->
+  <line x1="332" y1="366" x2="332" y2="396" stroke="#ff6d5a" stroke-width="2.5" marker-end="url(#arrowRed)"/>
+  <rect x="270" y="370" width="124" height="20" rx="4" fill="#1a100e"/>
+  <text x="332" y="383" text-anchor="middle" font-size="10" fill="#ff6d5a" font-weight="600">Bull Queue → Redis</text>
+
+  <!-- n8n-worker -->
+  <rect x="72" y="400" width="520" height="100" rx="10" fill="#111827" stroke="#ff6d5a" stroke-width="2" filter="url(#glowRed)"/>
+  <text x="180" y="424" font-size="20">⚙️</text>
+  <text x="210" y="424" font-size="15" fill="#ffe2dd" font-weight="700">n8n-worker</text>
+  <text x="210" y="440" font-size="11" fill="#6b7280">Dequeues &amp; Executes Workflows · Scalable</text>
+  <line x1="72" y1="449" x2="592" y2="449" stroke="#1f2937" stroke-width="1"/>
+  <text x="90" y="466" font-size="10" fill="#9ca3af">• N8N_RUNNERS_MODE=external · Broker listens :5679</text>
+  <text x="90" y="481" font-size="10" fill="#9ca3af">• Scale: docker compose up -d --scale n8n-worker=N</text>
+  <!-- Scalable badge -->
+  <rect x="494" y="404" width="90" height="20" rx="4" fill="#0e2a16"/>
+  <text x="539" y="418" text-anchor="middle" font-size="10" fill="#6ee7b7" font-weight="600">SCALABLE ×N</text>
+
+  <!-- Arrow: n8n-worker → n8n-python-runner -->
+  <line x1="332" y1="500" x2="332" y2="530" stroke="#ff6d5a" stroke-width="2.5" marker-end="url(#arrowRed)"/>
+  <rect x="258" y="504" width="148" height="20" rx="4" fill="#1a100e"/>
+  <text x="332" y="517" text-anchor="middle" font-size="10" fill="#ff6d5a" font-weight="600">Task Runner Protocol</text>
+
+  <!-- n8n-python-runner -->
+  <rect x="72" y="534" width="340" height="108" rx="10" fill="#111827" stroke="#d97706" stroke-width="2" filter="url(#glowAmber)"/>
+  <text x="150" y="558" font-size="20">🚀</text>
+  <text x="180" y="558" font-size="14" fill="#fef3c7" font-weight="700">n8n-python-runner</text>
+  <text x="180" y="573" font-size="10" fill="#6b7280">Sandboxed Code Execution Sidecar</text>
+  <line x1="72" y1="582" x2="412" y2="582" stroke="#1f2937" stroke-width="1"/>
+  <text x="90" y="597" font-size="10" fill="#9ca3af">• JS Runner  :5681</text>
+  <text x="90" y="612" font-size="10" fill="#9ca3af">• Python Runner  :5682</text>
+  <text x="90" y="627" font-size="10" fill="#9ca3af">• Health  :5680   AUTO_SHUTDOWN=0</text>
+
+  <!-- n8n-init (separate, amber) -->
+  <rect x="432" y="534" width="160" height="108" rx="10" fill="#111827" stroke="#f59e0b" stroke-width="2" stroke-dasharray="5,3" filter="url(#glowAmber)"/>
+  <text x="512" y="560" text-anchor="middle" font-size="22">🔄</text>
+  <text x="512" y="578" text-anchor="middle" font-size="13" fill="#fde68a" font-weight="700">n8n-init</text>
+  <text x="512" y="594" text-anchor="middle" font-size="10" fill="#6b7280">One-Shot Provisioner</text>
+  <line x1="432" y1="602" x2="592" y2="602" stroke="#292015" stroke-width="1"/>
+  <text x="512" y="617" text-anchor="middle" font-size="9.5" fill="#9ca3af">Seeds credentials</text>
+  <text x="512" y="631" text-anchor="middle" font-size="9.5" fill="#9ca3af">to PostgreSQL · then exits</text>
+
+  <!-- ONE-SHOT badge -->
+  <rect x="446" y="538" width="68" height="16" rx="3" fill="#2d1f05"/>
+  <text x="480" y="550" text-anchor="middle" font-size="9" fill="#fbbf24" font-weight="600">ONE-SHOT</text>
+
+  <!-- Python packages note -->
+  <rect x="72" y="656" width="520" height="60" rx="8" fill="#0d1520" stroke="#1f2937" stroke-width="1"/>
+  <text x="90" y="673" font-size="10" fill="#4b5fa0" font-weight="600">Pre-installed Python packages:</text>
+  <text x="90" y="688" font-size="10" fill="#6b7280">pandas · numpy · pyarrow · requests</text>
+  <text x="340" y="673" font-size="10" fill="#4b5fa0" font-weight="600">Dockerfile.runner → uv pip install</text>
+  <text x="340" y="688" font-size="10" fill="#6b7280">Extend: add packages + docker compose build</text>
+  <text x="90" y="703" font-size="10" fill="#4b5fa0" font-weight="600">Runner config (hot-swap, no rebuild):</text>
+  <text x="280" y="703" font-size="10" fill="#6b7280">./n8n-task-runners.json → docker compose restart n8n-python-runner</text>
+
+  <!-- ─────────────────────────────────────────────────────── -->
+  <!-- COLUMN 2: State & Queue -->
+  <!-- ─────────────────────────────────────────────────────── -->
+  <rect x="638" y="226" width="330" height="608" rx="10" fill="#0a1510" stroke="#10b981" stroke-width="1.5" opacity="0.4"/>
+  <text x="803" y="246" text-anchor="middle" font-size="11" fill="#10b981" font-weight="700" letter-spacing="1">STATE &amp; QUEUE LAYER</text>
+
+  <!-- Redis -->
+  <rect x="658" y="256" width="290" height="140" rx="10" fill="#111827" stroke="#10b981" stroke-width="2" filter="url(#glowGreen)"/>
+  <!-- Cylinder body -->
+  <ellipse cx="803" cy="280" rx="50" ry="14" fill="#0a2518" stroke="#10b981" stroke-width="1.5"/>
+  <rect x="753" y="280" width="100" height="45" fill="#0a2518" stroke="none"/>
+  <ellipse cx="803" cy="325" rx="50" ry="14" fill="#0d2e1d" stroke="#10b981" stroke-width="1.5"/>
+  <text x="803" y="307" text-anchor="middle" font-size="14" fill="#10b981" font-weight="700">Redis 7</text>
+  <line x1="658" y1="346" x2="948" y2="346" stroke="#1f2937" stroke-width="1"/>
+  <text x="658" y="362" dx="14" font-size="10" fill="#9ca3af">• Bull Queue Broker</text>
+  <text x="658" y="376" dx="14" font-size="10" fill="#9ca3af">• AOF Persistent + RDB backup</text>
+  <text x="658" y="390" dx="14" font-size="10" fill="#6b7280">• maxmemory 256mb · LRU eviction</text>
+  <!-- Badge -->
+  <rect x="850" y="260" width="90" height="18" rx="4" fill="#052e16"/>
+  <text x="895" y="272" text-anchor="middle" font-size="9" fill="#6ee7b7" font-weight="600">PORT 6379 INTERNAL</text>
+
+  <!-- Arrow Redis → PostgreSQL -->
+  <line x1="803" y1="396" x2="803" y2="436" stroke="#10b981" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <!-- PostgreSQL -->
+  <rect x="658" y="440" width="290" height="154" rx="10" fill="#111827" stroke="#10b981" stroke-width="2" filter="url(#glowGreen)"/>
+  <ellipse cx="803" cy="466" rx="55" ry="15" fill="#0a2518" stroke="#10b981" stroke-width="1.5"/>
+  <rect x="748" y="466" width="110" height="50" fill="#0a2518" stroke="none"/>
+  <ellipse cx="803" cy="516" rx="55" ry="15" fill="#0d2e1d" stroke="#10b981" stroke-width="1.5"/>
+  <text x="803" y="498" text-anchor="middle" font-size="14" fill="#10b981" font-weight="700">PostgreSQL 16</text>
+  <line x1="658" y1="536" x2="948" y2="536" stroke="#1f2937" stroke-width="1"/>
+  <text x="658" y="552" dx="14" font-size="10" fill="#9ca3af">• Credentials (encrypted) · Workflows</text>
+  <text x="658" y="566" dx="14" font-size="10" fill="#9ca3af">• Execution History · User Accounts</text>
+  <text x="658" y="580" dx="14" font-size="10" fill="#6b7280">• shared_buffers=256MB · synchronous_commit=local</text>
+  <text x="658" y="594" dx="14" font-size="10" fill="#6b7280">• stop_grace_period: 60s (clean shutdown)</text>
+  <!-- Badge -->
+  <rect x="848" y="444" width="92" height="18" rx="4" fill="#052e16"/>
+  <text x="894" y="456" text-anchor="middle" font-size="9" fill="#6ee7b7" font-weight="600">PORT 5432 INTERNAL</text>
+
+  <!-- Startup ordering note -->
+  <rect x="658" y="608" width="290" height="62" rx="8" fill="#0d1520" stroke="#1f2937" stroke-width="1"/>
+  <text x="803" y="625" text-anchor="middle" font-size="10" fill="#4b5fa0" font-weight="600">Startup Ordering (depends_on: healthy)</text>
+  <text x="658" y="641" dx="14" font-size="10" fill="#6b7280">postgres → n8n-main → n8n-worker</text>
+  <text x="658" y="655" dx="14" font-size="10" fill="#6b7280">redis → n8n-python-runner · n8n-init</text>
+
+  <!-- Volumes note -->
+  <rect x="658" y="682" width="290" height="50" rx="8" fill="#0d1520" stroke="#1f2937" stroke-width="1"/>
+  <text x="803" y="699" text-anchor="middle" font-size="10" fill="#4b5fa0" font-weight="600">Named Docker Volumes (persistent)</text>
+  <text x="803" y="714" text-anchor="middle" font-size="10" fill="#6b7280">postgres_data · redis_data · qdrant_storage</text>
+  <text x="803" y="729" text-anchor="middle" font-size="10" fill="#6b7280">n8n_data (workflows &amp; credentials)</text>
+
+  <!-- ─────────────────────────────────────────────────────── -->
+  <!-- COLUMN 3: AI & Vector Layer -->
+  <!-- ─────────────────────────────────────────────────────── -->
+  <rect x="994" y="226" width="340" height="608" rx="10" fill="#071522" stroke="#0ea5e9" stroke-width="1.5" opacity="0.4"/>
+  <text x="1164" y="246" text-anchor="middle" font-size="11" fill="#0ea5e9" font-weight="700" letter-spacing="1">AI &amp; VECTOR LAYER</text>
+
+  <!-- OpenRouter (External) -->
+  <rect x="1014" y="256" width="300" height="160" rx="10" fill="#111827" stroke="#0ea5e9" stroke-width="2" stroke-dasharray="6,3" filter="url(#glowBlue)"/>
+  <text x="1164" y="282" text-anchor="middle" font-size="28">🤖</text>
+  <text x="1164" y="303" text-anchor="middle" font-size="15" fill="#e0f2fe" font-weight="700">OpenRouter API</text>
+  <text x="1164" y="319" text-anchor="middle" font-size="11" fill="#6b7280">External · No local GPU required</text>
+  <line x1="1014" y1="328" x2="1314" y2="328" stroke="#1f2937" stroke-width="1"/>
+  <text x="1014" y="344" dx="14" font-size="10" fill="#9ca3af">• GPT-4o · Claude 3.5 Sonnet</text>
+  <text x="1014" y="358" dx="14" font-size="10" fill="#9ca3af">• Llama 3 · Gemini Pro</text>
+  <text x="1014" y="372" dx="14" font-size="10" fill="#6b7280">• Via n8n Advanced AI nodes</text>
+  <text x="1014" y="386" dx="14" font-size="10" fill="#6b7280">• Keeps 4GB GPU free for data work</text>
+  <!-- External badge -->
+  <rect x="1014" y="259" width="70" height="16" rx="3" fill="#0c1f35"/>
+  <text x="1049" y="271" text-anchor="middle" font-size="9" fill="#38bdf8" font-weight="600">EXTERNAL API</text>
+
+  <!-- Arrow OpenRouter → Qdrant -->
+  <line x1="1164" y1="416" x2="1164" y2="456" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <rect x="1110" y="420" width="108" height="20" rx="4" fill="#071825"/>
+  <text x="1164" y="433" text-anchor="middle" font-size="10" fill="#0ea5e9" font-weight="600">Embedding API</text>
+
+  <!-- Qdrant -->
+  <rect x="1014" y="460" width="300" height="160" rx="10" fill="#111827" stroke="#0ea5e9" stroke-width="2" filter="url(#glowBlue)"/>
+  <ellipse cx="1164" cy="488" rx="52" ry="14" fill="#071a28" stroke="#0ea5e9" stroke-width="1.5"/>
+  <rect x="1112" y="488" width="104" height="46" fill="#071a28" stroke="none"/>
+  <ellipse cx="1164" cy="534" rx="52" ry="14" fill="#091e2e" stroke="#0ea5e9" stroke-width="1.5"/>
+  <text x="1164" y="515" text-anchor="middle" font-size="14" fill="#0ea5e9" font-weight="700">Qdrant</text>
+  <line x1="1014" y1="550" x2="1314" y2="550" stroke="#1f2937" stroke-width="1"/>
+  <text x="1014" y="566" dx="14" font-size="10" fill="#9ca3af">• Vector DB for RAG workflows</text>
+  <text x="1014" y="580" dx="14" font-size="10" fill="#9ca3af">• High-performance semantic search</text>
+  <text x="1014" y="594" dx="14" font-size="10" fill="#6b7280">• REST :6333 · gRPC :6334</text>
+  <text x="1014" y="608" dx="14" font-size="10" fill="#6b7280">• http://qdrant:6333 (internal DNS)</text>
+
+  <!-- n8n config note -->
+  <rect x="1014" y="634" width="300" height="62" rx="8" fill="#0d1520" stroke="#1f2937" stroke-width="1"/>
+  <text x="1164" y="651" text-anchor="middle" font-size="10" fill="#4b5fa0" font-weight="600">n8n Credential in UI</text>
+  <text x="1014" y="667" dx="14" font-size="10" fill="#6b7280">OpenRouter: set API Key credential</text>
+  <text x="1014" y="681" dx="14" font-size="10" fill="#6b7280">Qdrant: http://qdrant:6333 (no auth)</text>
+  <text x="1014" y="695" dx="14" font-size="10" fill="#6b7280">Use Advanced AI nodes for LLM chains</text>
+
+  <!-- BigQuery/Airflow note -->
+  <rect x="1014" y="708" width="300" height="62" rx="8" fill="#0d1520" stroke="#1f2937" stroke-width="1"/>
+  <text x="1164" y="725" text-anchor="middle" font-size="10" fill="#4b5fa0" font-weight="600">Data Engineering Integrations</text>
+  <text x="1014" y="741" dx="14" font-size="10" fill="#6b7280">Google BigQuery · Apache Airflow DAGs</text>
+  <text x="1014" y="755" dx="14" font-size="10" fill="#6b7280">Trigger via HTTP Request node → REST API</text>
+  <text x="1014" y="769" dx="14" font-size="10" fill="#6b7280">pandas + pyarrow: local data validation</text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- CROSS-COLUMN ARROWS (n8n app → State & AI) -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
+  <!-- n8n-main → Redis (Enqueues Tasks) -->
+  <path d="M 592 308 Q 620 308 638 308" stroke="#ff6d5a" stroke-width="2" fill="none" marker-end="url(#arrowGreen)" stroke-dasharray="5,3"/>
+  <rect x="598" y="296" width="30" height="10" rx="2" fill="#0a0e1a"/>
+  <text x="613" y="304" text-anchor="middle" font-size="8" fill="#ff6d5a">→</text>
+
+  <!-- n8n-main → Redis (visible thick arrow) -->
+  <path d="M 592 340 C 620 340, 638 340, 648 330" stroke="#ff6d5a" stroke-width="2" fill="none" marker-end="url(#arrowGreen)"/>
+  <rect x="596" y="330" width="98" height="18" rx="4" fill="#100d0d"/>
+  <text x="645" y="343" text-anchor="middle" font-size="9" fill="#ff6d5a" font-weight="600">Enqueues Tasks</text>
+
+  <!-- n8n-worker → Redis (Pulls Tasks) -->
+  <path d="M 592 460 C 620 460, 638 460, 648 450" stroke="#ff6d5a" stroke-width="2" fill="none" marker-end="url(#arrowGreen)"/>
+  <rect x="596" y="450" width="80" height="18" rx="4" fill="#100d0d"/>
+  <text x="636" y="463" text-anchor="middle" font-size="9" fill="#ff6d5a" font-weight="600">Pulls Tasks</text>
+
+  <!-- n8n-main → PostgreSQL (Read/Write) -->
+  <path d="M 592 370 C 616 370, 630 530, 648 530" stroke="#10b981" stroke-width="1.5" fill="none" marker-end="url(#arrowGreen)" stroke-dasharray="4,2"/>
+  <rect x="596" y="444" width="60" height="16" rx="3" fill="#0a1510"/>
+  <text x="626" y="456" text-anchor="middle" font-size="8" fill="#10b981">Read/Write</text>
+
+  <!-- n8n-worker → PostgreSQL (Read/Write) -->
+  <path d="M 592 480 C 618 490, 630 520, 648 518" stroke="#10b981" stroke-width="1.5" fill="none" marker-end="url(#arrowGreen)" stroke-dasharray="4,2"/>
+
+  <!-- n8n-init → PostgreSQL (Seeds) -->
+  <path d="M 592 600 C 618 600, 628 590, 648 580" stroke="#f59e0b" stroke-width="1.5" fill="none" stroke-dasharray="5,3" marker-end="url(#arrowAmber)"/>
+  <rect x="594" y="577" width="80" height="16" rx="3" fill="#100d00"/>
+  <text x="634" y="589" text-anchor="middle" font-size="8" fill="#f59e0b">Seeds Credentials</text>
+
+  <!-- n8n-main → OpenRouter (AI Prompts) -->
+  <path d="M 592 350 C 800 350, 900 290, 1004 290" stroke="#0ea5e9" stroke-width="1.5" fill="none" marker-end="url(#arrowBlue)" stroke-dasharray="5,3"/>
+  <rect x="754" y="282" width="76" height="16" rx="3" fill="#071522"/>
+  <text x="792" y="294" text-anchor="middle" font-size="8" fill="#0ea5e9">AI Prompts</text>
+
+  <!-- n8n-worker → OpenRouter (AI Prompts) -->
+  <path d="M 592 430 C 800 430, 900 330, 1004 320" stroke="#0ea5e9" stroke-width="1.5" fill="none" marker-end="url(#arrowBlue)" stroke-dasharray="5,3"/>
+
+  <!-- n8n → Qdrant (RAG Query) -->
+  <path d="M 592 390 C 800 390, 900 510, 1004 510" stroke="#0ea5e9" stroke-width="1.5" fill="none" marker-end="url(#arrowBlue)" stroke-dasharray="5,3"/>
+  <rect x="756" y="432" width="72" height="16" rx="3" fill="#071522"/>
+  <text x="792" y="444" text-anchor="middle" font-size="8" fill="#0ea5e9">RAG Query</text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- LEGEND -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <rect x="30" y="866" width="1340" height="44" rx="8" fill="#0a0e18" stroke="#1e2d45" stroke-width="1"/>
+  <text x="60" y="884" font-size="11" fill="#4b5fa0" font-weight="600">LEGEND:</text>
+
+  <rect x="130" y="873" width="14" height="14" rx="3" fill="#111827" stroke="#ff6d5a" stroke-width="2"/>
+  <text x="150" y="884" font-size="10" fill="#9ca3af">n8n Core</text>
+
+  <rect x="230" y="873" width="14" height="14" rx="3" fill="#111827" stroke="#d97706" stroke-width="2" stroke-dasharray="3,2"/>
+  <text x="250" y="884" font-size="10" fill="#9ca3af">n8n-init (One-Shot)</text>
+
+  <rect x="380" y="873" width="14" height="14" rx="3" fill="#111827" stroke="#10b981" stroke-width="2"/>
+  <text x="400" y="884" font-size="10" fill="#9ca3af">State &amp; Queue</text>
+
+  <rect x="500" y="873" width="14" height="14" rx="3" fill="#111827" stroke="#0ea5e9" stroke-width="2" stroke-dasharray="4,2"/>
+  <text x="520" y="884" font-size="10" fill="#9ca3af">AI &amp; Vector (External API)</text>
+
+  <rect x="700" y="873" width="14" height="14" rx="3" fill="#111827" stroke="#374151" stroke-width="1.5"/>
+  <text x="720" y="884" font-size="10" fill="#9ca3af">External Clients</text>
+
+  <!-- Version -->
+  <text x="1340" y="884" text-anchor="end" font-size="10" fill="#2d3a55">n8n v2.25.6 · Docker Compose v2 · 2026</text>
+
+  <!-- ─── Footer line ─── -->
+  <text x="700" y="906" text-anchor="middle" font-size="10" fill="#1e2d45">All internal services communicate exclusively over n8n-net bridge network — PostgreSQL &amp; Redis ports are NOT exposed to the host</text>
+</svg>
