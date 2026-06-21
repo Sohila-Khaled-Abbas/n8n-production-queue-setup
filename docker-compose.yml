@@ -1,11 +1,96 @@
 volumes:
   postgres_data:
   redis_data:
-  qdrant_storage:    # Persists vector embeddings
+  qdrant_storage:
+  backup_data:
 
 networks:
   n8n-net:
     driver: bridge
+
+# ── Centralized log rotation (configurable via .env) ──────────
+x-logging: &default-logging
+  driver: ${LOG_DRIVER:-json-file}
+  options:
+    max-size: ${LOG_MAX_SIZE:-10m}
+    max-file: ${LOG_MAX_FILE:-3}
+
+# ── Shared n8n service template ───────────────────────────────
+x-n8n: &service-n8n
+  build:
+    context: .
+    dockerfile: Dockerfile
+  restart: unless-stopped
+  logging: *default-logging
+  networks:
+    - n8n-net
+  environment:
+    # Routing & URLs
+    - N8N_EDITOR_BASE_URL=${N8N_EDITOR_BASE_URL}
+    - WEBHOOK_URL=${WEBHOOK_URL}
+    - N8N_PROXY_HOPS=${N8N_PROXY_HOPS:-1}
+    # Security
+    - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+    - N8N_RUNNERS_AUTH_TOKEN=${N8N_RUNNERS_AUTH_TOKEN}
+    - N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=${N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE:-true}
+    - N8N_COMMUNITY_PACKAGES_ENABLED=true
+    - N8N_SKIP_AUTH_ON_OAUTH_CALLBACK=${N8N_SKIP_AUTH_ON_OAUTH_CALLBACK:-true}
+    - N8N_RUNNERS_ALLOW_PROTOTYPE_MUTATION=true
+    - N8N_RUNNERS_INSECURE_MODE=true
+    # Database
+    - DB_TYPE=${DB_TYPE:-postgresdb}
+    - DB_POSTGRESDB_HOST=${DB_POSTGRESDB_HOST:-postgres}
+    - DB_POSTGRESDB_PORT=${DB_POSTGRESDB_PORT:-5432}
+    - DB_POSTGRESDB_DATABASE=${DB_POSTGRESDB_DATABASE}
+    - DB_POSTGRESDB_USER=${DB_POSTGRESDB_USER}
+    - DB_POSTGRESDB_PASSWORD=${DB_POSTGRESDB_PASSWORD}
+    # Queue mode
+    - EXECUTIONS_MODE=queue
+    - QUEUE_BULL_REDIS_HOST=redis
+    - QUEUE_BULL_REDIS_PORT=6379
+    - QUEUE_HEALTH_CHECK_ACTIVE=true
+    - N8N_QUEUE_BULL_GRACEFULSHUTDOWNTIMEOUT=${N8N_QUEUE_BULL_GRACEFULSHUTDOWNTIMEOUT:-300}
+    - N8N_GRACEFUL_SHUTDOWN_TIMEOUT=${N8N_GRACEFUL_SHUTDOWN_TIMEOUT:-300}
+    # Offload all executions (including manual) to workers
+    - OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true
+    # Task runner (n8n 2.0 external mode)
+    - N8N_RUNNERS_MODE=external
+    - N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0
+    # Execution data
+    - EXECUTIONS_DATA_PRUNE=${EXECUTIONS_DATA_PRUNE:-true}
+    - EXECUTIONS_DATA_MAX_AGE=${EXECUTIONS_DATA_MAX_AGE:-168}
+    - EXECUTIONS_DATA_PRUNE_MAX_COUNT=${EXECUTIONS_DATA_PRUNE_MAX_COUNT:-5000}
+    - EXECUTIONS_DATA_SAVE_ON_SUCCESS=${EXECUTIONS_DATA_SAVE_ON_SUCCESS:-all}
+    - EXECUTIONS_DATA_SAVE_ON_ERROR=${EXECUTIONS_DATA_SAVE_ON_ERROR:-all}
+    - EXECUTIONS_DATA_SAVE_ON_PROGRESS=${EXECUTIONS_DATA_SAVE_ON_PROGRESS:-false}
+    # Binary data
+    - N8N_DEFAULT_BINARY_DATA_MODE=${N8N_DEFAULT_BINARY_DATA_MODE:-database}
+    # Diagnostics
+    - N8N_DIAGNOSTICS_ENABLED=false
+    - N8N_VERSION_NOTIFICATIONS_ENABLED=false
+    # Logging
+    - N8N_LOG_LEVEL=${N8N_LOG_LEVEL:-info}
+    - N8N_LOG_OUTPUT=${N8N_LOG_OUTPUT:-console}
+    # AI
+    - OLLAMA_HOST=${OLLAMA_HOST:-ollama:11434}
+
+# ── Shared task runner template ───────────────────────────────
+x-task-runner: &service-task-runner
+  build:
+    context: .
+    dockerfile: Dockerfile.runner
+  restart: unless-stopped
+  logging: *default-logging
+  networks:
+    - n8n-net
+  environment:
+    - N8N_RUNNERS_AUTH_TOKEN=${N8N_RUNNERS_AUTH_TOKEN}
+    - N8N_RUNNERS_MAX_CONCURRENCY=${N8N_RUNNERS_MAX_CONCURRENCY:-5}
+    - N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT=${N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT:-0}
+    - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+    - PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
+    - N8N_RUNNERS_ALLOW_PROTOTYPE_MUTATION=true
+    - N8N_RUNNERS_INSECURE_MODE=true
 
 services:
 
@@ -16,10 +101,8 @@ services:
     image: postgres:16-alpine
     container_name: n8n-postgres
     restart: unless-stopped
-    # Give PostgreSQL time to complete the shutdown checkpoint before Docker
-    # force-kills the container. Without this (default = 10s), Postgres is
-    # killed mid-write → "not properly shut down" WAL recovery on every restart.
     stop_grace_period: 60s
+    logging: *default-logging
     networks:
       - n8n-net
     environment:
@@ -48,6 +131,8 @@ services:
         -c log_connections=off
         -c log_disconnections=off
     volumes:
+      # ⚠️ postgres_data is a Docker named volume — your data lives here.
+      # This is NEVER deleted by docker compose operations.
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h localhost -U ${DB_POSTGRESDB_USER} -d ${DB_POSTGRESDB_DATABASE}"]
@@ -57,14 +142,14 @@ services:
       start_period: 30s
 
   # ──────────────────────────────────────────────────────────
-  # Redis — Bull queue broker for queue-mode execution
+  # Redis — Bull queue broker (unauthenticated, internal only)
   # ──────────────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
     container_name: n8n-redis
     restart: unless-stopped
-    # Allow Redis to finish the AOF flush before being killed
     stop_grace_period: 20s
+    logging: *default-logging
     networks:
       - n8n-net
     command: redis-server /usr/local/etc/redis/redis.conf
@@ -79,106 +164,168 @@ services:
       start_period: 10s
 
   # ──────────────────────────────────────────────────────────
-  # n8n Main — Editor UI, REST API, and task broker
+  # n8n Main — Editor UI, REST API, task broker
   # ──────────────────────────────────────────────────────────
   n8n:
-    image: docker.n8n.io/n8nio/n8n:latest
+    <<: *service-n8n
     container_name: n8n-main-server
-    restart: unless-stopped
-    # Allow n8n to finish in-flight requests before the container is killed
     stop_grace_period: 30s
-    networks:
-      - n8n-net
     ports:
       - "80:5678"
-    env_file:
-      - .env
-    environment:
-      - EXECUTIONS_MODE=queue
-      - QUEUE_BULL_REDIS_HOST=redis
-      - QUEUE_BULL_REDIS_PORT=6379
-      - N8N_RUNNERS_MODE=external
-      - N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0
-      - OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true
-      - N8N_DIAGNOSTICS_ENABLED=false
-      - N8N_VERSION_NOTIFICATIONS_ENABLED=false
-      - N8N_PAYLOAD_SIZE_MAX=256
     volumes:
+      # ⚠️ ./n8n-data is your existing bind-mount — data preserved here
       - ${N8N_DATA_DIR:-./n8n-data}:/home/node/.n8n
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:5678/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  # No task runner on main instance — all executions offloaded to workers
+  # (OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true)
 
   # ──────────────────────────────────────────────────────────
-  # n8n Worker — Executes queued workflows
-  # Scale horizontally: docker compose up --scale n8n-worker=3
+  # n8n Webhook — Dedicated webhook processor
+  # ──────────────────────────────────────────────────────────
+  n8n-webhook:
+    <<: *service-n8n
+    container_name: n8n-webhook
+    stop_grace_period: 30s
+    command: webhook
+    volumes:
+      - ${N8N_DATA_DIR:-./n8n-data}:/home/node/.n8n
+    depends_on:
+      n8n:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:5678/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ──────────────────────────────────────────────────────────
+  # n8n Worker — Executes queued workflows (autoscaled)
+  # DO NOT set container_name — autoscaler scales this dynamically
   # ──────────────────────────────────────────────────────────
   n8n-worker:
-    image: docker.n8n.io/n8nio/n8n:latest
-    container_name: n8n-worker-1
-    restart: unless-stopped
-    # Allow the worker to finish any running workflow before being killed
-    stop_grace_period: 30s
+    <<: *service-n8n
+    stop_grace_period: 5m
     command: worker
-    networks:
-      - n8n-net
-    env_file:
-      - .env
-    environment:
-      - EXECUTIONS_MODE=queue
-      - QUEUE_BULL_REDIS_HOST=redis
-      - QUEUE_BULL_REDIS_PORT=6379
-      - N8N_RUNNERS_MODE=external
-      - N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0
     volumes:
       - ${N8N_DATA_DIR:-./n8n-data}:/home/node/.n8n
     depends_on:
+      n8n:
+        condition: service_healthy
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-      n8n:
-        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:5678/healthz || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   # ──────────────────────────────────────────────────────────
-  # n8n Python/JS Runner — External task runner sidecar
-  # Executes Code node sandboxes (Python + JavaScript)
+  # n8n Worker Runner — Task runner sidecar (autoscaled 1:1 with workers)
   # ──────────────────────────────────────────────────────────
-  n8n-python-runner:
+  n8n-worker-runner:
+    <<: *service-task-runner
+    environment:
+      - N8N_RUNNERS_AUTH_TOKEN=${N8N_RUNNERS_AUTH_TOKEN}
+      - N8N_RUNNERS_TASK_BROKER_URI=http://n8n-worker:5679
+      - N8N_RUNNERS_MAX_CONCURRENCY=${N8N_RUNNERS_MAX_CONCURRENCY:-5}
+      - N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT=${N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT:-0}
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+      - PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
+      - N8N_RUNNERS_ALLOW_PROTOTYPE_MUTATION=true
+      - N8N_RUNNERS_INSECURE_MODE=true
+    depends_on:
+      n8n-worker:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'node.*runner' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ──────────────────────────────────────────────────────────
+  # n8n Autoscaler — Monitors Redis queue, scales workers
+  # ──────────────────────────────────────────────────────────
+  n8n-autoscaler:
     build:
       context: .
-      dockerfile: Dockerfile.runner
-    container_name: n8n-python-runner
+      dockerfile: autoscaler/Dockerfile
+    container_name: n8n-autoscaler
     restart: unless-stopped
+    logging: *default-logging
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - QUEUE_NAME_PREFIX=${QUEUE_NAME_PREFIX:-bull}
+      - QUEUE_NAME=${QUEUE_NAME:-jobs}
+      - N8N_WORKER_SERVICE_NAME=${N8N_WORKER_SERVICE_NAME:-n8n-worker}
+      - N8N_WORKER_RUNNER_SERVICE_NAME=${N8N_WORKER_RUNNER_SERVICE_NAME:-n8n-worker-runner}
+      - COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}
+      - COMPOSE_FILE_PATH=/app/docker-compose.yml
+      - MIN_REPLICAS=${MIN_REPLICAS:-1}
+      - MAX_REPLICAS=${MAX_REPLICAS:-5}
+      - SCALE_UP_QUEUE_THRESHOLD=${SCALE_UP_QUEUE_THRESHOLD:-5}
+      - SCALE_DOWN_QUEUE_THRESHOLD=${SCALE_DOWN_QUEUE_THRESHOLD:-1}
+      - POLLING_INTERVAL_SECONDS=${POLLING_INTERVAL_SECONDS:-10}
+      - COOLDOWN_PERIOD_SECONDS=${COOLDOWN_PERIOD_SECONDS:-10}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock
+      - ./.env:/app/.env
+    depends_on:
+      redis:
+        condition: service_healthy
+      n8n-worker:
+        condition: service_started
     networks:
       - n8n-net
-    env_file:
-      - .env
+
+  # ──────────────────────────────────────────────────────────
+  # Redis Monitor — Logs queue depth continuously
+  # ──────────────────────────────────────────────────────────
+  redis-monitor:
+    build:
+      context: .
+      dockerfile: monitor/monitor.Dockerfile
+    container_name: n8n-redis-monitor
+    restart: unless-stopped
+    logging: *default-logging
+    networks:
+      - n8n-net
     environment:
-      - N8N_RUNNERS_TASK_BROKER_URI=http://n8n-worker:5679
-      - N8N_RUNNERS_LAUNCHER_HEARTBEAT_INTERVAL=30
-      - N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT=0
-    volumes:
-      - ${N8N_DATA_DIR:-./n8n-data}:/home/node/.n8n
-      - ./n8n-task-runners.json:/etc/n8n-task-runners.json:ro
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - QUEUE_NAME_PREFIX=${QUEUE_NAME_PREFIX:-bull}
+      - QUEUE_NAME=${QUEUE_NAME:-jobs}
+      - POLL_INTERVAL_SECONDS=${POLL_INTERVAL_SECONDS:-5}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
     depends_on:
-      - n8n
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:5680/healthz || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 20s
+      redis:
+        condition: service_healthy
 
   # ──────────────────────────────────────────────────────────
   # n8n Init — One-shot credential provisioner
-  # Runs on every `docker compose up`. Idempotent:
-  #   - ADDS missing credentials (PostgreSQL, Redis)
-  #   - NEVER modifies or deletes existing credentials
-  # Does NOT require n8n-main to be running — talks directly
-  # to PostgreSQL using the n8n CLI + encryption key.
   # ──────────────────────────────────────────────────────────
   n8n-init:
     image: docker.n8n.io/n8nio/n8n:latest
@@ -191,7 +338,6 @@ services:
     entrypoint: ["node", "/scripts/provision.js"]
     volumes:
       - ./scripts:/scripts:ro
-      # Mount n8n-data so the CLI can find any local config it needs
       - ${N8N_DATA_DIR:-./n8n-data}:/home/node/.n8n
     depends_on:
       postgres:
@@ -200,19 +346,64 @@ services:
         condition: service_healthy
 
   # ──────────────────────────────────────────────────────────
+  # n8n Backup — Scheduled backups (optional, use profile)
+  # Enable with: docker compose --profile backup up -d
+  # ──────────────────────────────────────────────────────────
+  n8n-backup:
+    profiles: [backup]
+    build:
+      context: .
+      dockerfile: backup/Dockerfile
+    container_name: n8n-backup
+    restart: unless-stopped
+    logging: *default-logging
+    networks:
+      - n8n-net
+    volumes:
+      - ${N8N_DATA_DIR:-./n8n-data}:/data/n8n:ro
+      - redis_data:/data/redis:ro
+      - backup_data:/backups
+      # Uncomment after creating backup/rclone.conf from backup/rclone.conf.example:
+      # - ./backup/rclone.conf:/config/rclone/rclone.conf:ro
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=${DB_POSTGRESDB_DATABASE}
+      - POSTGRES_USER=${DB_POSTGRESDB_USER}
+      - POSTGRES_PASSWORD=${DB_POSTGRESDB_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - BACKUP_SCHEDULE=${BACKUP_SCHEDULE:-0 2 * * *}
+      - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-30}
+      - BACKUP_ENCRYPTION_KEY=${BACKUP_ENCRYPTION_KEY:-}
+      - BACKUP_RCLONE_DESTINATIONS=${BACKUP_RCLONE_DESTINATIONS:-}
+      - BACKUP_RUN_ON_START=${BACKUP_RUN_ON_START:-false}
+      - BACKUP_DELETE_LOCAL_AFTER_UPLOAD=${BACKUP_DELETE_LOCAL_AFTER_UPLOAD:-false}
+      - BACKUP_WEBHOOK_URL=${BACKUP_WEBHOOK_URL:-}
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - SMTP_TO=${SMTP_TO:-}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ──────────────────────────────────────────────────────────
   # Qdrant — High-performance vector database
-  # REST API  → http://qdrant:6333  (n8n internal)
-  # gRPC API  → qdrant:6334         (n8n internal)
   # ──────────────────────────────────────────────────────────
   qdrant:
     image: qdrant/qdrant:latest
     container_name: qdrant
     restart: unless-stopped
+    logging: *default-logging
     networks:
       - n8n-net
     ports:
-      - "6333:6333"            # REST API — accessible from host for testing
-      - "6334:6334"            # gRPC API
+      - "6333:6333"
+      - "6334:6334"
     volumes:
       - qdrant_storage:/qdrant/storage
-
