@@ -1,4 +1,4 @@
-# Architecture — n8n Production Stack
+# Architecture — n8n Autoscaling Production Stack
 
 This document expands on the high-level overview in the [README](../README.md) and explains every architectural decision in depth.
 
@@ -6,81 +6,103 @@ This document expands on the high-level overview in the [README](../README.md) a
 
 ## Overview
 
-The stack is composed of seven Docker containers that communicate exclusively over an isolated Docker bridge network (`n8n-net`). No container port is exposed to the host except `n8n-main:80`, `ollama:11434`, and `qdrant:6333` (for host-level access to AI services).
+The stack is composed of Docker containers that communicate exclusively over an isolated Docker bridge network (`n8n-net`). External access is limited to port `80` (n8n editor), and optionally `6333/6334` (Qdrant vector DB). The autoscaler monitors Redis queue depth and dynamically scales worker containers.
 
 ```
-Browser / Webhook
+Browser / External
        │
        ▼
-┌──────────────────────────────────────────────┐
-│              n8n-net (bridge)                │
-│                                              │
-│  ┌─────────────────────────────────────┐     │
-│  │  n8n-main  (host port 80 → 5678)   │     │
-│  │  ─────────────────────────────────  │     │
-│  │  • Editor UI  (HTTP)               │     │
-│  │  • REST API   (/api/v1/*)          │     │
-│  │  • Webhook receiver                │     │
-│  │  • Enqueues executions → Redis     │     │
-│  └───────────────┬─────────────────────┘     │
-│                  │ Bull queue                │
-│                  ▼                           │
-│  ┌─────────────────────────────────────┐     │
-│  │  n8n-worker (scalable replicas)    │     │
-│  │  ─────────────────────────────────  │     │
-│  │  • Dequeues & executes workflows   │     │
-│  │  • Task Broker   (:5679 internal)  │     │
-│  │  • N8N_RUNNERS_MODE=external       │     │
-│  └───────────────┬─────────────────────┘     │
-│                  │ Task Runner Protocol      │
-│                  ▼                           │
-│  ┌─────────────────────────────────────┐     │
-│  │  n8n-python-runner                 │     │
-│  │  • n8n launcher binary             │     │
-│  │  • JavaScript runner (:5681)       │     │
-│  │  • Python runner     (:5682)       │     │
-│  │  • Health check      (:5680)       │     │
-│  └─────────────────────────────────────┘     │
-│                                              │
-│  ┌─────────────────────────────────────┐     │
-│  │  n8n-init (One-Shot)               │     │
-│  │  • Seeds DB credentials            │     │
-│  └─────────────────────────────────────┘     │
-│                                              │
-│  ┌──────────────┐   ┌──────────────┐         │
-│  │  PostgreSQL  │   │  Redis       │         │
-│  │  :5432       │   │  :6379       │         │
-│  │  (internal)  │   │  (internal)  │         │
-│  └──────────────┘   └──────────────┘         │
-│                                              │
-│                     ┌──────────────┐         │
-│                     │  Qdrant      │         │
-│                     │  :6333       │         │
-│                     │  (Vector DB) │         │
-│                     └──────────────┘         │
-└──────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│                   n8n-net (bridge)                       │
+│                                                          │
+│  ┌──────────────────────────────────────────────────┐    │
+│  │  n8n  (host port 80 → 5678)                      │    │
+│  │  ─────────────────────────────────────────────── │    │
+│  │  • Editor UI  (HTTP)                             │    │
+│  │  • REST API   (/api/v1/*)                        │    │
+│  │  • Task Broker (:5679 internal)                  │    │
+│  │  • Enqueues executions → Redis                   │    │
+│  └───────────────────────┬──────────────────────────┘    │
+│                          │ Bull queue                    │
+│  ┌───────────────────────▼──────────────────────────┐    │
+│  │  n8n-webhook                                     │    │
+│  │  • Dedicated webhook processor                   │    │
+│  │  • Shares n8n_data volume with main              │    │
+│  └──────────────────────────────────────────────────┘    │
+│                          │                               │
+│  ┌───────────────────────▼──────────────────────────┐    │
+│  │  n8n-worker (autoscaled: 1–N replicas)           │    │
+│  │  • Dequeues & runs workflow nodes                │    │
+│  │  • Task Broker (:5679 internal)                  │    │
+│  └───────────────────────┬──────────────────────────┘    │
+│                          │ Task Runner Protocol          │
+│  ┌───────────────────────▼──────────────────────────┐    │
+│  │  n8n-worker-runner (autoscaled 1:1 with worker)  │    │
+│  │  • JavaScript runner (Puppeteer, Playwright, AJV)│    │
+│  │  • Python runner (pandas, numpy, pillow)         │    │
+│  │  • Chromium browser (headless)                   │    │
+│  └──────────────────────────────────────────────────┘    │
+│                                                          │
+│  ┌──────────────────────────────────────────────────┐    │
+│  │  n8n-autoscaler                                  │    │
+│  │  • Polls bull:jobs:wait in Redis                 │    │
+│  │  • Runs docker compose up --scale                │    │
+│  │  • Scales worker + runner together (1:1)         │    │
+│  └──────────────────────────────────────────────────┘    │
+│                                                          │
+│  ┌──────────────────────────────────────────────────┐    │
+│  │  redis-monitor                                   │    │
+│  │  • Logs queue depth every N seconds              │    │
+│  └──────────────────────────────────────────────────┘    │
+│                                                          │
+│  ┌──────────────────────────────────────────────────┐    │
+│  │  n8n-init (One-Shot)                             │    │
+│  │  • Seeds DB credentials on first start           │    │
+│  └──────────────────────────────────────────────────┘    │
+│                                                          │
+│  ┌────────────────┐  ┌────────────────┐                  │
+│  │  PostgreSQL    │  │  Redis         │                  │
+│  │  :5432 (int)   │  │  :6379 (int)   │                  │
+│  └────────────────┘  └────────────────┘                  │
+│                                                          │
+│  ┌────────────────────────────────────┐                  │
+│  │  Qdrant  :6333/:6334 (Vector DB)  │                  │
+│  └────────────────────────────────────┘                  │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Service Deep-Dives
 
-### n8n-main
+### n8n (Main Instance)
 
 | Attribute | Value |
 |---|---|
-| Image | `docker.n8n.io/n8nio/n8n:2.25.6` |
+| Image | Custom — built from `Dockerfile` (Alpine multi-stage) |
 | Exposed port | `80` (maps to internal `5678`) |
-| Role | Editor UI, REST API, webhook ingress |
+| Role | Editor UI, REST API, task broker |
 | Queue mode | `EXECUTIONS_MODE=queue` |
 
-`n8n-main` runs in **queue mode**, which means it never directly executes workflow nodes. Instead it enqueues execution jobs into Redis via the [Bull](https://github.com/OptimalBits/bull) library.
+`n8n` runs in **queue mode** — it never directly executes workflow nodes. It enqueues execution jobs into Redis via the [Bull](https://github.com/OptimalBits/bull) library. All manual executions are offloaded to workers via `OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true`.
 
-Manual executions are offloaded to workers via `OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true` — this is the recommended setting in n8n v2.25+ to avoid overloading the main process.
+**Custom Dockerfile adds:** `ffmpeg`, `ffprobe`, `git`, `graphicsmagick`, `jq`, `curl` — installed via an Alpine builder stage and copied into the official `n8nio/n8n` image (which has `apk` stripped).
 
-**Diagnostics suppressed:** `N8N_DIAGNOSTICS_ENABLED=false` prevents n8n from making outbound requests to `api.n8n.io` on startup (MCP registry and version-check calls), eliminating the 6-second timeout error that appears in environments with restricted outbound access.
+**Diagnostics suppressed:** `N8N_DIAGNOSTICS_ENABLED=false` eliminates the 6-second MCP registry timeout on startup.
 
-**Health check:** HTTP GET `http://localhost:5678/healthz` — must return `200` before workers or runners start.
+**Health check:** `GET http://localhost:5678/healthz` — all dependent services wait for this before starting.
+
+---
+
+### n8n-webhook
+
+| Attribute | Value |
+|---|---|
+| Image | Custom — built from `Dockerfile` |
+| Command | `n8n webhook` |
+| Role | Dedicated webhook processor — offloads webhook traffic from main instance |
+
+The dedicated webhook processor handles all inbound `POST /webhook/*` and `GET /webhook/*` requests. This prevents webhook traffic from competing with the editor UI and REST API for resources on the main process. Shares the same `n8n-data` volume as the main instance.
 
 ---
 
@@ -88,46 +110,83 @@ Manual executions are offloaded to workers via `OFFLOAD_MANUAL_EXECUTIONS_TO_WOR
 
 | Attribute | Value |
 |---|---|
-| Image | `docker.n8n.io/n8nio/n8n:2.25.6` |
+| Image | Custom — built from `Dockerfile` |
 | Command | `n8n worker` |
-| Scalable | Yes (`docker compose up -d --scale n8n-worker=N`) |
+| Scalable | Yes — autoscaled by `n8n-autoscaler` |
 | Runner mode | `N8N_RUNNERS_MODE=external` |
 
-Workers are **stateless** — they share no disk with each other. All state lives in PostgreSQL (workflow definitions, credentials) and Redis (queue, locks). This makes horizontal scaling trivial.
+Workers are **stateless** — they share no disk state with each other. All state lives in PostgreSQL (workflow definitions, credentials) and Redis (queue, locks).
 
-The worker is explicitly configured with `N8N_RUNNERS_MODE=external` and runs its own Task Broker (listening on `0.0.0.0:5679` via `N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0`) so that external runners can connect to it. Without this, the worker tries to start a Python runner internally and fails because Python is not installed in the base n8n image.
+**No static `container_name`** — required for the autoscaler to scale this service dynamically. The autoscaler identifies containers by the `com.docker.compose.service` and `com.docker.compose.project` Docker labels.
 
-> **Important:** Remove `container_name: n8n-worker-1` from `docker-compose.yml` before scaling to multiple replicas, as Docker Compose cannot assign a fixed name to multiple containers.
+Each worker runs its own Task Broker on `0.0.0.0:5679` (`N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0`) so its paired `n8n-worker-runner` sidecar can connect to it.
 
 ---
 
-### n8n-python-runner
+### n8n-worker-runner
 
 | Attribute | Value |
 |---|---|
-| Image | Custom — built from `Dockerfile.runner` |
+| Image | Custom — built from `Dockerfile.runner` (Alpine multi-stage) |
 | Base | `n8nio/runners:latest` |
-| Manages | JavaScript runner (port 5681) + Python runner (port 5682) |
-| Health check | `GET http://localhost:5680/healthz` |
+| Broker URI | `http://n8n-worker:5679` |
+| Scaled | 1:1 with `n8n-worker` by the autoscaler |
 
-This sidecar runs the **n8n launcher binary**, which spawns and supervises both a JavaScript and a Python sub-process. Each sub-process:
-1. Connects back to the broker inside `n8n-worker` over `:5679`.
-2. Receives isolated task payloads (code + input items).
-3. Executes the code in a sandboxed environment.
-4. Streams results back to the broker.
+This is the **task runner sidecar** introduced in n8n 2.0. Each worker must have exactly one paired runner. The autoscaler scales both in a single `docker compose up --scale` command to maintain the 1:1 ratio.
 
-The launcher reads its configuration from `/etc/n8n-task-runners.json` (mounted from the host). **No rebuild is needed** to change runner configuration — just edit the file and run `docker compose restart n8n-python-runner`.
+**JavaScript packages pre-installed via pnpm:**
+- `puppeteer-core@22.15.0`, `puppeteer-extra`, `puppeteer-extra-plugin-stealth`
+- `playwright-core`, `playwright-extra`
+- `ajv`, `ajv-formats`
 
-`N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT=0` keeps the runner alive indefinitely instead of shutting down after an idle period. This prevents the WebSocket `i/o timeout` handshake failure that occurs when the runner disconnects and the broker tries to reconnect after a long idle period.
+**Python packages pre-installed via uv:**
+- `requests`, `pillow`, `pandas`, `numpy`
 
-**Pre-installed Python packages:**
+**System tools (copied from Alpine builder):**
+- `chromium-browser` — headless browser for Puppeteer/Playwright
+- `ffmpeg`/`ffprobe`, `git`, `graphicsmagick`, `imagemagick`
 
-| Package | Reason |
+**Security note:** `NODE_ENV=test` is set in the runner to disable prototype freezing, which is required for Puppeteer/Playwright to work. The `n8n-task-runners.json` config removes `--disable-proto=delete` for this reason.
+
+---
+
+### n8n-autoscaler
+
+| Attribute | Value |
 |---|---|
-| `pandas` | DataFrame manipulation, CSV/Excel/JSON |
-| `numpy` | Vectorised numeric operations |
-| `pyarrow` | Parquet & columnar I/O |
-| `requests` | Outbound HTTP calls from Python code nodes |
+| Image | Custom — built from `autoscaler/Dockerfile` (Python 3.12) |
+| Volume | `/var/run/docker.sock` — Docker socket |
+| Script | `autoscaler/autoscaler.py` |
+
+The autoscaler is a Python process that:
+
+1. Connects to Redis and polls `bull:jobs:wait` every `POLLING_INTERVAL_SECONDS`
+2. Counts running `n8n-worker` containers using the Docker SDK (filtered by Compose project + service labels)
+3. Scales **up** when `queue_length > SCALE_UP_QUEUE_THRESHOLD` and `replicas < MAX_REPLICAS`
+4. Scales **down** when `queue_length < SCALE_DOWN_QUEUE_THRESHOLD` and `replicas > MIN_REPLICAS`
+5. Respects a `COOLDOWN_PERIOD_SECONDS` between any scaling action
+6. Scales worker AND runner together in one atomic `docker compose up --scale` command
+
+**Scaling command used:**
+```bash
+docker compose -f /app/docker-compose.yml -p <COMPOSE_PROJECT_NAME> \
+  up -d --no-deps \
+  --scale n8n-worker=N \
+  --scale n8n-worker-runner=N \
+  n8n-worker n8n-worker-runner
+```
+
+---
+
+### redis-monitor
+
+| Attribute | Value |
+|---|---|
+| Image | Custom — built from `monitor/monitor.Dockerfile` (Python 3.12-slim) |
+| Script | `monitor/monitor_redis_queue.py` |
+| User | Non-root (`monitor` user, UID 1000) |
+
+A lightweight Python service that polls Redis for queue depth every `POLL_INTERVAL_SECONDS` and logs it. Uses event-driven logging — only logs when queue has items, or when queue drains to zero (transition event). Silent at idle.
 
 ---
 
@@ -135,13 +194,12 @@ The launcher reads its configuration from `/etc/n8n-task-runners.json` (mounted 
 
 | Attribute | Value |
 |---|---|
-| Image | `docker.n8n.io/n8nio/n8n:2.25.6` |
+| Image | `docker.n8n.io/n8nio/n8n:latest` |
 | Command | `node /scripts/provision.js` |
-| Role | One-shot execution (exits after completion) |
+| Role | One-shot execution — exits after completion |
+| Restart | `"no"` |
 
-`n8n-init` runs briefly during stack startup. It waits for PostgreSQL to become healthy, then uses the `n8n CLI` to idempotently import API credentials (such as OpenRouter, Postgres, GitHub, etc.) from `.env` directly into the database. 
-
-It never overwrites existing credentials. Once the sync is complete, the container exits gracefully.
+Runs briefly at stack startup to idempotently seed credentials into PostgreSQL using the n8n CLI. Never overwrites existing credentials. Exits cleanly after completion.
 
 ---
 
@@ -153,26 +211,21 @@ It never overwrites existing credentials. Once the sync is complete, the contain
 | Internal port | `5432` |
 | Data volume | Named Docker volume `postgres_data` |
 
-Stores all n8n application data: workflow definitions, credentials (encrypted at rest by n8n), execution history, and user accounts. The database is **never exposed** to the host network.
+Stores all n8n application data. Never exposed to the host network.
 
 #### Production Tuning
 
-The following flags are applied via the `command:` override in `docker-compose.yml`:
-
 | Parameter | Value | Effect |
 |---|---|---|
-| `shared_buffers` | `256MB` | Main read cache; reduces disk hits |
+| `shared_buffers` | `256MB` | Main read cache — reduces disk hits |
 | `effective_cache_size` | `768MB` | Planner hint for index preference |
-| `work_mem` | `16MB` | Per-sort/hash memory; speeds complex queries |
-| `maintenance_work_mem` | `128MB` | Speeds up VACUUM, CREATE INDEX |
-| `checkpoint_completion_target` | `0.9` | Spreads checkpoint I/O over 90% of the interval — eliminates the 18–21 second checkpoint spikes seen in untuned deployments |
+| `work_mem` | `16MB` | Per-sort/hash memory — speeds complex queries |
+| `maintenance_work_mem` | `128MB` | Speeds VACUUM, CREATE INDEX |
+| `checkpoint_completion_target` | `0.9` | Spreads checkpoint I/O — eliminates spikes |
 | `wal_buffers` | `16MB` | Reduces WAL write round-trips |
-| `max_wal_size` | `2GB` | Allows more WAL before triggering an early checkpoint |
-| `min_wal_size` | `512MB` | Prevents thrashing on low-traffic instances |
-| `synchronous_commit` | `local` | Writes WAL to the OS page cache before returning from COMMIT, but does **not** wait for the physical disk fsync. Eliminates multi-second COMMIT latency caused by Docker Desktop's virtualised I/O layer on Windows while still protecting against process crashes |
-| `log_min_duration_statement` | `2000ms` | Logs queries slower than 2 seconds for visibility |
-
-The healthcheck includes `start_period: 30s` so Compose does not declare Postgres unhealthy during the WAL recovery phase that follows an unclean shutdown.
+| `max_wal_size` | `2GB` | Allows more WAL before triggering a checkpoint |
+| `synchronous_commit` | `off` | Sub-ms COMMIT latency on Docker Desktop/Windows |
+| `log_min_duration_statement` | `2000ms` | Logs queries slower than 2 seconds |
 
 ---
 
@@ -184,35 +237,21 @@ The healthcheck includes `start_period: 30s` so Compose does not declare Postgre
 | Internal port | `6379` |
 | Data volume | Named Docker volume `redis_data` |
 | Config file | `./redis.conf` (mounted read-only) |
+| Auth | Unauthenticated (internal network only) |
 
-Acts as the **Bull queue broker**. Each workflow execution becomes a Bull job on the `n8n` queue. Redis also handles distributed locks to prevent duplicate execution across worker replicas.
-
-#### Production Configuration (`redis.conf`)
-
-Redis is started with an explicit configuration file instead of the default settings. Key changes from the default:
-
-| Setting | Default → Production | Reason |
-|---|---|---|
-| Config file | None | `Warning: no config file specified` is now gone |
-| Persistence | RDB only | AOF (`appendonly yes`) is primary; RDB kept as backup |
-| `appendfsync` | — | `everysec` — durable, low overhead |
-| `maxmemory` | Unlimited | `256mb` — prevents OOM from queue growth |
-| `maxmemory-policy` | `noeviction` | `allkeys-lru` — graceful eviction |
-| Slow log | Disabled | Enabled at 10ms threshold for visibility |
+Acts as the **Bull queue broker**. Redis is unauthenticated — it is only accessible inside `n8n-net` and never published to the host network, so no password is needed.
 
 ---
-
-
 
 ### Qdrant (Vector Database)
 
 | Attribute | Value |
 |---|---|
 | Image | `qdrant/qdrant:latest` |
-| Internal ports | `6333` (REST), `6334` (gRPC) |
+| Ports | `6333` (REST), `6334` (gRPC) |
 | Data volume | Named Docker volume `qdrant_storage` |
 
-Qdrant is a high-performance vector database used for Retrieval-Augmented Generation (RAG) and embedding storage. n8n vector store nodes interact with it over `http://qdrant:6333`. It is highly recommended to pair this with an OpenRouter API embedding model to avoid overloading the local GPU.
+High-performance vector database for RAG and embedding storage. n8n vector store nodes connect via `http://qdrant:6333`.
 
 ---
 
@@ -221,32 +260,29 @@ Qdrant is a high-performance vector database used for Retrieval-Augmented Genera
 Docker Compose `depends_on` with `condition: service_healthy` enforces strict ordering:
 
 ```
-postgres  ──(healthy, start_period=30s)──► n8n-main  ──(started)──► n8n-worker
-redis     ──(healthy, start_period=10s)──►                           n8n-python-runner
+postgres ──(healthy, 30s start_period)──┐
+                                        ├──► n8n ──(healthy, 60s)──► n8n-webhook
+redis    ──(healthy, 10s start_period)──┘                       ├──► n8n-worker ──► n8n-worker-runner
+                                                                ├──► n8n-autoscaler
+                                                                └──► n8n-init
 ```
 
-All services include `restart: unless-stopped` so the stack recovers automatically after host reboots or transient failures.
+All services include `restart: unless-stopped` so the stack recovers automatically after host reboots.
 
 ### Shutdown Grace Periods
 
-Docker's default stop timeout is **10 seconds** — too short for PostgreSQL to finish an in-progress checkpoint. Without explicit grace periods, every `docker compose down` or host reboot causes an unclean shutdown, which forces WAL recovery on the next start.
-
 | Service | `stop_grace_period` | Reason |
 |---|---|---|
-| `postgres` | `60s` | Completes the shutdown checkpoint + WAL flush before SIGKILL |
-| `redis` | `20s` | Flushes the AOF buffer to disk |
+| `postgres` | `60s` | Completes shutdown checkpoint + WAL flush |
+| `redis` | `20s` | Flushes AOF buffer to disk |
 | `n8n` | `30s` | Finishes in-flight HTTP requests |
-| `n8n-worker` | `30s` | Completes any currently-executing workflow node |
+| `n8n-worker` | `5m` | Completes any currently-executing workflow |
 
 ---
 
 ## Network Isolation
 
-All services are attached to the named bridge network `n8n-net` defined in `docker-compose.yml`. Benefits:
-
-- Services resolve each other by container name DNS (e.g., `postgres`, `redis`, `n8n`)
-- The network is isolated from other containers running on the Docker host
-- Only `n8n-main:80` is published externally
+All services share `n8n-net` (Docker bridge). Services resolve each other by container name (e.g., `postgres`, `redis`, `n8n`). Only `n8n:80` and `qdrant:6333/6334` are published externally.
 
 ---
 
@@ -256,22 +292,40 @@ All services are attached to the named bridge network `n8n-net` defined in `dock
 |---|---|
 | Secrets in version control | `.env` is `.gitignore`d; `.env.example` contains only placeholders |
 | Runner auth | `N8N_RUNNERS_AUTH_TOKEN` shared secret prevents rogue runner connections |
-| Database exposure | PostgreSQL and Redis ports are not published to the host |
-| Code execution sandbox | Task runners run as a separate process/container, isolated from the main n8n process |
-| Encryption at rest | n8n encrypts credentials using `N8N_ENCRYPTION_KEY` (set in `.env`) |
-| Image stability | All images pinned to exact versions — no silent breaking upgrades |
+| Database exposure | PostgreSQL and Redis not published to host |
+| Code execution sandbox | Task runners run as a separate process/container, isolated from main n8n |
+| Encryption at rest | Credentials AES-256-CBC encrypted with `N8N_ENCRYPTION_KEY` |
+| Redis unauthenticated | Acceptable — Redis is network-isolated inside `n8n-net` only |
+| Autoscaler Docker socket | Required for `docker compose` — grants container management rights |
 
 ---
 
 ## Data Flow: Workflow Execution
 
 ```
-1. User triggers workflow  →  n8n-main receives trigger
-2. n8n-main enqueues job   →  Redis (Bull queue)
-3. n8n-worker dequeues job →  executes non-code nodes locally
-4. Worker hits Code node   →  submits task to its internal task broker (:5679)
-5. Broker dispatches task  →  n8n-python-runner (connected via WebSocket)
-6. Runner executes code    →  streams result back to worker's broker
-7. Broker returns result   →  worker continues workflow
-8. Worker writes result    →  PostgreSQL (execution history)
+1. User triggers workflow    →  n8n receives trigger (or n8n-webhook for HTTP)
+2. n8n enqueues job          →  Redis (Bull queue: bull:jobs:wait)
+3. n8n-autoscaler polls      →  sees queue length, may scale n8n-worker up
+4. n8n-worker dequeues job   →  executes non-code nodes locally
+5. Worker hits Code node     →  submits task to its task broker (:5679)
+6. Broker dispatches task    →  n8n-worker-runner (connected via WebSocket)
+7. Runner executes code      →  Chromium / Python / JS sandbox
+8. Runner streams result     →  back to worker's broker
+9. Worker continues workflow →  writes result to PostgreSQL
+10. Autoscaler polls again   →  may scale down if queue empty
 ```
+
+---
+
+## Data Persistence
+
+| Data | Storage | Survives `docker compose down`? |
+|---|---|---|
+| Workflows, credentials, variables | `postgres_data` Docker volume | ✅ Yes |
+| Execution history | `postgres_data` Docker volume | ✅ Yes |
+| n8n user files & config | `./n8n-data` bind mount | ✅ Yes |
+| Redis queue state | `redis_data` Docker volume | ✅ Yes |
+| Vector embeddings | `qdrant_storage` Docker volume | ✅ Yes |
+| Backups | `backup_data` volume + `./backups/` | ✅ Yes |
+
+> ⚠️ `docker compose down -v` destroys all named volumes — **this is irreversible**.

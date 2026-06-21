@@ -1,6 +1,6 @@
-# Troubleshooting — n8n Production Stack
+# Troubleshooting — n8n Autoscaling Production Stack
 
-Extended troubleshooting guide. For a quick reference, see the [README](../README.md#troubleshooting).
+Extended troubleshooting guide. For a quick reference, see the [README](../README.md#-troubleshooting).
 
 ---
 
@@ -17,102 +17,90 @@ docker compose logs -f --tail=50
 
 # 3. Check resource usage
 docker stats --no-stream
+
+# 4. Check autoscaler decisions
+docker compose logs -f n8n-autoscaler
+
+# 5. Check queue depth
+docker compose exec redis redis-cli LLEN bull:jobs:wait
 ```
 
 ---
 
-## Credentials & Encryption Issues
+## Autoscaler Issues
 
-### "Credentials could not be decrypted" / `error:1C800064:Provider routines::bad decrypt`
+### Autoscaler not scaling / stuck
 
-**This is the most important issue to prevent.** It means n8n is trying to decrypt credentials with a different key than what was used to encrypt them.
+**Symptoms:** Workers not scaling up even with long queue, or not scaling down when idle.
 
-**Root cause — look for this line in `docker compose logs n8n`:**
-```
-No encryption key found - Auto-generating and saving to: /home/node/.n8n/config
-```
-
-If you see this, n8n generated a new random key because `N8N_ENCRYPTION_KEY` was not set in `.env`. Any credentials already stored in PostgreSQL from a previous session are now unreadable.
-
-**Fix — two parts:**
-
-**Part 1: Pin the key permanently in `.env`**
-
-Read the current key that n8n auto-generated:
+**Step 1 — Check the autoscaler logs:**
 ```bash
-# On Windows
-type n8n-data\config
-
-# On Linux/macOS
-cat n8n-data/config
+docker compose logs -f n8n-autoscaler
 ```
 
-This outputs something like:
-```json
-{
-    "encryptionKey": "MP81UEDl6uFA2UGE1oB/6XEz/iHmW7DL"
-}
+**Step 2 — Verify `COMPOSE_PROJECT_NAME`:**
+
+This is the most common cause. The autoscaler uses this to filter Docker containers by label. It must exactly match your Docker Compose project name.
+
+```bash
+# See what project name Docker Compose is using
+docker compose ps --format "table {{.Project}}\t{{.Service}}\t{{.Status}}"
+
+# Verify it matches .env
+grep COMPOSE_PROJECT_NAME .env
 ```
 
-Add that exact value to `.env`:
+If they don't match, update `.env`:
 ```dotenv
-N8N_ENCRYPTION_KEY=MP81UEDl6uFA2UGE1oB/6XEz/iHmW7DL
+COMPOSE_PROJECT_NAME=n8n   # ← must match the prefix shown in docker compose ps
 ```
 
-Then recreate the n8n containers (not the DB):
+Then restart the autoscaler:
 ```bash
-docker compose up -d --force-recreate n8n n8n-worker
+docker compose up -d --force-recreate n8n-autoscaler
 ```
 
-**Part 2: Re-enter your credentials in the UI**
+**Step 3 — Check Docker socket access:**
+```bash
+docker compose exec n8n-autoscaler docker ps
+```
 
-Credentials encrypted with an old/lost key cannot be recovered. You must:
-1. Open the n8n editor
-2. Go to **Credentials**
-3. Delete the broken credentials (they will show a decryption error)
-4. Re-create them from scratch by entering your API keys again
-
-> ⚠️ **Prevention:** Always set `N8N_ENCRYPTION_KEY` in `.env` *before* first launch. Generate with: `openssl rand -base64 24`. See `.env.example` for the required variable.
+If this fails, the autoscaler container cannot reach the Docker daemon. Verify the socket mount in `docker-compose.yml`:
+```yaml
+volumes:
+  - /var/run/docker.sock:/var/run/docker.sock
+```
 
 ---
 
-## Reverse Proxy Issues
+### Autoscaler exits immediately
 
-### "ValidationError: The 'X-Forwarded-For' header is set but the Express 'trust proxy' setting is false"
+**Cause:** One of the required environment variables (`REDIS_HOST`, `REDIS_PORT`, `MIN_REPLICAS`, etc.) is not set.
 
-**Cause:** n8n's rate-limiting middleware is receiving proxy headers (e.g., from ngrok, Nginx, or Traefik) but n8n is not configured to trust them.
-
-**Fix:** Tell n8n how many reverse proxy layers are in front of it. Add the following to `.env`:
-```dotenv
-N8N_PROXY_HOPS=1
-```
-(Increase the number if you have a multi-tier proxy, e.g., Cloudflare -> Nginx -> n8n).
-
-Restart the stack after changing the configuration:
+**Fix:** Check the logs for which variable is missing:
 ```bash
-docker compose down
-docker compose up -d
+docker compose logs n8n-autoscaler | head -30
 ```
 
-### "Error connecting to n8n. Could not connect to server. Refresh to try again"
-
-**Cause:** The frontend lost its WebSocket / Push connection to the backend. This frequently occurs when you restart the n8n Docker containers in the background while the browser tab is still open.
-
-**Fix:** A simple browser hard-refresh (Ctrl+F5 or Cmd+Shift+R) will reconnect the frontend. If it persists across hard refreshes, ensure your reverse proxy properly supports WebSocket connections and that `N8N_EDITOR_BASE_URL` matches your access URL perfectly.
+Verify all autoscaler variables are in `.env`:
+```bash
+grep -E "MIN_REPLICAS|MAX_REPLICAS|COMPOSE_PROJECT_NAME|QUEUE_NAME" .env
+```
 
 ---
 
-### "ERR_NGROK_3004" or "Uncaught SyntaxError: Unexpected end of input"
+### Autoscaler scales but workers don't start
 
-**Cause:** On Windows, Docker Desktop sometimes has IPv6 resolution conflicts with the default `localhost` target, causing `ngrok` to drop connections mid-transfer. When a connection drops during an asset download, the browser may cache the truncated file, leading to syntax errors in the UI.
+**Cause:** The `docker compose up --scale` command runs inside the autoscaler container and references the mounted `docker-compose.yml`. If the compose file has build errors or missing images, the scale command will fail silently.
 
 **Fix:**
-1. Stop your current `ngrok` session.
-2. Restart it using the explicit IPv4 address and host-header rewrite:
-   ```bash
-   ngrok http 127.0.0.1:80 --host-header=rewrite
-   ```
-3. **Crucial:** You must hard refresh your browser (Ctrl+F5 or Cmd+Shift+R) or right-click the refresh button with DevTools open and select **Empty Cache and Hard Reload** to clear the corrupted files.
+```bash
+# Test the compose file from the host
+docker compose config --quiet && echo "Config OK"
+
+# Try a manual scale to see the error
+docker compose up -d --scale n8n-worker=2 --scale n8n-worker-runner=2
+```
 
 ---
 
@@ -120,91 +108,87 @@ docker compose up -d
 
 ### "contains no task runners"
 
-**Symptom:** `n8n-python-runner` exits immediately with a message like:
+**Symptom:** `n8n-worker-runner` exits with:
 ```
 ERR  launcher    Config file contains no task runners
 ```
 
-**Cause:** The container is reading a malformed or empty `n8n-task-runners.json`, or the file mount failed.
-
 **Fix:**
-
-1. Verify the file is valid JSON:
+1. Verify the config file is valid JSON:
    ```bash
    cat n8n-task-runners.json | python -m json.tool
    ```
-2. Confirm the bind mount is active:
+2. Confirm the file is baked into the image (Dockerfile.runner copies it):
    ```bash
-   docker compose exec n8n-python-runner cat /etc/n8n-task-runners.json
+   docker compose exec n8n-worker-runner cat /etc/n8n-task-runners.json
    ```
-3. If the file looks correct, recreate the container:
+3. Rebuild if needed:
    ```bash
-   docker compose up -d --force-recreate n8n-python-runner
+   docker compose build --no-cache n8n-worker-runner
+   docker compose up -d
    ```
 
 ---
 
 ### "missing required value: N8N_RUNNERS_AUTH_TOKEN"
 
-**Cause:** The `N8N_RUNNERS_AUTH_TOKEN` variable is not set or not being passed to the container.
-
-**Diagnosis:**
 ```bash
-# Check the variable is in .env
+# Verify the variable is in .env
 grep N8N_RUNNERS_AUTH_TOKEN .env
 
 # Verify the container sees it
-docker compose run --rm n8n-python-runner env | grep N8N_RUNNERS_AUTH_TOKEN
+docker compose run --rm n8n-worker-runner env | grep N8N_RUNNERS_AUTH_TOKEN
 ```
 
-**Fix:** Generate a token and add it to `.env`:
+Generate a token if missing:
 ```bash
-# On Linux/macOS
+# Linux/macOS
 openssl rand -hex 32
 
-# On Windows (PowerShell)
+# Windows PowerShell
 [System.Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
 ```
 
-Then set the same value in `.env`:
-```dotenv
-N8N_RUNNERS_AUTH_TOKEN=<generated token>
+---
+
+### Puppeteer / Playwright crashes in Code node
+
+**Symptom:** Error like `Failed to launch the browser process` or `spawn /usr/bin/chromium-browser ENOENT`.
+
+**Fix 1 — Always pass required flags:**
+```javascript
+const browser = await puppeteer.launch({
+  executablePath: '/usr/bin/chromium-browser',
+  headless: true,
+  args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+});
 ```
 
-Restart the stack: `docker compose up -d`
+**Fix 2 — Verify Chromium is in the image:**
+```bash
+docker compose exec n8n-worker-runner which chromium-browser
+docker compose exec n8n-worker-runner chromium-browser --version
+```
+
+If missing, the runner image needs to be rebuilt:
+```bash
+docker compose build --no-cache n8n-worker-runner
+docker compose up -d
+```
 
 ---
 
-### Runner connects but tasks timeout
-
-**Cause:** Network latency between worker and runner, or the runner subprocess crashed silently.
-
-**Diagnosis:**
-```bash
-# Check runner health endpoints (from inside another container)
-docker compose exec n8n wget -qO- http://n8n-python-runner:5680/healthz
-```
-
-**Fix:**
-```bash
-docker compose restart n8n-python-runner
-docker compose logs -f n8n-python-runner
-```
-
----
-
-### Runner WebSocket `i/o timeout` handshake error
+### Runner WebSocket `i/o timeout`
 
 ```
 ERROR [launcher:py] Failed to execute `launch` command:
 handshake failed: failed to read ws message: write tcp ...:5679: i/o timeout
 ```
 
-**Cause:** The runner was idle too long and its WebSocket connection to the broker timed out. This is mitigated by `N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT=0` in `docker-compose.yml`, which keeps the runner alive indefinitely. If you still see it, the runner container was restarted while the broker was unavailable.
+**Cause:** The runner was idle too long. Mitigated by `N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT=0`. If it persists:
 
-**Fix:** Docker's `restart: unless-stopped` handles this automatically. If it persists:
 ```bash
-docker compose restart n8n-python-runner
+docker compose restart n8n-worker-runner
 ```
 
 ---
@@ -215,30 +199,164 @@ docker compose restart n8n-python-runner
 Failed to start Python task runner in internal mode. because Python 3 is missing
 ```
 
-**Cause:** The worker is trying to start Python internally instead of using the external runner sidecar. This means `N8N_RUNNERS_MODE=external` is missing from the worker's environment.
+**Cause:** Worker is trying to start Python internally instead of using the external sidecar. The `N8N_RUNNERS_MODE=external` environment variable is missing from the worker.
 
-**Fix:** Verify `docker-compose.yml` has this in `n8n-worker`'s environment:
+**Fix:** Verify in `docker-compose.yml` that `n8n-worker` inherits from `x-n8n` which sets:
 ```yaml
 - N8N_RUNNERS_MODE=external
 - N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0
 ```
 
-Also verify that `n8n-python-runner` points to the worker:
-```yaml
-- N8N_RUNNERS_TASK_BROKER_URI=http://n8n-worker:5679
+---
+
+## Credentials & Encryption
+
+### "Credentials could not be decrypted" / `bad decrypt`
+
+**This is the most critical issue to prevent.**
+
+**Cause:** n8n is using a different `N8N_ENCRYPTION_KEY` than what was used to encrypt the credentials.
+
+**Fix:**
+```bash
+# Read the auto-generated key (Windows)
+type n8n-data\config
+
+# Read the auto-generated key (Linux/macOS)
+cat n8n-data/config
+```
+
+Copy the `encryptionKey` value and set it in `.env`:
+```dotenv
+N8N_ENCRYPTION_KEY=<exact value from config file>
+```
+
+Then recreate n8n containers:
+```bash
+docker compose up -d --force-recreate n8n n8n-worker n8n-webhook
+```
+
+> ⚠️ **Prevention:** Always set `N8N_ENCRYPTION_KEY` in `.env` before first launch. Never change it after credentials are stored.
+
+---
+
+## Reverse Proxy Issues
+
+### "ValidationError: The 'X-Forwarded-For' header is set but Express 'trust proxy' is false"
+
+**Fix:** Add to `.env`:
+```dotenv
+N8N_PROXY_HOPS=1
+```
+Increase if you have multiple proxy layers (e.g., Cloudflare → Nginx → n8n).
+
+---
+
+### "ERR_NGROK_3004" or corrupted UI assets
+
+**Cause:** IPv6 resolution conflict on Windows + Docker Desktop.
+
+**Fix:**
+```bash
+ngrok http 127.0.0.1:80 --host-header=rewrite
+```
+Then do a hard refresh: Ctrl+F5, or DevTools → right-click refresh → **Empty Cache and Hard Reload**.
+
+---
+
+## Database Issues
+
+### n8n never becomes healthy
+
+```bash
+docker compose ps
+docker compose logs postgres
+docker compose logs redis
+```
+
+| Problem | Fix |
+|---|---|
+| `postgres` unhealthy | Check `DB_POSTGRESDB_PASSWORD` matches volume initialization. If wrong, destroy volume: `docker compose down -v` |
+| `redis` unhealthy | Check disk space: `df -h` |
+| Port conflict | Another service using port 5432 or 6379 on the host |
+
+---
+
+### "database system was not properly shut down"
+
+**This is normal after an unclean shutdown.** PostgreSQL's WAL recovery is automatic. Wait for:
+```
+database system is ready to accept connections
+```
+
+The `stop_grace_period: 60s` on the postgres service prevents this on clean shutdowns.
+
+---
+
+### Slow COMMIT warnings (`duration: Nms statement: COMMIT`)
+
+**Cause:** Docker Desktop for Windows virtualized disk I/O latency.
+
+**Already fixed** in `docker-compose.yml` with `synchronous_commit=off`. If you still see it, verify the postgres command flags are applied:
+```bash
+docker compose exec postgres psql -U n8n_user -c "SHOW synchronous_commit;"
 ```
 
 ---
 
-## Deprecation Warnings on Startup
+### "password authentication failed for user"
 
-### `N8N_RUNNERS_ENABLED -> Remove this environment variable`
+The `postgres_data` volume was initialized with a different password.
 
-Remove `N8N_RUNNERS_ENABLED` from `.env`. It is no longer recognized in n8n v2.25+.
+```bash
+# ⚠️ Destructive — deletes all data
+docker compose down -v
+docker compose up -d
+```
 
-### `OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS`
+Back up first: `docker compose exec postgres pg_dump -U n8n_user n8n > backup.sql`
 
-This is already set to `true` in `docker-compose.yml`. Do not set it in `.env`.
+---
+
+## Workflow Execution
+
+### Workflows stuck in queue / not executing
+
+```bash
+# Verify at least one worker is running
+docker compose ps n8n-worker
+
+# Check worker logs
+docker compose logs n8n-worker | tail -30
+
+# Check queue depth
+docker compose exec redis redis-cli LLEN bull:jobs:wait
+
+# Manually start a worker
+docker compose up -d n8n-worker
+```
+
+---
+
+### Webhook not reachable from internet
+
+1. Set `WEBHOOK_URL=https://your-actual-public-domain.com` in `.env`
+2. Ensure port 80 is open in your firewall
+3. Restart: `docker compose up -d`
+
+In n8n, webhook URLs are `https://your-domain.com/webhook/<id>` — ensure this matches `WEBHOOK_URL`.
+
+---
+
+### Execution shows "Error" but no useful message
+
+Enable debug logging:
+```dotenv
+# Add to .env
+N8N_LOG_LEVEL=debug
+```
+Restart and re-run: `docker compose up -d`
+Then watch: `docker compose logs -f n8n n8n-worker`
 
 ---
 
@@ -246,238 +364,82 @@ This is already set to `true` in `docker-compose.yml`. Do not set it in `.env`.
 
 ```
 Error fetching from Strapi API (https://api.n8n.io/api/mcp-servers): timeout of 6000ms exceeded
-Failed to refresh MCP registry
 ```
 
-**Cause:** n8n tries to reach `api.n8n.io` on startup. In restricted network environments this times out after 6 seconds.
-
-**Fix:** Already suppressed in this stack by `N8N_DIAGNOSTICS_ENABLED=false` in `docker-compose.yml`. If you see this again, verify the variable is present:
+Non-critical. Already suppressed by `N8N_DIAGNOSTICS_ENABLED=false`. If you still see it:
 ```bash
 docker compose exec n8n env | grep N8N_DIAGNOSTICS_ENABLED
 ```
 
 ---
 
-## Database Issues
-
-### n8n-main never becomes healthy
-
-**Symptom:** `docker compose ps` shows `n8n-main` stuck in `starting` or `unhealthy`.
-
-**Cause:** PostgreSQL or Redis is not ready.
-
-**Diagnosis:**
-```bash
-docker compose ps          # check all health statuses
-docker compose logs postgres
-docker compose logs redis
-```
-
-**Common fixes:**
-
-| Problem | Fix |
-|---|---|
-| `postgres` unhealthy | Check `DB_POSTGRESDB_PASSWORD` matches what Postgres was initialized with. If not, destroy the volume: `docker compose down -v` and restart |
-| `redis` unhealthy | Redis rarely fails. Check disk space: `df -h` |
-| Port conflict | Another Postgres/Redis is already running on the host. Change `DB_POSTGRESDB_PORT` / redis port in `docker-compose.yml` |
-
----
-
-### Database initialization / n8n-init fails
-
-**Symptom:** The `n8n-init` container exits with `Fatal error: Database never became ready` or fails to import credentials.
-
-**Cause:** The `n8n-init` script waits for PostgreSQL to be ready before running `n8n CLI` commands. If PostgreSQL is stuck, `n8n-init` will timeout. Alternatively, you might have invalid JSON/environment variables in `.env`.
-
-**Fix:** 
-1. Check postgres logs (`docker compose logs postgres`).
-2. If the postgres credentials are correct and postgres is healthy, check the `n8n-init` logs:
-   ```bash
-   docker compose logs n8n-init
-   ```
-   It will output any parsing errors or missing variables from your `.env` file during credential creation.
-
----
-
-### PostgreSQL: "database system was not properly shut down"
-
-```
-database system was not properly shut down; automatic recovery in progress
-```
-
-**Cause:** Docker killed the container before PostgreSQL finished writing its shutdown checkpoint. Docker's default stop timeout is 10 seconds — not long enough.
-
-**This is fixed in `docker-compose.yml`** by `stop_grace_period: 60s` on the `postgres` service, which gives it up to 60 seconds to flush WAL and write the shutdown record cleanly.
-
-If you still see this after the fix, it means the host was restarted abruptly (power loss, SIGKILL). PostgreSQL's WAL recovery is automatic and safe — just wait for `database system is ready to accept connections`.
-
-> Never investigate this message unless Postgres *fails to reach the ready state* afterwards.
-
----
-
-### Slow COMMIT warnings (`duration: Nms  statement: COMMIT`)
-
-```
-2026-06-11 11:50:25 UTC [248] LOG:  duration: 1153.883 ms  statement: COMMIT
-```
-
-**Cause:** On Docker Desktop for Windows, the virtualised disk layer adds significant fsync latency. By default, PostgreSQL waits for the OS to confirm the WAL was physically written to disk before returning from `COMMIT` — on Windows + Docker this can take 1–3 seconds.
-
-**Fixed by `synchronous_commit=local`** in `docker-compose.yml`. This setting tells Postgres to flush WAL to the OS page cache (protecting against process crashes) but not wait for the physical disk write confirmation. The result is sub-millisecond COMMIT responses while maintaining full protection against n8n crashes.
-
-**Durability trade-off:** With `synchronous_commit=local`, in the event of a *complete OS/hardware crash* (not just a process crash), the last ~1 second of committed transactions could theoretically be lost. For n8n workflow execution metadata this is an acceptable trade-off; for financial transactions it would not be.
-
-The `log_min_duration_statement` threshold is set to `2000ms` (2 seconds) so only genuinely slow queries (not fsync waits) appear in logs.
-
----
-
-
-
-### "password authentication failed for user"
-
-**Cause:** The `postgres_data` volume was created with a different password than what's in `.env`.
-
-**Fix (destructive — deletes all data):**
-```bash
-docker compose down -v
-docker compose up -d
-```
-
-> ⚠️ This wipes all workflow definitions and execution history. Back up first if needed.
-
----
-
-### Database migration fails on startup
-
-**Symptom:** n8n logs show `ERROR Migration … failed`.
-
-**Fix:**
-```bash
-# Check full migration output
-docker compose logs n8n | grep -i migrat
-
-# If a migration is stuck, force-recreate n8n-main
-docker compose up -d --force-recreate n8n
-```
-
-If the issue persists, open an issue at [n8n's GitHub](https://github.com/n8n-io/n8n/issues) with the migration error message.
-
----
-
-## Workflow Execution Issues
-
-### Workflows not executing (stuck in queue)
-
-**Cause:** No worker is running, or the worker lost its Redis connection.
-
-**Diagnosis:**
-```bash
-docker compose ps n8n-worker
-docker compose logs n8n-worker | tail -30
-```
-
-**Fix:**
-```bash
-docker compose up -d n8n-worker
-```
-
----
-
-### Execution history shows "Error" but no useful message
-
-1. Enable verbose logging:
-   ```dotenv
-   # Add to .env
-   N8N_LOG_LEVEL=debug
-   ```
-2. Restart: `docker compose up -d`
-3. Re-run the workflow and check `docker compose logs -f n8n`
-
----
-
-### Webhook not reachable from the internet
-
-**Cause:** `WEBHOOK_URL` is not set to the correct public URL, or the host firewall blocks port 80.
-
-**Fix:**
-1. Set `WEBHOOK_URL=https://your-actual-public-domain.com` in `.env`.
-2. Ensure port 80 (or your reverse-proxy port) is open in your firewall / cloud security group.
-3. Restart: `docker compose up -d`
-
----
-
-## AI Services
-
-### Python Code nodes run out of memory (OOM)
-
-**Cause:** Processing large datasets (e.g. hundreds of megabytes of CSVs or Parquet files) using `pandas` or `pyarrow` inside the Python runner exceeds the container's memory limits.
-
-**Fix:** 
-1. **Streaming Data:** Instead of loading full files into memory, use `pandas` chunking (`chunksize` in `read_csv`) or `pyarrow.dataset` to stream data.
-2. **Pushdown to Data Warehouse:** If connected to BigQuery or Snowflake, perform joins and aggregations directly in the warehouse using SQL queries instead of downloading data to process in Python locally.
-3. **Increase limits:** If you have free RAM, consider explicitly assigning more memory to the `n8n-python-runner` in `docker-compose.yml`.
-
----
-
-### n8n cannot connect to Qdrant
-
-**Cause:** The internal Docker network addresses are incorrect or the container crashed.
-
-**Fix:**
-1. In n8n credentials, ensure you are using `http://qdrant:6333` for Qdrant. Do not use `localhost` (which resolves to the n8n container itself).
-2. Check container health:
-   ```bash
-   docker compose ps qdrant
-   ```
-
----
-
-## Scaling Issues
-
-### "Cannot start service n8n-worker: container name … is already in use"
-
-**Cause:** `container_name: n8n-worker-1` is set in `docker-compose.yml`, which prevents `--scale` from creating multiple containers.
-
-**Fix:** Remove (or comment out) the `container_name` line for `n8n-worker` and `n8n-python-runner` before scaling:
-```yaml
-# container_name: n8n-worker-1   ← remove this line
-```
-
-Then:
-```bash
-docker compose up -d --scale n8n-worker=3
-```
-
----
-
 ## Performance
-
-### High memory usage by PostgreSQL
-
-PostgreSQL is already tuned via command-line flags in `docker-compose.yml` (`shared_buffers=256MB`, `work_mem=16MB`). For heavier workloads, increase these values and redeploy:
-
-```bash
-docker compose up -d --force-recreate postgres
-```
 
 ### High Redis memory usage
 
-If execution history grows large, configure n8n to prune old executions:
-```dotenv
-EXECUTIONS_DATA_PRUNE=true
-EXECUTIONS_DATA_MAX_AGE=168   # hours (7 days)
+Check the current queue depths:
+```bash
+docker compose exec redis redis-cli INFO memory
+docker compose exec redis redis-cli LLEN bull:jobs:wait
+docker compose exec redis redis-cli LLEN bull:jobs:active
 ```
 
-Redis also has a hard memory cap (`maxmemory 256mb` in `redis.conf`). Raise this if needed and restart Redis:
+Configure execution pruning in `.env`:
+```dotenv
+EXECUTIONS_DATA_PRUNE=true
+EXECUTIONS_DATA_MAX_AGE=168    # 7 days in hours
+EXECUTIONS_DATA_PRUNE_MAX_COUNT=5000
+```
+
+Raise Redis memory cap if needed — edit `redis.conf` and restart:
 ```bash
 docker compose restart redis
 ```
 
 ---
 
+### High PostgreSQL memory usage
+
+Tune in `docker-compose.yml` postgres `command:` block and redeploy:
+```bash
+docker compose up -d --force-recreate postgres
+```
+
+---
+
+### Workers not scaling down fast enough
+
+Adjust in `.env`:
+```dotenv
+SCALE_DOWN_QUEUE_THRESHOLD=1   # scale down when queue < 1
+COOLDOWN_PERIOD_SECONDS=10     # minimum seconds between scaling actions
+```
+
+---
+
+## Redis Queue Reference
+
+```bash
+# Check all Bull queue states
+docker compose exec redis redis-cli LLEN bull:jobs:wait      # waiting
+docker compose exec redis redis-cli LLEN bull:jobs:active    # running
+docker compose exec redis redis-cli LLEN bull:jobs:failed    # failed
+docker compose exec redis redis-cli ZCARD bull:jobs:delayed  # delayed
+docker compose exec redis redis-cli ZCARD bull:jobs:completed # completed
+
+# Ping Redis
+docker compose exec redis redis-cli ping
+
+# List all Bull-related keys
+docker compose exec redis redis-cli KEYS "bull:*"
+```
+
+---
+
 ## Getting Help
 
-1. **Check the logs first:** `docker compose logs -f`
-2. **Search the n8n community forum:** [community.n8n.io](https://community.n8n.io)
-3. **File a GitHub issue:** [github.com/n8n-io/n8n/issues](https://github.com/n8n-io/n8n/issues)
-4. **Open an issue on this repo** for deployment-config-specific problems.
+1. **Check logs first:** `docker compose logs -f`
+2. **Check autoscaler:** `docker compose logs -f n8n-autoscaler`
+3. **n8n community forum:** [community.n8n.io](https://community.n8n.io)
+4. **n8n GitHub issues:** [github.com/n8n-io/n8n/issues](https://github.com/n8n-io/n8n/issues)
+5. **Upstream autoscaling repo:** [conor-is-my-name/n8n-autoscaling](https://github.com/conor-is-my-name/n8n-autoscaling)
