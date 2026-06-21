@@ -132,16 +132,33 @@ async function main() {
   // ── Step 1.5: Install WAHA Community Node ─────────────────────────────────
   log('Checking/Installing WAHA Community Node...');
   const nodesDir = '/home/node/.n8n/nodes';
+  const pkgJsonPath = path.join(nodesDir, 'package.json');
+  let isInstalled = false;
   try {
-    fs.mkdirSync(nodesDir, { recursive: true });
-    execSync(`npm install --prefix "${nodesDir}" @devlikeapro/n8n-nodes-waha --omit=dev --no-audit --no-fund`, {
-      stdio:   'inherit',
-      timeout: 180_000,
-      env:     process.env,
-    });
-    log('WAHA Community Node checked/installed successfully.');
-  } catch (err) {
-    log('Warning: Failed to auto-install WAHA community node:', err.message);
+    if (fs.existsSync(pkgJsonPath)) {
+      const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
+      if (pkg.dependencies && pkg.dependencies['@devlikeapro/n8n-nodes-waha']) {
+        isInstalled = true;
+      }
+    }
+  } catch (e) {
+    log('Error checking package.json:', e.message);
+  }
+
+  if (isInstalled) {
+    log('WAHA Community Node is already installed. Skipping npm install.');
+  } else {
+    try {
+      fs.mkdirSync(nodesDir, { recursive: true });
+      execSync(`npm install --prefix "${nodesDir}" @devlikeapro/n8n-nodes-waha --omit=dev --no-audit --no-fund`, {
+        stdio:   'inherit',
+        timeout: 180_000,
+        env:     process.env,
+      });
+      log('WAHA Community Node checked/installed successfully.');
+    } catch (err) {
+      log('Warning: Failed to auto-install WAHA community node:', err.message);
+    }
   }
 
   // ── Step 2: Determine what to create ─────────────────────────────────────

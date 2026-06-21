@@ -191,11 +191,11 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:5678/healthz || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:5678/healthz || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 60s
+      retries: 12
+      start_period: 120s
 
   # No task runner on main instance — all executions offloaded to workers
   # (OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true)
@@ -218,11 +218,11 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:5678/healthz || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:5678/healthz || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 30s
+      start_period: 60s
 
   # ──────────────────────────────────────────────────────────
   # n8n Worker — Executes queued workflows (autoscaled)
@@ -242,11 +242,11 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:5678/healthz || exit 1"]
-      interval: 5s
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:5678/healthz || exit 1"]
+      interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 10s
+      start_period: 60s
 
   # ──────────────────────────────────────────────────────────
   # n8n Worker Runner — Task runner sidecar (autoscaled 1:1 with workers)
@@ -343,6 +343,9 @@ services:
     restart: "no"
     networks:
       - n8n-net
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     env_file:
       - .env
     entrypoint: ["node", "/scripts/provision.js"]
@@ -350,9 +353,7 @@ services:
       - ./scripts:/scripts:ro
       - ${N8N_DATA_DIR:-./n8n-data}:/home/node/.n8n
     depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
+      n8n:
         condition: service_healthy
 
   # ──────────────────────────────────────────────────────────
