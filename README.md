@@ -30,6 +30,7 @@
 | **Redis Queue Monitor** | Continuous queue depth logging for observability |
 | **PostgreSQL Backend** | Durable workflow, credential, and execution history storage |
 | **Scheduled Backups** | Optional backup service: pg_dump + Redis + n8n volume → cloud via rclone |
+| **WhatsApp HTTP API** | Local WAHA gateway integrated + `@devlikeapro/n8n-nodes-waha` node auto-installed |
 | **Data-Engineering Ready** | `pandas`, `numpy`, `pillow`, `requests` pre-installed in Python runner |
 | **Qdrant Vector DB** | Included for high-performance RAG and embeddings |
 | **Production-Tuned PostgreSQL** | `shared_buffers`, `wal_buffers`, `checkpoint_completion_target` pre-configured |
@@ -65,8 +66,11 @@
                            │  redis-monitor ──────────────────────────────────── │
                            │    └── Logs queue depth continuously                │
                            │                                                      │
+                           │  waha (port 3000) ───────────────────────────────── │
+                           │    └── WhatsApp HTTP API gateway                    │
+                           │                                                      │
                            │  n8n-init (One-Shot) ────────────────────────────── │
-                           │    └── Seeds DB credentials                         │
+                           │    └── Seeds DB credentials & WAHA community node   │
                            │                                                      │
                            │  PostgreSQL (internal)  Redis (internal)            │
                            │  Qdrant (ports 6333/6334)                           │
@@ -87,6 +91,7 @@
 | `n8n-postgres` | `postgres:16-alpine` | Persistent data store |
 | `n8n-redis` | `redis:7-alpine` | Queue broker |
 | `qdrant` | `qdrant/qdrant:latest` | Vector database |
+| `waha` | `devlikeapro/waha:latest` | WhatsApp HTTP API gateway |
 | `n8n-backup` | Custom (`backup/Dockerfile`) | Scheduled backups *(optional profile)* |
 
 ---
@@ -178,6 +183,8 @@ All variables live in `.env` (never committed to git).
 | `DB_POSTGRESDB_DATABASE` | ✅ | `n8n` | Database name |
 | `DB_POSTGRESDB_USER` | ✅ | `n8n_user` | Database user |
 | `DB_POSTGRESDB_PASSWORD` | ✅ | — | Database password |
+| `DB_POSTGRESDB_POOL_SIZE` | — | `10` | Concurrency connection pool size for PostgreSQL |
+| `DB_POSTGRESDB_CONNECTION_TIMEOUT` | — | `60000` | Database connection timeout in milliseconds |
 
 #### Autoscaling
 
@@ -206,6 +213,13 @@ All variables live in `.env` (never committed to git).
 | `LOG_DRIVER` | `json-file` | Docker log driver |
 | `LOG_MAX_SIZE` | `10m` | Max size per log file |
 | `LOG_MAX_FILE` | `3` | Number of log files to retain |
+
+#### WhatsApp HTTP API (WAHA)
+
+| Variable | Default | Description |
+|---|---|---|
+| `WAHA_API_KEY` | `admin` | API Key/token for WAHA gateway authentication |
+| `WAHA_API_URL` | `http://waha:3000` | Internal URL of the WAHA service |
 
 ---
 
@@ -463,6 +477,16 @@ Error fetching from Strapi API: timeout of 6000ms exceeded
 ```
 
 Non-critical. Suppressed by `N8N_DIAGNOSTICS_ENABLED=false` — verify it's set.
+
+---
+
+### WAHA WhatsApp API connection issues
+
+If n8n cannot connect to WAHA:
+1. Verify the `waha` container is running: `docker compose ps waha`
+2. Check `waha` container logs: `docker compose logs waha`
+3. Ensure the community node `@devlikeapro/n8n-nodes-waha` was installed by checking `n8n-init` logs: `docker compose logs n8n-init`
+4. Confirm `WAHA_API_KEY` in `.env` matches the key configured inside the WAHA container.
 
 ---
 

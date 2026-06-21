@@ -57,7 +57,13 @@ Browser / External
 │                                                          │
 │  ┌──────────────────────────────────────────────────┐    │
 │  │  n8n-init (One-Shot)                             │    │
-│  │  • Seeds DB credentials on first start           │    │
+│  │  • Seeds DB credentials & WAHA community node    │    │
+│  └──────────────────────────────────────────────────┘    │
+│                                                          │
+│  ┌──────────────────────────────────────────────────┐    │
+│  │  waha (port 3000)                                │    │
+│  │  • WhatsApp HTTP API gateway                     │    │
+│  │  • Volume: waha_sessions                         │    │
 │  └──────────────────────────────────────────────────┘    │
 │                                                          │
 │  ┌────────────────┐  ┌────────────────┐                  │
@@ -203,6 +209,29 @@ Runs briefly at stack startup to idempotently seed credentials into PostgreSQL u
 
 ---
 
+### waha (WhatsApp HTTP API)
+
+| Attribute | Value |
+|---|---|
+| Image | `devlikeapro/waha:latest` |
+| Exposed port | `3000` |
+| Role | WhatsApp HTTP API gateway |
+| Data volume | Named Docker volume `waha_sessions` |
+
+The `waha` container provides a WhatsApp HTTP API gateway, running locally and exposing a REST API on port `3000` inside the `n8n-net` network.
+
+**Community Node**: The `n8n-init` service automatically checks for and installs the `@devlikeapro/n8n-nodes-waha` node in the n8n community nodes directory (`/home/node/.n8n/nodes`), enabling a native graphical user interface in the n8n editor.
+
+**Credentials**: Seeding is handled automatically on startup by the `n8n-init` service:
+- Credentials Name: `WAHA API — n8n Stack`
+- Type: `wahaApi`
+- API Key: `admin` (or custom from `WAHA_API_KEY`)
+- API URL: `http://waha:3000` (resolves internally via Docker DNS)
+
+**Session Persistence**: All active WhatsApp sessions (QR codes, credentials, and message states) are persisted inside the named Docker volume `waha_sessions`.
+
+---
+
 ### PostgreSQL
 
 | Attribute | Value |
@@ -226,6 +255,13 @@ Stores all n8n application data. Never exposed to the host network.
 | `max_wal_size` | `2GB` | Allows more WAL before triggering a checkpoint |
 | `synchronous_commit` | `off` | Sub-ms COMMIT latency on Docker Desktop/Windows |
 | `log_min_duration_statement` | `2000ms` | Logs queries slower than 2 seconds |
+
+#### Connection Tuning (Application-side)
+
+To prevent database connection timeouts during startup (especially on resource-constrained environments or hosts with high disk I/O latency like Docker Desktop on Windows), connection pooling and timeout variables are configured in the `x-n8n` container template:
+
+- `DB_POSTGRESDB_POOL_SIZE` = `10`: Increases the parallel open connections from the default `2` to `10` to handle queue mode worker loads.
+- `DB_POSTGRESDB_CONNECTION_TIMEOUT` = `60000` (60 seconds): Extends the connection timeout from the default `20` seconds to prevent timeouts during simultaneous multi-container startups.
 
 ---
 
@@ -326,6 +362,7 @@ All services share `n8n-net` (Docker bridge). Services resolve each other by con
 | n8n user files & config | `./n8n-data` bind mount | ✅ Yes |
 | Redis queue state | `redis_data` Docker volume | ✅ Yes |
 | Vector embeddings | `qdrant_storage` Docker volume | ✅ Yes |
+| WhatsApp Sessions | `waha_sessions` Docker volume | ✅ Yes |
 | Backups | `backup_data` volume + `./backups/` | ✅ Yes |
 
 > ⚠️ `docker compose down -v` destroys all named volumes — **this is irreversible**.

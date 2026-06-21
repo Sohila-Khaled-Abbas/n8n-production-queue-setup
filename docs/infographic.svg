@@ -119,16 +119,16 @@
   <rect x="494" y="404" width="90" height="20" rx="4" fill="#0e2a16"/>
   <text x="539" y="418" text-anchor="middle" font-size="10" fill="#6ee7b7" font-weight="600">SCALABLE ×N</text>
 
-  <!-- Arrow: n8n-worker → n8n-python-runner -->
+  <!-- Arrow: n8n-worker → n8n-worker-runner -->
   <line x1="332" y1="500" x2="332" y2="530" stroke="#ff6d5a" stroke-width="2.5" marker-end="url(#arrowRed)"/>
   <rect x="258" y="504" width="148" height="20" rx="4" fill="#1a100e"/>
   <text x="332" y="517" text-anchor="middle" font-size="10" fill="#ff6d5a" font-weight="600">Task Runner Protocol</text>
 
-  <!-- n8n-python-runner -->
+  <!-- n8n-worker-runner -->
   <rect x="72" y="534" width="340" height="108" rx="10" fill="#111827" stroke="#d97706" stroke-width="2" filter="url(#glowAmber)"/>
   <text x="150" y="558" font-size="20">🚀</text>
-  <text x="180" y="558" font-size="14" fill="#fef3c7" font-weight="700">n8n-python-runner</text>
-  <text x="180" y="573" font-size="10" fill="#6b7280">Sandboxed Code Execution Sidecar</text>
+  <text x="180" y="558" font-size="14" fill="#fef3c7" font-weight="700">n8n-worker-runner</text>
+  <text x="180" y="573" font-size="10" fill="#6b7280">External Task Runner Sidecar</text>
   <line x1="72" y1="582" x2="412" y2="582" stroke="#1f2937" stroke-width="1"/>
   <text x="90" y="597" font-size="10" fill="#9ca3af">• JS Runner  :5681</text>
   <text x="90" y="612" font-size="10" fill="#9ca3af">• Python Runner  :5682</text>
@@ -140,7 +140,7 @@
   <text x="512" y="578" text-anchor="middle" font-size="13" fill="#fde68a" font-weight="700">n8n-init</text>
   <text x="512" y="594" text-anchor="middle" font-size="10" fill="#6b7280">One-Shot Provisioner</text>
   <line x1="432" y1="602" x2="592" y2="602" stroke="#292015" stroke-width="1"/>
-  <text x="512" y="617" text-anchor="middle" font-size="9.5" fill="#9ca3af">Seeds credentials</text>
+  <text x="512" y="617" text-anchor="middle" font-size="9.5" fill="#9ca3af">Seeds credentials &amp; node</text>
   <text x="512" y="631" text-anchor="middle" font-size="9.5" fill="#9ca3af">to PostgreSQL · then exits</text>
 
   <!-- ONE-SHOT badge -->
@@ -154,7 +154,19 @@
   <text x="340" y="673" font-size="10" fill="#4b5fa0" font-weight="600">Dockerfile.runner → uv pip install</text>
   <text x="340" y="688" font-size="10" fill="#6b7280">Extend: add packages + docker compose build</text>
   <text x="90" y="703" font-size="10" fill="#4b5fa0" font-weight="600">Runner config (hot-swap, no rebuild):</text>
-  <text x="280" y="703" font-size="10" fill="#6b7280">./n8n-task-runners.json → docker compose restart n8n-python-runner</text>
+  <text x="280" y="703" font-size="10" fill="#6b7280">./n8n-task-runners.json → docker compose restart n8n-worker-runner</text>
+
+  <!-- waha -->
+  <rect x="72" y="726" width="520" height="92" rx="10" fill="#111827" stroke="#22c55e" stroke-width="2" filter="url(#glowGreen)"/>
+  <text x="150" y="752" font-size="20">💬</text>
+  <text x="180" y="752" font-size="14" fill="#e8f5e9" font-weight="700">waha</text>
+  <text x="180" y="768" font-size="10.5" fill="#6b7280">WhatsApp HTTP API Gateway (Local)</text>
+  <line x1="72" y1="778" x2="592" y2="778" stroke="#1f2937" stroke-width="1"/>
+  <text x="90" y="793" font-size="10" fill="#9ca3af">• Node: @devlikeapro/n8n-nodes-waha (Auto-installed)</text>
+  <text x="90" y="808" font-size="10" fill="#9ca3af">• Port: 3000 (Exposed) · Session: waha_sessions volume</text>
+  <!-- Port badge -->
+  <rect x="504" y="730" width="80" height="18" rx="4" fill="#064e3b"/>
+  <text x="544" y="742" text-anchor="middle" font-size="9" fill="#a7f3d0" font-weight="600">PORT 3000</text>
 
   <!-- ─────────────────────────────────────────────────────── -->
   <!-- COLUMN 2: State & Queue -->
@@ -199,12 +211,12 @@
   <rect x="658" y="608" width="290" height="62" rx="8" fill="#0d1520" stroke="#1f2937" stroke-width="1"/>
   <text x="803" y="625" text-anchor="middle" font-size="10" fill="#4b5fa0" font-weight="600">Startup Ordering (depends_on: healthy)</text>
   <text x="658" y="641" dx="14" font-size="10" fill="#6b7280">postgres → n8n-main → n8n-worker</text>
-  <text x="658" y="655" dx="14" font-size="10" fill="#6b7280">redis → n8n-python-runner · n8n-init</text>
+  <text x="658" y="655" dx="14" font-size="10" fill="#6b7280">redis → n8n-worker-runner · n8n-init</text>
 
   <!-- Volumes note -->
   <rect x="658" y="682" width="290" height="50" rx="8" fill="#0d1520" stroke="#1f2937" stroke-width="1"/>
   <text x="803" y="699" text-anchor="middle" font-size="10" fill="#4b5fa0" font-weight="600">Named Docker Volumes (persistent)</text>
-  <text x="803" y="714" text-anchor="middle" font-size="10" fill="#6b7280">postgres_data · redis_data · qdrant_storage</text>
+  <text x="803" y="714" text-anchor="middle" font-size="9" fill="#6b7280">postgres_data · redis_data · qdrant_storage · waha_sessions</text>
   <text x="803" y="729" text-anchor="middle" font-size="10" fill="#6b7280">n8n_data (workflows &amp; credentials)</text>
 
   <!-- ─────────────────────────────────────────────────────── -->
@@ -323,6 +335,9 @@
 
   <rect x="700" y="873" width="14" height="14" rx="3" fill="#111827" stroke="#374151" stroke-width="1.5"/>
   <text x="720" y="884" font-size="10" fill="#9ca3af">External Clients</text>
+
+  <rect x="830" y="873" width="14" height="14" rx="3" fill="#111827" stroke="#22c55e" stroke-width="2"/>
+  <text x="850" y="884" font-size="10" fill="#9ca3af">WhatsApp (Local API)</text>
 
   <!-- Version -->
   <text x="1340" y="884" text-anchor="end" font-size="10" fill="#2d3a55">n8n v2.25.6 · Docker Compose v2 · 2026</text>

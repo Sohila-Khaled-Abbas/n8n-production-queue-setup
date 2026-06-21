@@ -36,6 +36,8 @@ High-resolution PNG suitable for presentation slides and documentation:
 
 10. **Qdrant (Vector DB)**: High-performance vector database for RAG-based workflows and embedding storage. Accessible via `http://qdrant:6333` inside the network.
 
-11. **n8n-init (One-Shot)**: Runs briefly on first startup to seed credentials into PostgreSQL from `.env`, then exits. Never overwrites existing data.
+11. **n8n-init (One-Shot)**: Runs briefly on first startup to seed credentials into PostgreSQL from `.env` and automatically install the `@devlikeapro/n8n-nodes-waha` community node, then exits. Never overwrites existing data.
 
-12. **n8n-backup (Optional)**: Profile-gated backup service (`docker compose --profile backup up -d`). Runs scheduled `pg_dump` + Redis RDB + volume archive → GPG encryption → rclone cloud upload.
+12. **waha**: WhatsApp HTTP API gateway running locally on port `3000`. Handled inside the network using the auto-installed WAHA community node. Session files are persisted in the `waha_sessions` volume.
+
+13. **n8n-backup (Optional)**: Profile-gated backup service (`docker compose --profile backup up -d`). Runs scheduled `pg_dump` + Redis RDB + volume archive → GPG encryption → rclone cloud upload.

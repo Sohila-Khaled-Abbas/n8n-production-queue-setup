@@ -23,6 +23,11 @@ docker compose logs -f n8n-autoscaler
 
 # 5. Check queue depth
 docker compose exec redis redis-cli LLEN bull:jobs:wait
+
+# 6. Check WAHA WhatsApp gateway status
+docker compose ps waha
+docker compose logs waha --tail=50
+docker compose logs n8n-init --tail=50
 ```
 
 ---
@@ -414,6 +419,67 @@ Adjust in `.env`:
 SCALE_DOWN_QUEUE_THRESHOLD=1   # scale down when queue < 1
 COOLDOWN_PERIOD_SECONDS=10     # minimum seconds between scaling actions
 ```
+
+---
+
+## WhatsApp Integration (WAHA) Issues
+
+### WAHA Community Node missing in n8n editor
+
+**Symptom:** You cannot find the WhatsApp node in the n8n editor when searching for "WAHA" or "WhatsApp".
+
+**Fix:**
+1. Check the logs of the `n8n-init` one-shot provisioning container:
+   ```bash
+   docker compose logs n8n-init
+   ```
+2. If the npm installation failed due to temporary network issues, restart the installer:
+   ```bash
+   docker compose start n8n-init
+   ```
+3. Verify that the file `package.json` inside `n8n-data/nodes` lists `@devlikeapro/n8n-nodes-waha` in its dependencies.
+
+---
+
+### "Connection Refused" / WAHA API connection timeout in n8n
+
+**Symptom:** Webhooks or HTTP requests to WAHA fail with connection errors.
+
+**Fix:**
+1. Verify the `waha` container is running and healthy:
+   ```bash
+   docker compose ps waha
+   ```
+2. Confirm the internal API URL in n8n matches `http://waha:3000`. Inside the Docker network `n8n-net`, services resolve each other by container service name (`waha`), not `localhost` or host IPs.
+3. If connecting from outside the Docker network, ensure port `3000` is open on your host.
+
+---
+
+### Mismatched API Key / Authentication Errors
+
+**Symptom:** WAHA API responds with `401 Unauthorized` or `403 Forbidden`.
+
+**Fix:**
+1. Check `WAHA_API_KEY` in `.env` matches the token n8n is sending.
+2. If you changed the environment variable, restart the waha container to pick it up:
+   ```bash
+   docker compose up -d --force-recreate waha
+   ```
+
+---
+
+### WhatsApp Session disconnected or stuck
+
+**Symptom:** WhatsApp messages are not sending, or the session is marked as disconnected.
+
+**Fix:**
+1. Access the WAHA Swagger UI by navigating to `http://localhost:3000` in your web browser.
+2. Query the session status via the `/api/sessions` endpoints.
+3. Obtain a new QR code scan sequence or check the browser screenshot to see if WhatsApp is prompting for multi-device login:
+   ```bash
+   # View a live screenshot of the WAHA Chromium instance
+   curl -o waha_screen.png http://localhost:3000/api/screenshot
+   ```
 
 ---
 
