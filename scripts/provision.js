@@ -40,6 +40,8 @@ const {
   DB_POSTGRESDB_DATABASE = 'n8n',
   DB_POSTGRESDB_USER,
   DB_POSTGRESDB_PASSWORD,
+  WAHA_API_URL           = 'http://waha:3000',
+  WAHA_API_KEY           = 'admin',
 } = process.env;
 
 const CREDENTIALS = [
@@ -71,6 +73,16 @@ const CREDENTIALS = [
       ssl:      false,
     },
   },
+
+  // ── WAHA API ────────────────────────────────────────────────────────────────
+  {
+    name: 'WAHA API — n8n Stack',
+    type: 'wahaApi',
+    data: {
+      apiUrl: WAHA_API_URL,
+      apiKey: WAHA_API_KEY,
+    },
+  },
 ];
 
 // ── Main ──────────────────────────────────────────────────────────────────────
@@ -89,14 +101,14 @@ async function main() {
   // It succeeds once the DB is up and the credentials_entity table exists
   // (i.e., after n8n has run its schema migrations on first start).
   log('Waiting for n8n database to be ready...');
-  const deadline = Date.now() + 300_000;   // 5-minute timeout
+  const deadline = Date.now() + 600_000;   // 10-minute timeout
   let existing   = [];
 
   while (true) {
     try {
       execSync(`n8n export:credentials --all --output="${exportFile}"`, {
         stdio:   'pipe',
-        timeout: 60_000,
+        timeout: 180_000, // 3-minute timeout to account for slow host systems
         env:     process.env,
       });
 
@@ -107,7 +119,7 @@ async function main() {
       break;   // success — proceed
     } catch (err) {
       if (Date.now() >= deadline) {
-        throw new Error('Database never became ready within 5 minutes. ' +
+        throw new Error('Database never became ready within 10 minutes. ' +
                         'Check postgres container logs.');
       }
       log(`Database not ready yet — retrying in 3s... Error: ${err.message}`);
@@ -115,6 +127,21 @@ async function main() {
       if (err.stderr) log('stderr:', err.stderr.toString());
       await sleep(3_000);
     }
+  }
+
+  // ── Step 1.5: Install WAHA Community Node ─────────────────────────────────
+  log('Checking/Installing WAHA Community Node...');
+  const nodesDir = '/home/node/.n8n/nodes';
+  try {
+    fs.mkdirSync(nodesDir, { recursive: true });
+    execSync(`npm install --prefix "${nodesDir}" @devlikeapro/n8n-nodes-waha --omit=dev --no-audit --no-fund`, {
+      stdio:   'inherit',
+      timeout: 180_000,
+      env:     process.env,
+    });
+    log('WAHA Community Node checked/installed successfully.');
+  } catch (err) {
+    log('Warning: Failed to auto-install WAHA community node:', err.message);
   }
 
   // ── Step 2: Determine what to create ─────────────────────────────────────

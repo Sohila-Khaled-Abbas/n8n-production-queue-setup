@@ -3,6 +3,8 @@ volumes:
   redis_data:
   qdrant_storage:
   backup_data:
+  waha_sessions:
+
 
 networks:
   n8n-net:
@@ -24,6 +26,9 @@ x-n8n: &service-n8n
   logging: *default-logging
   networks:
     - n8n-net
+  dns:
+    - 8.8.8.8
+    - 1.1.1.1
   environment:
     # Routing & URLs
     - N8N_EDITOR_BASE_URL=${N8N_EDITOR_BASE_URL}
@@ -84,6 +89,9 @@ x-task-runner: &service-task-runner
   logging: *default-logging
   networks:
     - n8n-net
+  dns:
+    - 8.8.8.8
+    - 1.1.1.1
   environment:
     - N8N_RUNNERS_AUTH_TOKEN=${N8N_RUNNERS_AUTH_TOKEN}
     - N8N_RUNNERS_GRANT_TOKEN_TTL=${N8N_RUNNERS_GRANT_TOKEN_TTL:-600}
@@ -409,3 +417,21 @@ services:
       - "6334:6334"
     volumes:
       - qdrant_storage:/qdrant/storage
+
+  # ──────────────────────────────────────────────────────────
+  # WAHA — WhatsApp HTTP API
+  # ──────────────────────────────────────────────────────────
+  waha:
+    image: devlikeapro/waha:latest
+    container_name: waha
+    restart: unless-stopped
+    logging: *default-logging
+    networks:
+      - n8n-net
+    ports:
+      - "3000:3000"
+    environment:
+      - WHATSAPP_API_KEY=${WAHA_API_KEY:-admin}
+    volumes:
+      - waha_sessions:/app/.sessions
+
