@@ -420,6 +420,59 @@ SCALE_DOWN_QUEUE_THRESHOLD=1   # scale down when queue < 1
 COOLDOWN_PERIOD_SECONDS=10     # minimum seconds between scaling actions
 ```
 
+## Container Networking & Node.js Issues
+
+### Outbound HTTP/API requests hang or fail (IPv6 Blackhole / Happy Eyeballs)
+
+**Symptom:** API calls to external services (like Google Gemini, OpenAI, or Strapi community node registries) hang for 30–42 seconds and fail with `fetch failed` or connection timeouts.
+
+**Cause:** Node.js (v18+) uses the `undici` HTTP client, which implements the "Happy Eyeballs" algorithm. It attempts to connect to the IPv6 address of the destination host first. If your Docker daemon has IPv6 network routing misconfigured (or if your host machine silently drops IPv6 packets), Node.js will wait for the IPv6 TCP handshake to time out before falling back to IPv4, causing significant latency or connection drops.
+
+**Fix:** Force all n8n Node.js containers to resolve IPv4 addresses first. This is implemented in `docker-compose.yml` under the shared template:
+```yaml
+environment:
+  - NODE_OPTIONS=--dns-result-order=ipv4first
+```
+If you run manual scripts or debug node processes outside compose, be sure to pass the `NODE_OPTIONS="--dns-result-order=ipv4first"` environment variable.
+
+---
+
+### Outbound requests fail only on large payloads (MTU Packet Fragmentation)
+
+**Symptom:** Tiny API test calls (e.g. pings) work instantly, but large payloads (e.g. sending 20 reviews or heavy text contexts to an AI model) hang for 60 seconds and fail with a network error.
+
+**Cause:** Maximum Transmission Unit (MTU) mismatch. Docker's default virtual bridge network interface (`docker0`) is hardcoded to an MTU of `1500` bytes. If your host server is behind a WAN router or PPPoE connection with a lower MTU (e.g. `1492` or `1450`), Docker will send packets that exceed the router's limit. If the router drops them and firewalls block the incoming ICMP `Fragmentation Needed` packets, n8n will sit waiting for TCP handshakes until it times out.
+
+**Fix:**
+1. Test MTU size by executing a large, unfragmented ping from inside the container:
+   ```bash
+   docker exec -it n8n-main-server ping -c 3 -M do -s 1472 generativelanguage.googleapis.com
+   ```
+2. If this fails with `Frag needed` or 100% packet loss, configure Docker to clamp its MTU size down to match your network. Edit `/etc/docker/daemon.json` on the host:
+   ```json
+   {
+     "mtu": 1450
+   }
+   ```
+3. Restart the Docker daemon on the host:
+   ```bash
+   sudo systemctl restart docker
+   ```
+
+---
+
+### AI agent/inference node times out under batch execution (Event Loop Lag)
+
+**Symptom:** The AI node times out or throws connection closed errors when running multiple executions concurrently.
+
+**Cause:** Batching multiple heavy API calls asynchronously without limits. Node.js is single-threaded. Firing 20 concurrent TLS handshakes to external APIs concurrently places high load on the Node event loop and network stack, causing sockets to time out before they are dispatched.
+
+**Fix:** Force n8n nodes to execute the batches serially or with structured rate limits.
+1. Open the failing node's settings in n8n.
+2. Under **Batch Options** / **Batch Processing**:
+   * Set **Batch Size** to `1` (serial execution).
+   * Set **Delay Between Batches** to `2000` (ms) to give the network connection time to breathe.
+
 ---
 
 ## WhatsApp Integration (WAHA) Issues
