@@ -83,6 +83,15 @@ const CREDENTIALS = [
       apiKey: WAHA_API_KEY,
     },
   },
+
+  // ── Ollama ──────────────────────────────────────────────────────────────────
+  {
+    name: 'Ollama — n8n Stack',
+    type: 'ollamaApi',
+    data: {
+      baseUrl: 'http://host.docker.internal:11434',
+    },
+  },
 ];
 
 // ── Main ──────────────────────────────────────────────────────────────────────
