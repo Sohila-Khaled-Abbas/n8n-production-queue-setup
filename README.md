@@ -221,6 +221,16 @@ All variables live in `.env` (never committed to git).
 | `WAHA_API_KEY` | `admin` | API Key/token for WAHA gateway authentication |
 | `WAHA_API_URL` | `http://waha:3000` | Internal URL of the WAHA service |
 
+#### Ollama / AI Services
+
+| Variable | Default | Description |
+|---|---|---|
+| `OLLAMA_HOST` | `host.docker.internal:11434` | Address of the Ollama LLM server |
+| `OLLAMA_VULKAN` | `off` | Force prioritizes CUDA over Vulkan (host level) |
+| `OLLAMA_FLASH_ATTENTION` | `1` | Enables Flash Attention for faster prompt processing (host level) |
+| `CUDA_VISIBLE_DEVICES` | `0` | Binds Ollama to the dedicated GPU (host level) |
+| `OLLAMA_IGPU_ENABLE` | `0` | Disables integrated GPU selection (host level) |
+
 ---
 
 ## 📈 Autoscaling
@@ -418,6 +428,26 @@ docker compose logs -f n8n-autoscaler
 ```
 
 Check `COMPOSE_PROJECT_NAME` in `.env` — it must exactly match the Docker Compose project name (run `docker compose ps` to see the project prefix).
+
+---
+
+### Autoscaler loops or makes Docker unresponsive
+
+If the Docker daemon experiences high CPU/I/O load or temporary timeouts, a bug in the replica check could trigger an infinite loop of `docker compose scale` commands. 
+* **Fix:** The autoscaler script has been updated to handle Docker API exceptions by skipping the scaling check instead of falling back to a scale-down command. Rebuild the autoscaler container to apply the fix:
+  ```bash
+  docker compose up -d --build n8n-autoscaler
+  ```
+
+---
+
+### Ollama is slow or fails to run on GPU
+
+* **Check model context window in n8n:** A context window size of `131k` or more requires over 13GB of KV cache memory, which will exceed a 4GB/8GB GPU or 16GB RAM machine and crash the LLM server. Keep the `Context Window` setting in the n8n Ollama Node to `4096`.
+* **GPU watchdog timeout:** High CPU/disk load can cause Ollama's GPU discovery to time out. Set these environment variables globally in your User/System profile to optimize discovery and force GPU usage:
+  * `OLLAMA_VULKAN=off` (Forces CUDA prioritize)
+  * `CUDA_VISIBLE_DEVICES=0` (Binds dedicated GPU)
+  * `OLLAMA_FLASH_ATTENTION=1` (Enables flash attention)
 
 ---
 

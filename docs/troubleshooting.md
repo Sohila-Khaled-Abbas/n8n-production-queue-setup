@@ -76,6 +76,20 @@ volumes:
   - /var/run/docker.sock:/var/run/docker.sock
 ```
 
+
+---
+
+### Autoscaler loops or makes Docker unresponsive
+
+**Symptoms:** The host system's CPU/I/O climbs to 100%, and Docker commands (`docker ps`, `docker compose`) time out or fail. Database connections from n8n to Postgres begin timing out.
+
+**Cause:** A bug in the replica check mechanism under high load/temporary Docker daemon timeouts. If `docker_client.containers.list()` threw an exception (e.g. timeout), the function defaulted to returning `MAX_REPLICAS + 1` (e.g. `6`). This triggered a false `SCALE DOWN` condition, leading to repeated `docker compose scale` executions that congested the host's resources.
+
+**Fix:** The autoscaler code was corrected to return `None` on Docker API exceptions and skip the scaling logic for that iteration. Apply the fix by rebuilding the container:
+```bash
+docker compose up -d --build n8n-autoscaler
+```
+
 ---
 
 ### Autoscaler exits immediately
@@ -533,6 +547,36 @@ If you run manual scripts or debug node processes outside compose, be sure to pa
    # View a live screenshot of the WAHA Chromium instance
    curl -o waha_screen.png http://localhost:3000/api/screenshot
    ```
+
+## Ollama & AI Services Issues
+
+### Ollama fails to run on GPU / falling back to CPU
+
+**Symptoms:** Ollama queries are extremely slow (taking 30+ seconds for a short response), and GPU utilization (checked via `nvidia-smi`) remains at 0%.
+
+**Cause:** 
+1. Ollama may fail to initialize CUDA and default to CPU if your system's GPU driver is outdated, or if it runs into conflicts trying to select an integrated GPU over the dedicated card.
+2. In virtualized environments or under high CPU load, Ollama's GPU discovery watchdog may time out (e.g., `llama-server GPU discovery watchdog timed out`), which cancels GPU initialization.
+
+**Fix:**
+Set the following environment variables globally in your User or System profile to force CUDA prioritizing and skip integrated graphics checks:
+*   `OLLAMA_VULKAN=off` (forces prioritising CUDA over Vulkan)
+*   `CUDA_VISIBLE_DEVICES=0` (explicitly binds to your dedicated GPU)
+*   `OLLAMA_IGPU_ENABLE=0` (disables integrated GPU discovery)
+*   `OLLAMA_FLASH_ATTENTION=1` (enables Flash Attention for faster evaluation)
+
+After setting these, stop and restart Ollama.
+
+---
+
+### Ollama crashes or reports Out-Of-Memory (OOM) during startup
+
+**Symptoms:** The Ollama log shows `ggml_backend_cpu_buffer_type_alloc_buffer: failed to allocate buffer of size X` and `llama-server terminated with exit status 0xc0000005`. The server crashes and doesn't respond on port 11434.
+
+**Cause:** This happens when n8n requests a massive context window (e.g. `131,072` or `262,144` tokens) via its workflow settings. For a 3B model, a context window of 131k requires ~13.9 GB of RAM just for the KV cache. This will crash systems with standard RAM sizes (like 16GB) or GPU VRAM limits.
+
+**Fix:**
+Open your workflow in the n8n editor, click on the Ollama Chat Model node, and ensure that the **Context Window** (or `num_ctx`) parameter is set to a reasonable size (such as `4096` or `8192` at most). Never set it to very high values unless your machine has matching system RAM/VRAM capacity.
 
 ---
 
