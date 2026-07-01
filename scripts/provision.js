@@ -42,6 +42,12 @@ const {
   DB_POSTGRESDB_PASSWORD,
   WAHA_API_URL           = 'http://waha:3000',
   WAHA_API_KEY           = 'admin',
+  MSSQL_HOST             = 'host.docker.internal',
+  MSSQL_PORT             = '1433',
+  MSSQL_DATABASE         = 'master',
+  MSSQL_USER,
+  MSSQL_PASSWORD,
+  MSSQL_DOMAIN,
 } = process.env;
 
 const CREDENTIALS = [
@@ -90,6 +96,22 @@ const CREDENTIALS = [
     type: 'ollamaApi',
     data: {
       baseUrl: 'http://host.docker.internal:11434',
+    },
+  },
+
+  // ── Microsoft SQL Server ──────────────────────────────────────────────────
+  {
+    name: 'Microsoft SQL Server — n8n Stack',
+    type: 'microsoftSql',
+    data: {
+      host:                  MSSQL_HOST,
+      port:                  parseInt(MSSQL_PORT, 10) || 1433,
+      database:              MSSQL_DATABASE || 'master',
+      user:                  MSSQL_USER || '',
+      password:              MSSQL_PASSWORD || '',
+      domain:                MSSQL_DOMAIN || '',
+      tls:                   false,
+      allowUnauthorizedCerts: true,
     },
   },
 ];
