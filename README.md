@@ -174,6 +174,14 @@ All variables live in `.env` (never committed to git).
 | `N8N_ENCRYPTION_KEY` | ✅ | AES-256-CBC key for credential encryption. Generate once, never change. |
 | `N8N_RUNNERS_AUTH_TOKEN` | ✅ | Shared secret between n8n and task runners. |
 
+#### Task Runners
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `N8N_RUNNERS_MAX_CONCURRENCY` | — | `5` | Maximum number of concurrent tasks per task runner instance. |
+| `N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT` | — | `0` | Auto-shutdown timeout in ms for idle task runners (set to `0` to keep alive). |
+| `N8N_RUNNERS_TASK_REQUEST_TIMEOUT` | — | `60` | Timeout (in seconds) for matching a task request to a runner before failing with a timeout error. |
+
 #### Database
 
 | Variable | Required | Default | Description |

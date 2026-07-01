@@ -228,6 +228,35 @@ Failed to start Python task runner in internal mode. because Python 3 is missing
 
 ---
 
+### Task runner fails: "Task request timed out after 60 seconds"
+
+```
+Your Code node task was not matched to a runner within the timeout period. This indicates that the task runner is currently down, or not ready, or at capacity, so it cannot service your task.
+```
+
+**Cause:** The broker timed out waiting for a task runner to request and execute the node's code. This occurs when runners are under high resource load, are at concurrency limits, or have crashed.
+
+**Fix:**
+1. **Check task runner logs:** Ensure the runner containers are running and not crashing:
+   ```bash
+   docker compose logs n8n-runner
+   docker compose logs n8n-worker-runner
+   ```
+2. **Increase request timeout:** In `.env`, increase `N8N_RUNNERS_TASK_REQUEST_TIMEOUT` to `120` or `180` (seconds) to give tasks more time to wait for a runner to become free:
+   ```properties
+   N8N_RUNNERS_TASK_REQUEST_TIMEOUT=120
+   ```
+3. **Increase runner concurrency:** If the runners are healthy but at capacity, raise the concurrent task limit in `.env`:
+   ```properties
+   N8N_RUNNERS_MAX_CONCURRENCY=10
+   ```
+4. Apply the changes:
+   ```bash
+   docker compose up -d
+   ```
+
+---
+
 ## Credentials & Encryption
 
 ### "Credentials could not be decrypted" / `bad decrypt`
