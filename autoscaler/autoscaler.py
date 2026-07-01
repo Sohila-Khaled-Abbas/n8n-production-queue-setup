@@ -81,7 +81,7 @@ def get_current_replicas(docker_client, service_name, project_name):
         # As a fallback, we might try to count containers based on service name label alone,
         # but this is unreliable if multiple projects use the same service name.
         # For now, return a high number to prevent unintended scaling if project name is missing.
-        return MAX_REPLICAS + 1 # Prevents scaling if project name is missing
+        return None
 
     try:
         filters = {
@@ -102,7 +102,7 @@ def get_current_replicas(docker_client, service_name, project_name):
         return running_count
     except Exception as e:
         logging.error(f"Error getting current replicas for {service_name} in {project_name}: {e}")
-        return MAX_REPLICAS + 1 # Return a safe value to prevent scaling on error
+        return None
 
 
 def scale_service(service_name, replicas, compose_file, project_name):
@@ -229,6 +229,11 @@ def main():
 
             queue_len = get_queue_length(r_conn)
             current_reps = get_current_replicas(docker_cl, N8N_WORKER_SERVICE_NAME, COMPOSE_PROJECT_NAME)
+
+            if current_reps is None:
+                logging.warning("Skipping scaling check because current replicas could not be determined.")
+                time.sleep(POLLING_INTERVAL_SECONDS)
+                continue
 
             # Event-driven logging: only log queue length when there's work
             if queue_len > 0:
