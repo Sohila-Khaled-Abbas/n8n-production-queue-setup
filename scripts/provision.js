@@ -104,7 +104,7 @@ const CREDENTIALS = [
     name: 'Microsoft SQL Server — n8n Stack',
     type: 'microsoftSql',
     data: {
-      host:                  MSSQL_HOST,
+      server:                MSSQL_HOST,
       port:                  parseInt(MSSQL_PORT, 10) || 1433,
       database:              MSSQL_DATABASE || 'master',
       user:                  MSSQL_USER || '',
