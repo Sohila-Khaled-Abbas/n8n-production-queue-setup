@@ -202,7 +202,7 @@ async function main() {
     log('No existing credentials found.');
   }
 
-  const toCreate = CREDENTIALS.filter(c => !existingNames.has(c.name));
+  const toCreate = CREDENTIALS.filter(c => !existingNames.has(c.name) || c.type === 'microsoftSql');
 
   if (toCreate.length === 0) {
     log('All target credentials already exist — nothing to do.');
@@ -210,12 +210,21 @@ async function main() {
     return;
   }
 
-  log(`Need to create ${toCreate.length} credential(s):`);
-  for (const c of toCreate) log(`  + ${c.name}  (type: ${c.type})`);
+  log(`Need to create/update ${toCreate.length} credential(s):`);
+  for (const c of toCreate) {
+    const action = existingNames.has(c.name) ? 'update' : 'create';
+    log(`  + ${c.name}  (type: ${c.type}, action: ${action})`);
+  }
 
   // ── Step 3: Write import file and run n8n import:credentials ─────────────
   // n8n's credentials_entity.id is NOT NULL — each credential must carry a UUID.
-  const toCreateWithIds = toCreate.map(c => ({ id: randomUUID(), ...c }));
+  const toCreateWithIds = toCreate.map(c => {
+    const matched = existing.find(e => e.name === c.name);
+    return {
+      id: matched ? matched.id : randomUUID(),
+      ...c
+    };
+  });
   fs.writeFileSync(importFile, JSON.stringify(toCreateWithIds, null, 2), 'utf8');
 
   execSync(`n8n import:credentials --input="${importFile}"`, {
@@ -225,7 +234,7 @@ async function main() {
   });
 
   line();
-  log(`Done. Created: ${toCreate.length}  Skipped: ${existingNames.size}`);
+  log(`Done. Processed: ${toCreate.length}`);
   line();
 }
 
