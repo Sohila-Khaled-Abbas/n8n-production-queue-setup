@@ -89,6 +89,7 @@ Browser / External
 | Exposed port | `80` (maps to internal `5678`) |
 | Role | Editor UI, REST API, task broker |
 | Queue mode | `EXECUTIONS_MODE=queue` |
+| Memory Limit | `1024M` (prevent JS Heap OOM crashes) |
 
 `n8n` runs in **queue mode** — it never directly executes workflow nodes. It enqueues execution jobs into Redis via the [Bull](https://github.com/OptimalBits/bull) library. All manual executions are offloaded to workers via `OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true`.
 
@@ -107,6 +108,7 @@ Browser / External
 | Image | Custom — built from `Dockerfile` |
 | Command | `n8n webhook` |
 | Role | Dedicated webhook processor — offloads webhook traffic from main instance |
+| Memory Limit | `512M` |
 
 The dedicated webhook processor handles all inbound `POST /webhook/*` and `GET /webhook/*` requests. This prevents webhook traffic from competing with the editor UI and REST API for resources on the main process. Shares the same `n8n-data` volume as the main instance.
 
@@ -120,6 +122,7 @@ The dedicated webhook processor handles all inbound `POST /webhook/*` and `GET /
 | Command | `n8n worker` |
 | Scalable | Yes — autoscaled by `n8n-autoscaler` |
 | Runner mode | `N8N_RUNNERS_MODE=external` |
+| Memory Limit | `1024M` |
 
 Workers are **stateless** — they share no disk state with each other. All state lives in PostgreSQL (workflow definitions, credentials) and Redis (queue, locks).
 
@@ -238,6 +241,7 @@ The `waha` container provides a WhatsApp HTTP API gateway, running locally and e
 |---|---|
 | Image | `postgres:16-alpine` |
 | Internal port | `5432` |
+| Memory Limit | `512M` |
 | Data volume | Named Docker volume `postgres_data` |
 
 Stores all n8n application data. Never exposed to the host network.
@@ -246,14 +250,17 @@ Stores all n8n application data. Never exposed to the host network.
 
 | Parameter | Value | Effect |
 |---|---|---|
-| `shared_buffers` | `256MB` | Main read cache — reduces disk hits |
-| `effective_cache_size` | `768MB` | Planner hint for index preference |
-| `work_mem` | `16MB` | Per-sort/hash memory — speeds complex queries |
-| `maintenance_work_mem` | `128MB` | Speeds VACUUM, CREATE INDEX |
+| `shared_buffers` | `128MB` | Main read cache — tuned for 7.6 GB RAM host |
+| `effective_cache_size` | `384MB` | Planner hint for index preference |
+| `work_mem` | `8MB` | Per-sort/hash memory — prevents memory exhaustion |
+| `maintenance_work_mem` | `64MB` | Speeds VACUUM, CREATE INDEX |
 | `checkpoint_completion_target` | `0.9` | Spreads checkpoint I/O — eliminates spikes |
-| `wal_buffers` | `16MB` | Reduces WAL write round-trips |
-| `max_wal_size` | `2GB` | Allows more WAL before triggering a checkpoint |
+| `wal_buffers` | `8MB` | Reduces WAL write round-trips |
+| `max_wal_size` | `512MB` | Allows more WAL before triggering a checkpoint |
+| `min_wal_size` | `80MB` | Minimum WAL size |
 | `synchronous_commit` | `off` | Sub-ms COMMIT latency on Docker Desktop/Windows |
+| `fsync` | `on` | Enabled for data safety (re-enabled for crash protection) |
+| `full_page_writes` | `on` | Enabled for data safety (re-enabled for crash protection) |
 | `log_min_duration_statement` | `2000ms` | Logs queries slower than 2 seconds |
 
 #### Connection Tuning (Application-side)
@@ -274,6 +281,7 @@ To prevent database connection timeouts during startup (especially on resource-c
 | Data volume | Named Docker volume `redis_data` |
 | Config file | `./redis.conf` (mounted read-only) |
 | Auth | Unauthenticated (internal network only) |
+| Memory Limit | `128M` |
 
 Acts as the **Bull queue broker**. Redis is unauthenticated — it is only accessible inside `n8n-net` and never published to the host network, so no password is needed.
 

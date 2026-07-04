@@ -609,6 +609,77 @@ Open your workflow in the n8n editor, click on the Ollama Chat Model node, and e
 
 ---
 
+### n8n Main Server crashes with `JavaScript heap out of memory`
+
+**Symptoms:** The n8n main container starts but exits soon after, or the logs show `FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory`.
+
+**Cause:** The container's memory limit (configured via Docker Compose limits) is set too low (e.g. `512M`). n8n requires at least `1024M` (1GB) of memory to boot, load schemas, workflows, and initialize dependencies.
+
+**Fix:**
+Open `docker-compose.yml`, locate the `n8n` (and `n8n-worker`) service limits under `deploy.resources.limits`, and increase the limit:
+```yaml
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+```
+
+---
+
+### Ollama workflow execution takes several minutes (Model Swapping / HDD loading)
+
+**Symptoms:** Requests to Ollama nodes inside n8n take 40+ seconds to finish, even for simple generation or embedding tasks. The Ollama logs show long `load_duration` times (e.g. `42000ms`) and mention loading models on every call.
+
+**Cause:** By default, Ollama is configured to hold only `1` model in memory. If your workflow uses both an LLM (e.g., `llama3.2`) and an embedding model (e.g., `nomic-embed-text`), Ollama constantly unloads one to load the other, especially when reading from a slow hard drive (like a `D:` drive).
+
+**Fix:**
+Set the following environment variables in your Windows User profile (or system environment) and restart the Ollama process:
+- `OLLAMA_MAX_LOADED_MODELS=2`: Allows both the LLM and the embedding model to reside in VRAM/RAM simultaneously.
+- `OLLAMA_NUM_PARALLEL=2`: Enables parallel processing of requests.
+- `OLLAMA_KEEP_ALIVE=1h`: Keeps the models loaded in memory for 1 hour of inactivity, eliminating load time overhead on subsequent runs.
+- `OLLAMA_IGPU_ENABLE=0`: Ignores integrated GPUs (like Intel UHD) to prevent GPU discovery timeouts.
+
+---
+
+### Supabase Vector Store searches fail with `PGRST202 Could not find the function public.match_kb`
+
+**Symptoms:** The Supabase Vector Store node fails with `Error searching for documents: PGRST202 Could not find the function public.match_kb(filter, match_count, query_embedding) in the schema cache`.
+
+**Cause:** The Supabase node in n8n uses PostgREST RPC to call a database function named `match_kb` to match query embeddings against your vector store table. If the database function has not been created or has a different signature, PostgREST returns a `404 Not Found (PGRST202)` error.
+
+**Fix:**
+Run the following SQL in your Supabase SQL Editor to create the required vector matching function:
+```sql
+create or replace function match_kb (
+  query_embedding vector(1536), -- 1536 matches nomic-embed-text/openai dimensions
+  match_count int,
+  filter jsonb default '{}'
+) returns table (
+  id bigint,
+  content text,
+  metadata jsonb,
+  similarity float
+)
+language plpgsql
+as $$
+#variable_conflict use_variable
+begin
+  return query
+  select
+    kb.id,
+    kb.content,
+    kb.metadata,
+    1 - (kb.embedding <=> query_embedding) as similarity
+  from public.documents kb -- Replace with your actual table name if different
+  where (filter = '{}'::jsonb or kb.metadata @> filter)
+  order by kb.embedding <=> query_embedding
+  limit match_count;
+end;
+$$;
+```
+
+---
+
 ## Redis Queue Reference
 
 ```bash

@@ -231,9 +231,12 @@ All variables live in `.env` (never committed to git).
 
 #### Ollama / AI Services
 
-| Variable | Default | Description |
+| Variable | Default / Recommended | Description |
 |---|---|---|
 | `OLLAMA_HOST` | `host.docker.internal:11434` | Address of the Ollama LLM server |
+| `OLLAMA_MAX_LOADED_MODELS` | `2` | (Recommended) Allows both the LLM and the embedding model to stay in VRAM |
+| `OLLAMA_NUM_PARALLEL` | `2` | (Recommended) Allows parallel requests to be processed |
+| `OLLAMA_KEEP_ALIVE` | `1h` | (Recommended) Keeps models loaded in VRAM (avoids disk load times) |
 | `OLLAMA_VULKAN` | `off` | Force prioritizes CUDA over Vulkan (host level) |
 | `OLLAMA_FLASH_ATTENTION` | `1` | Enables Flash Attention for faster prompt processing (host level) |
 | `CUDA_VISIBLE_DEVICES` | `0` | Binds Ollama to the dedicated GPU (host level) |
