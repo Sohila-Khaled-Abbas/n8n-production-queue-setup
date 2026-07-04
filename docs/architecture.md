@@ -374,3 +374,20 @@ All services share `n8n-net` (Docker bridge). Services resolve each other by con
 | Backups | `backup_data` volume + `./backups/` | ✅ Yes |
 
 > ⚠️ `docker compose down -v` destroys all named volumes — **this is irreversible**.
+
+---
+
+## Operational & Diagnostic Scripts
+
+A collection of PowerShell, Python, and SQL scripts reside in the `scripts/` directory to help manage and diagnose the stack:
+
+1. **Workflow Parsing and Configuration Modification:**
+   - **[parse_nodes.py](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/parse_nodes.py)**: Scans raw workflow export JSON and reports details of Ollama nodes.
+   - **[modify_workflow.py](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/modify_workflow.py)**: Automatically modifies context window sizes (`numCtx` option to `2048`) and updates the model to `qwen2.5:1.5b` for Ollama chat nodes to ensure stable executions on limited-VRAM hosts.
+
+2. **Database Diagnostics & Space Reclamation:**
+   - **[cleanup.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/cleanup.sql)**: Prunes execution logs older than 3 days, marks orphaned running tasks as `crashed`, and runs `VACUUM FULL` to reclaim space.
+   - **[count_chat.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/count_chat.sql)**: Counts total messages in chat history tables grouped by session.
+   - **[durations.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/durations.sql)** & **[durations_times.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/durations_times.sql)**: Reports workflow execution duration patterns to identify slow nodes or bottlenecks.
+   - **[get_error.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/get_error.sql)** & **[search_errors.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/search_errors.sql)**: Pinpoints errors and exceptions recorded within execution records.
+   - **[get_keys.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/get_keys.sql)**: Helper to inspect JSON properties of execution records.

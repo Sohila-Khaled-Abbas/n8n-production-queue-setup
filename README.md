@@ -242,6 +242,10 @@ All variables live in `.env` (never committed to git).
 | `CUDA_VISIBLE_DEVICES` | `0` | Binds Ollama to the dedicated GPU (host level) |
 | `OLLAMA_IGPU_ENABLE` | `0` | Disables integrated GPU selection (host level) |
 
+> [!IMPORTANT]
+> **VRAM / Memory Optimization for GPUs (e.g. GTX 1650 4GB):**
+> When running local LLMs, always restrict the model's context window size to **`2048`** in n8n (inside the Ollama Chat Model node under parameters, click **Add Option** ➡️ **Context Window** and enter `2048`). By default, models like Qwen 2.5 request a 32k context size which allocates a massive ~2 GB KV Cache buffer in GPU VRAM. This will exceed a 4GB graphics card's capacity and cause Ollama to crash with an Out-of-Memory (OOM) error. Constraining it to `2048` reduces the total footprint to 1.2 GB, ensuring 100% GPU-accelerated speeds.
+
 ---
 
 ## 📈 Autoscaling
@@ -543,6 +547,29 @@ docker compose exec redis redis-cli LLEN bull:jobs:wait
 
 ---
 
+## 🛠️ Operational & Diagnostic Scripts
+
+The `scripts/` directory contains automation and database diagnostic scripts to maintain and troubleshoot the n8n production stack:
+
+### Workflow Node Automation (Ollama VRAM Optimization)
+If you run into GPU Out-of-Memory (OOM) crashes on constrained GPUs (like a 4GB GTX 1650) when running local LLMs, you can batch-optimize your workflows:
+- **[parse_nodes.py](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/parse_nodes.py)**: Scans a raw JSON workflow export (`workflow_nodes_raw.json`) and prints details of all Ollama chat model nodes.
+- **[modify_workflow.py](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/modify_workflow.py)**: Automatically updates all Ollama chat nodes in `workflow_nodes_raw.json` to use `qwen2.5:1.5b` with a restricted context window of `2048` tokens (saving VRAM and preventing crashes), outputting `workflow_nodes_modified.json` for easy re-import.
+
+### Database Maintenance & Cleanup
+- **[cleanup.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/cleanup.sql)**: A PostgreSQL script to safely prune stale execution data older than 3 days, mark orphaned execution tasks as `crashed`, reclaim disk space using `VACUUM FULL`, and report table disk sizes.
+
+### Database Diagnostic Queries
+Run these queries inside the PostgreSQL database to troubleshoot workflow performance and errors:
+- **[count_chat.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/count_chat.sql)**: Aggregates and counts chat history messages by session ID.
+- **[durations.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/durations.sql)**: Analyzes and lists the duration and status of the 15 most recent executions.
+- **[durations_times.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/durations_times.sql)**: Analyzes execution durations specifically for a given workflow ID.
+- **[get_error.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/get_error.sql)**: Extracts raw error logs from execution data for a specific execution ID.
+- **[get_keys.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/get_keys.sql)**: Identifies JSON result keys within execution logs.
+- **[search_errors.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/search_errors.sql)**: Searches and extracts detailed error messages across all execution JSON blocks.
+
+---
+
 ## 📁 Repository Structure
 
 ```
@@ -567,7 +594,16 @@ docker compose exec redis redis-cli LLEN bull:jobs:wait
 │   ├── backup.py                   # pg_dump + Redis + rclone logic
 │   └── rclone.conf.example         # Example rclone cloud storage config
 ├── scripts/
-│   └── provision.js                # One-shot credential provisioner (n8n-init)
+│   ├── provision.js                # One-shot credential provisioner (n8n-init)
+│   ├── cleanup.sql                 # Database cleanup and VACUUM script
+│   ├── count_chat.sql              # Aggregates chat count by session
+│   ├── durations.sql               # Diagnostic for execution durations
+│   ├── durations_times.sql         # Diagnostic for workflow execution durations
+│   ├── get_error.sql               # Diagnostic to retrieve execution errors
+│   ├── get_keys.sql                # Diagnostic to inspect execution JSON keys
+│   ├── search_errors.sql           # Diagnostic to search error messages in execution logs
+│   ├── parse_nodes.py              # Scans workflow nodes for Ollama chat nodes
+│   └── modify_workflow.py          # Batch configures Ollama nodes (model & context)
 ├── n8n-data/                       # n8n user data (git-ignored)
 ├── backups/                        # Local backup output (git-ignored)
 └── README.md                       # This file

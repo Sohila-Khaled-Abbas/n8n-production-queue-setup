@@ -600,14 +600,20 @@ After setting these, stop and restart Ollama.
 
 ### Ollama crashes or reports Out-Of-Memory (OOM) during startup
 
-**Symptoms:** The Ollama log shows `ggml_backend_cpu_buffer_type_alloc_buffer: failed to allocate buffer of size X` and `llama-server terminated with exit status 0xc0000005`. The server crashes and doesn't respond on port 11434.
+**Symptoms:** 
+- The Ollama log shows `ggml_backend_cpu_buffer_type_alloc_buffer: failed to allocate buffer of size X` and `llama-server terminated with exit status 0xc0000005`.
+- Or in the n8n UI, a LangChain agent node fails with the error: `llama-server reported out-of-memory during startup: alloc_tensor_range: failed to allocate Vulkan0 buffer of size 980097536 error loading model: unable to allocate Vulkan0 buffer`.
 
-**Cause:** This happens when n8n requests a massive context window (e.g. `131,072` or `262,144` tokens) via its workflow settings. For a 3B model, a context window of 131k requires ~13.9 GB of RAM just for the KV cache. This will crash systems with standard RAM sizes (like 16GB) or GPU VRAM limits.
+**Cause:** 
+This happens on graphics cards with constrained VRAM (like a 4GB GTX 1650) when n8n requests a model without restricting the context window, causing Ollama to attempt to allocate a massive default context buffer (e.g. 32,768 tokens for Qwen 2.5). A 32k context buffer requires up to 2 GB of VRAM just for the KV cache. When combined with other loaded models (like embedding models) and system apps, this exceeds the GPU's memory limit, causing the Vulkan/CUDA allocation to fail.
 
 **Fix:**
-Open your workflow in the n8n editor, click on the Ollama Chat Model node, and ensure that the **Context Window** (or `num_ctx`) parameter is set to a reasonable size (such as `4096` or `8192` at most). Never set it to very high values unless your machine has matching system RAM/VRAM capacity.
+1. **Reduce Context Size:** Open your workflow in the n8n editor, double-click on **all** Ollama Chat Model nodes (e.g., `Ollama Chat Model` and `Ollama Chat Model1`), click **Add Option** (under Options), select **Context Window** (or `numCtx`), and set it to `2048` (or `4096`).
+2. **Use a Lightweight Model:** Switch the model from 3B parameters to `qwen2.5:1.5b`. A 1.5B model with a 2k context window uses only 1.2 GB of VRAM and runs entirely on the GPU.
+3. **If modifying the database directly:** You can run a SQL update script to inject the `numCtx` parameters into the `workflow_entity` table's JSON nodes.
 
 ---
+
 
 ### n8n Main Server crashes with `JavaScript heap out of memory`
 
