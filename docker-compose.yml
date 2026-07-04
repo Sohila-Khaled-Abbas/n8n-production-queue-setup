@@ -189,8 +189,6 @@ services:
     container_name: n8n-main-server
     environment:
       <<: *n8n-env
-      EXECUTIONS_MODE: regular
-      OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS: "false"
     stop_grace_period: 30s
     ports:
       - "80:5678"
