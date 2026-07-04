@@ -716,7 +716,7 @@
       ],
       "id": "ba2c1d59-c9e1-4690-a481-2b6b113ed4a4",
       "name": "Check Active",
-      "alwaysOutputData": false,
+      "alwaysOutputData": true,
       "credentials": {
         "supabaseApi": {
           "id": "DndUTCcCP3GzfG5V",
