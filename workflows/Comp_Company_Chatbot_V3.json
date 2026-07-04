@@ -1,0 +1,254 @@
+{
+  "updatedAt": "2026-06-28T17:40:28.453Z",
+  "createdAt": "2026-06-28T16:02:15.484Z",
+  "id": "Nmbn4aftmr0dt5wz",
+  "name": "Comp_Company_Chatbot_V3",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -32,
+        -48
+      ],
+      "id": "5534af02-1d2e-4f4a-87fe-b700d3b5172f",
+      "name": "When chat message received",
+      "webhookId": "3baa62af-00bf-4da9-abaa-60293acdd846"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You represent a Computer company. Please answer customer inquiries using the information provided in the Google Sheet. Please send an email to the owner only if the customer requests to purchase a device. Before sending the email, ask the customer for their name and phone number, and send them to the owner via Email."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -48
+      ],
+      "id": "b28fdcfd-c1c3-4814-8fed-8e7584b73375",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        176
+      ],
+      "id": "1307fda2-55cc-43a9-a922-a42341a932db",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1rZ119i1VZmte3H1MsDBcFye8ae2APG808_eLiSO50BI",
+          "mode": "list",
+          "cachedResultName": "Computer Company",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rZ119i1VZmte3H1MsDBcFye8ae2APG808_eLiSO50BI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rZ119i1VZmte3H1MsDBcFye8ae2APG808_eLiSO50BI/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        448,
+        176
+      ],
+      "id": "276ac43e-19ed-4c8a-826c-6d066be5c1d7",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LKFLSWDFvv6fE63D",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "sohila.k.data@gmail.com",
+        "subject": "Customer Purchase Request",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        576,
+        176
+      ],
+      "id": "382de7a8-bad2-4508-a98d-2e2113b14a31",
+      "name": "Send a message in Gmail",
+      "webhookId": "218bed10-e904-460a-8b67-e7c72d6a3151",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "lnIdGq9BGx5bYyLm",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "qwen2.5:3b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        192,
+        176
+      ],
+      "id": "e5ad1337-0b96-45a7-bf94-e8b1d1ce012a",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "wDe9MCIO6q1M7Gau",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.timeSaved",
+      "typeVersion": 1,
+      "position": [
+        784,
+        -48
+      ],
+      "id": "a20e956b-bfde-409b-bed7-6d73a3d6ccb6",
+      "name": "Time Saved"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Time Saved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "ab22141a-ff7e-400e-a45a-b18a649694de",
+  "activeVersionId": "ab22141a-ff7e-400e-a45a-b18a649694de",
+  "versionCounter": 58,
+  "triggerCount": 1,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-06-28T16:02:15.484Z",
+      "createdAt": "2026-06-28T16:02:15.484Z",
+      "role": "workflow:owner",
+      "workflowId": "Nmbn4aftmr0dt5wz",
+      "projectId": "7Kuw5RaGwePDWMtJ",
+      "project": {
+        "updatedAt": "2026-06-09T16:37:14.049Z",
+        "createdAt": "2026-06-09T16:15:53.210Z",
+        "id": "7Kuw5RaGwePDWMtJ",
+        "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version ab22141a",
+    "description": ""
+  }
+}

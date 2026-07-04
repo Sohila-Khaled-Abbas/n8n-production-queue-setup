@@ -1,0 +1,188 @@
+{
+  "updatedAt": "2026-06-17T23:20:07.100Z",
+  "createdAt": "2026-06-17T17:45:50.182Z",
+  "id": "vsUT3G8zRWz530xO",
+  "name": "Hotel Reservation‏",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Reservation‏",
+        "formDescription": "Please, Choose your Room.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Your Name",
+              "placeholder": "e.g. Sohila Khaled",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Choose your Room",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Suite"
+                  },
+                  {
+                    "option": "Single Room"
+                  },
+                  {
+                    "option": "Deluxe Room"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "buttonLabel": "Book",
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "Your room is booked"
+            }
+          },
+          "ignoreBots": true,
+          "customCss": ":root {\n\t/* Typography */\n\t--font-family: 'Inter', 'SF Pro Display', sans-serif;\n\t--font-weight-normal: 400;\n\t--font-weight-bold: 600;\n\n\t--font-size-body: 14px;\n\t--font-size-label: 14px;\n\t--font-size-input: 15px;\n\t--font-size-header: 28px;\n\t--font-size-subheader: 15px;\n\t--font-size-paragraph: 14px;\n\t--font-size-link: 13px;\n\t--font-size-error: 13px;\n\n\t/* Colors */\n\t--color-background: #f5f7fb;\n\t--color-card-bg: #ffffff;\n\t--color-card-border: #e8ecf3;\n\t--color-card-shadow: rgba(15, 23, 42, 0.08);\n\n\t--color-header: #111827;\n\t--color-header-subtext: #6b7280;\n\t--color-label: #374151;\n\n\t--color-input-border: #d1d5db;\n\t--color-input-text: #111827;\n\t--color-focus-border: #6366f1;\n\n\t--color-submit-btn-bg: #6366f1;\n\t--color-submit-btn-text: #ffffff;\n\n\t--color-link: #6366f1;\n\t--color-html-link: #6366f1;\n\n\t--color-error: #ef4444;\n\t--color-required: #ef4444;\n\n\t--color-clear-button-bg: #94a3b8;\n\t--color-html-text: #4b5563;\n\n\t/* Test notice */\n\t--color-test-notice-text: #92400e;\n\t--color-test-notice-bg: #fffbeb;\n\t--color-test-notice-border: #fde68a;\n\n\t/* Border radius */\n\t--border-radius-card: 24px;\n\t--border-radius-input: 14px;\n\t--border-radius-clear-btn: 50%;\n\t--card-border-radius: 24px;\n\n\t/* Spacing */\n\t--padding-container-top: 48px;\n\t--padding-card: 40px;\n\t--padding-form-input: 16px;\n\n\t--padding-test-notice-vertical: 12px;\n\t--padding-test-notice-horizontal: 20px;\n\n\t--margin-bottom-card: 24px;\n\t--card-padding: 40px;\n\t--card-margin-bottom: 24px;\n\n\t/* Dimensions */\n\t--container-width: 520px;\n\t--submit-btn-height: 56px;\n\t--checkbox-size: 20px;\n\n\t/* Effects */\n\t--box-shadow-card:\n\t\t0 4px 6px rgba(0,0,0,.03),\n\t\t0 20px 40px rgba(15,23,42,.08);\n\n\t--opacity-placeholder: .55;\n}\n\ninput,\ntextarea,\nselect {\n\ttransition: all .2s ease;\n}\n\ninput:focus,\ntextarea:focus,\nselect:focus {\n\tborder-color: #6366f1 !important;\n\tbox-shadow: 0 0 0 4px rgba(99,102,241,.15);\n}\n\nbutton[type=\"submit\"] {\n\tborder-radius: 16px !important;\n\tfont-weight: 600;\n\tletter-spacing: .2px;\n\ttransition: all .2s ease;\n}\n\nbutton[type=\"submit\"]:hover {\n\ttransform: translateY(-1px);\n\tbox-shadow: 0 8px 24px rgba(99,102,241,.3);\n}"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -64,
+        0
+      ],
+      "id": "acba62ab-4ee0-4a3b-9036-c04d159eb9f8",
+      "name": "Hotel Reservation Form",
+      "webhookId": "a6686ad9-3019-4d4e-997a-97c824ad97e1"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appCsXvxAWWCLHYcm",
+          "mode": "list",
+          "cachedResultName": "Hotel Reservations",
+          "cachedResultUrl": "https://airtable.com/appCsXvxAWWCLHYcm"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl1OitDLGCMzX4bf",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appCsXvxAWWCLHYcm/tbl1OitDLGCMzX4bf"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json['Your Name'] }}",
+            "Room": "={{ $json['Choose your Room'] }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Room",
+              "displayName": "Room",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        144,
+        0
+      ],
+      "id": "d4e572ae-5d09-4c0c-addb-8b4a50f1f86e",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "20J6SJYSB73TnTGD",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Hotel Reservation Form": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "b3ce650a-9653-4ec5-b1a7-f8d53c3d0e1f",
+  "activeVersionId": "b3ce650a-9653-4ec5-b1a7-f8d53c3d0e1f",
+  "versionCounter": 61,
+  "triggerCount": 1,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-06-17T17:45:50.182Z",
+      "createdAt": "2026-06-17T17:45:50.182Z",
+      "role": "workflow:owner",
+      "workflowId": "vsUT3G8zRWz530xO",
+      "projectId": "7Kuw5RaGwePDWMtJ",
+      "project": {
+        "updatedAt": "2026-06-09T16:37:14.049Z",
+        "createdAt": "2026-06-09T16:15:53.210Z",
+        "id": "7Kuw5RaGwePDWMtJ",
+        "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version b3ce650a",
+    "description": ""
+  }
+}

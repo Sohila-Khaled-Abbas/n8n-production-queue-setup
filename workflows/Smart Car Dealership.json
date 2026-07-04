@@ -1,0 +1,191 @@
+{
+  "updatedAt": "2026-06-17T17:40:42.489Z",
+  "createdAt": "2026-06-14T19:10:01.734Z",
+  "id": "h3JWGK4EoWm4yerO",
+  "name": "Smart Car Dealership",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "35a1da73-040a-4fa5-863d-fbda8ce0716a",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -80,
+        80
+      ],
+      "id": "12ff5328-f153-49f2-a5b7-cc5898cff107",
+      "name": "Webhook",
+      "webhookId": "35a1da73-040a-4fa5-863d-fbda8ce0716a"
+    },
+    {
+      "parameters": {
+        "sendTo": "sohila.k.data@gmail.com",
+        "subject": "Smart Car Dealership",
+        "emailType": "text",
+        "message": "=A car has just been sold. Here are the detalis: \n- Car Type: {{ $json.body.car }}\n- Price: {{ $json.body.price }}\n- Buyer: {{ $json.body.buyer }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        144,
+        -16
+      ],
+      "id": "8b10e79f-655b-443d-a0a5-a85ba755ce0b",
+      "name": "Send a message",
+      "webhookId": "5ad0c981-da00-4091-9a05-23154406bdb7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "lnIdGq9BGx5bYyLm",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1VwqpGhExpgnZLYQLMkNslZpBXgQea05V8kz_Ex5ni7Y",
+          "mode": "list",
+          "cachedResultName": "Smart Car Dealership",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VwqpGhExpgnZLYQLMkNslZpBXgQea05V8kz_Ex5ni7Y/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VwqpGhExpgnZLYQLMkNslZpBXgQea05V8kz_Ex5ni7Y/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Car": "={{ $('Webhook').item.json.body.car }}",
+            "Price": "={{ $('Webhook').item.json.body.price }}",
+            "Buyer": "={{ $('Webhook').item.json.body.buyer }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Car",
+              "displayName": "Car",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Price",
+              "displayName": "Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Buyer",
+              "displayName": "Buyer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        144,
+        176
+      ],
+      "id": "e3d0cf29-553d-4a50-8904-437bbe7160da",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LKFLSWDFvv6fE63D",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "ce54f9a9-f61f-49f6-abd0-abc961625c03",
+  "activeVersionId": "ce54f9a9-f61f-49f6-abd0-abc961625c03",
+  "versionCounter": 53,
+  "triggerCount": 1,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-06-14T19:10:01.734Z",
+      "createdAt": "2026-06-14T19:10:01.734Z",
+      "role": "workflow:owner",
+      "workflowId": "h3JWGK4EoWm4yerO",
+      "projectId": "7Kuw5RaGwePDWMtJ",
+      "project": {
+        "updatedAt": "2026-06-09T16:37:14.049Z",
+        "createdAt": "2026-06-09T16:15:53.210Z",
+        "id": "7Kuw5RaGwePDWMtJ",
+        "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version ce54f9a9",
+    "description": ""
+  }
+}

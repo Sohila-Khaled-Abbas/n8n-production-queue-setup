@@ -1,0 +1,896 @@
+{
+  "updatedAt": "2026-06-14T12:47:24.549Z",
+  "createdAt": "2026-06-13T17:38:09.170Z",
+  "id": "rbpyqNliHGje0ezV",
+  "name": "Stock Prices Real-time",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"tickers\": \"AAPL,MSFT,NVDA\"\n}",
+        "options": {}
+      },
+      "id": "1c19a882-c2b8-49f9-a85e-6d8c086bd46c",
+      "name": "Define Tickers",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [
+        416,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://finnhub.io/api/v1/quote",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "symbol",
+              "value": "={{ $json.symbol }}"
+            },
+            {
+              "name": "token",
+              "value": "d8msle9r01qp7ubncgd0d8msle9r01qp7ubncgdg"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "31b8b53b-98d4-45f9-9030-c7ad1f5665c7",
+      "name": "Fetch All Quotes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1088,
+        624
+      ],
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "const tickers = $json.tickers.split(',');\n\nreturn tickers.map(symbol => ({\n  json: {\n    symbol: symbol.trim()\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        544
+      ],
+      "id": "6ab14487-ad90-4983-aeb2-ce0ed7aab0af",
+      "name": "Split Tickers"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6995bc58-d554-4d82-bcd0-80f690285bee",
+              "name": "symbol",
+              "value": "={{ $json.symbol }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        864,
+        624
+      ],
+      "id": "525504a8-bca2-4ba3-bd5d-539226a26274",
+      "name": "Preserve Symbol Name"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1312,
+        544
+      ],
+      "id": "589c1d48-f529-4cb3-a107-6210884ff874",
+      "name": "Merge",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  return {\n    json: {\n      symbol: item.json.symbol,   // 👈 this was missing in output\n      price: item.json.c,\n      change: item.json.d,\n      percent: item.json.dp,\n      high: item.json.h,\n      low: item.json.l\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1536,
+        544
+      ],
+      "id": "390dea40-f79f-433d-87b0-ddd142213f4a",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        544
+      ],
+      "id": "15c6c2c4-ebc1-4f1b-9588-58640e8a4450",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        192,
+        880
+      ],
+      "id": "ad305702-75cc-48bf-b3b4-efdd38f0d970",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "content": "Database Creation",
+        "height": 272,
+        "width": 1636
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        96,
+        800
+      ],
+      "typeVersion": 1,
+      "id": "372a0879-875c-4efa-b86f-50c39f7a8f09",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  json: {\n    symbol: $json.symbol,\n    price: $json.price,\n    change_value: $json.change,\n    percent_change: $json.percent,\n    high: $json.high,\n    low: $json.low,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        544
+      ],
+      "id": "6deab3f5-23b1-4533-a791-6bf1df65b7fe",
+      "name": "Normalize for DB"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS stock_prices (\n    id SERIAL PRIMARY KEY,\n    symbol TEXT,\n    price NUMERIC,\n    change_value NUMERIC,\n    percent_change NUMERIC,\n    high NUMERIC,\n    low NUMERIC,\n    timestamp TIMESTAMP DEFAULT NOW()\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        416,
+        880
+      ],
+      "id": "738bda40-be9e-4df7-b137-a97de769c986",
+      "name": "Table 1: Raw Data",
+      "executeOnce": true,
+      "credentials": {
+        "postgres": {
+          "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+          "name": "PostgreSQL — n8n Stack"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS stock_market_insights (\n    id SERIAL PRIMARY KEY,\n    analysis_date DATE,\n    symbol TEXT,\n    sentiment TEXT,\n    trend TEXT,\n    recommendation TEXT,\n    ai_summary TEXT,\n    created_at TIMESTAMP DEFAULT NOW()\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        640,
+        880
+      ],
+      "id": "c1b9755f-4c2c-411f-b866-743ed527debf",
+      "name": "Table 2: AI Insights",
+      "executeOnce": true,
+      "credentials": {
+        "postgres": {
+          "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+          "name": "PostgreSQL — n8n Stack"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "stock_prices",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {
+            "id": 0,
+            "price": 0,
+            "change_value": 0,
+            "percent_change": 0,
+            "high": 0,
+            "low": 0
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "symbol",
+              "displayName": "symbol",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "price",
+              "displayName": "price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "change_value",
+              "displayName": "change_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "percent_change",
+              "displayName": "percent_change",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "high",
+              "displayName": "high",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "low",
+              "displayName": "low",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1984,
+        544
+      ],
+      "id": "b9bc41f8-e9e6-42de-8e58-573f864243c5",
+      "name": "PostgreSQL (stock_prices)",
+      "credentials": {
+        "postgres": {
+          "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+          "name": "PostgreSQL — n8n Stack"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a financial analyst.\n\nAnalyze this stock:\n\nSymbol: {{ $json.symbol }}\nCurrent Price: {{ $json.price }}\nChange: {{ $json.change_value }}\nPercent Change: {{ $json.percent_change }}\nHigh: {{ $json.high }}\nLow: {{ $json.low }}\n\nReturn ONLY valid JSON.\n\n{\n  \"sentiment\": \"\",\n  \"trend\": \"\",\n  \"recommendation\": \"\",\n  \"summary\": \"\"\n}\n\nRules:\n\nsentiment:\n- Bullish\n- Neutral\n- Bearish\n\ntrend:\n- Uptrend\n- Downtrend\n- Sideways\n- Strong Uptrend\n- Strong Downtrend\n\nrecommendation:\n- Buy\n- Hold\n- Watch\n- Sell",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2208,
+        544
+      ],
+      "id": "2d4af70b-2fac-4b7b-a20f-eb60039f02c2",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2224,
+        768
+      ],
+      "id": "c6a0771b-b328-4f44-8837-3c631074cb51",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "o1WM1pxDXe6yNltX",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "stock_prices"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        2352,
+        768
+      ],
+      "id": "0416d370-4e0d-498f-adbe-610a865430d4",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+          "name": "PostgreSQL — n8n Stack"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const ai = JSON.parse($json.output);\n\nreturn {\n  json: {\n    analysis_date: new Date().toISOString().split('T')[0],\n\n    symbol: $(\"PostgreSQL (stock_prices)\").first().json.symbol,\n    price: $(\"PostgreSQL (stock_prices)\").first().json.price,\n\n    sentiment: ai.sentiment,\n    trend: ai.trend,\n    recommendation: ai.recommendation,\n    ai_summary: ai.summary\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2560,
+        544
+      ],
+      "id": "7c8eb1d1-7763-4268-8b40-130fb5126184",
+      "name": "Parse AI Output"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "ALTER TABLE stock_market_insights\nADD COLUMN price NUMERIC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        864,
+        880
+      ],
+      "id": "5e9b460a-6753-4f8b-8976-12eedfcd82ff",
+      "name": "Execute a SQL query",
+      "executeOnce": true,
+      "credentials": {
+        "postgres": {
+          "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+          "name": "PostgreSQL — n8n Stack"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "ALTER TABLE stock_market_insights\nADD CONSTRAINT stock_market_insights_unique\nUNIQUE (analysis_date, symbol);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1536,
+        880
+      ],
+      "id": "13cf9324-931b-43d5-b344-5b3520d564a1",
+      "name": "Unique Constraint",
+      "executeOnce": true,
+      "credentials": {
+        "postgres": {
+          "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+          "name": "PostgreSQL — n8n Stack"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n    analysis_date,\n    symbol,\n    COUNT(*)\nFROM stock_market_insights\nGROUP BY analysis_date, symbol\nHAVING COUNT(*) > 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1088,
+        880
+      ],
+      "id": "5027e585-bcda-4477-bead-6c879fd24b66",
+      "name": "Verify Existing Duplicates",
+      "credentials": {
+        "postgres": {
+          "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+          "name": "PostgreSQL — n8n Stack"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM stock_market_insights\nWHERE id NOT IN (\n    SELECT MAX(id)\n    FROM stock_market_insights\n    GROUP BY analysis_date, symbol\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1312,
+        880
+      ],
+      "id": "b4f6de91-496a-49fb-9b33-cbe39b27930b",
+      "name": "Delete Existing Duplicates (if needed)",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+          "name": "PostgreSQL — n8n Stack"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "stock_market_insights",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {
+            "id": 0,
+            "price": 0
+          },
+          "matchingColumns": [
+            "analysis_date"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "analysis_date",
+              "displayName": "analysis_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "symbol",
+              "displayName": "symbol",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sentiment",
+              "displayName": "sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "trend",
+              "displayName": "trend",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "recommendation",
+              "displayName": "recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ai_summary",
+              "displayName": "ai_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "price",
+              "displayName": "price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2784,
+        544
+      ],
+      "id": "275fbb18-ab5a-4c57-9aa8-9106d075534b",
+      "name": "Update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+          "name": "PostgreSQL — n8n Stack"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Define Tickers": {
+      "main": [
+        [
+          {
+            "node": "Split Tickers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch All Quotes": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Split Tickers": {
+      "main": [
+        [
+          {
+            "node": "Preserve Symbol Name",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preserve Symbol Name": {
+      "main": [
+        [
+          {
+            "node": "Fetch All Quotes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Normalize for DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Define Tickers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Table 1: Raw Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize for DB": {
+      "main": [
+        [
+          {
+            "node": "PostgreSQL (stock_prices)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Table 1: Raw Data": {
+      "main": [
+        [
+          {
+            "node": "Table 2: AI Insights",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PostgreSQL (stock_prices)": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Output": {
+      "main": [
+        [
+          {
+            "node": "Update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Verify Existing Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Table 2: AI Insights": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Existing Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Delete Existing Duplicates (if needed)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Existing Duplicates (if needed)": {
+      "main": [
+        [
+          {
+            "node": "Unique Constraint",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "2e74ebd4-1e9c-405a-a8d5-191cccd48787",
+  "activeVersionId": null,
+  "versionCounter": 382,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-06-13T17:38:09.170Z",
+      "createdAt": "2026-06-13T17:38:09.170Z",
+      "role": "workflow:owner",
+      "workflowId": "rbpyqNliHGje0ezV",
+      "projectId": "7Kuw5RaGwePDWMtJ",
+      "project": {
+        "updatedAt": "2026-06-09T16:37:14.049Z",
+        "createdAt": "2026-06-09T16:15:53.210Z",
+        "id": "7Kuw5RaGwePDWMtJ",
+        "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

@@ -1,0 +1,1557 @@
+{
+  "updatedAt": "2026-06-26T18:35:00.960Z",
+  "createdAt": "2026-06-19T19:33:43.536Z",
+  "id": "6O7UN5cfWkZ9yGYu",
+  "name": "Sentiment Analysis Agent",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Restaurant Experience Feedback",
+        "formDescription": "Thank you for dining with us! Your feedback helps us improve our food and service. Please take a minute to share your experience.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Customer Name",
+              "placeholder": "e.g. Sarah Ahmed"
+            },
+            {
+              "fieldLabel": "Email Address",
+              "fieldType": "email",
+              "placeholder": "example@email.com"
+            },
+            {
+              "fieldLabel": "Date of Visit",
+              "fieldType": "date",
+              "fieldName": "When did you visit us?",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Meal Type",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Breakfast"
+                  },
+                  {
+                    "option": "Lunch"
+                  },
+                  {
+                    "option": "Dinner"
+                  },
+                  {
+                    "option": "Snack"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Overall Rating",
+              "fieldType": "radio",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "⭐⭐⭐⭐⭐ Excellent"
+                  },
+                  {
+                    "option": "⭐⭐⭐⭐ Very Good"
+                  },
+                  {
+                    "option": "⭐⭐⭐ Average"
+                  },
+                  {
+                    "option": "⭐⭐ Poor"
+                  },
+                  {
+                    "option": "⭐ Very Poor"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Food Quality Rating",
+              "fieldType": "radio",
+              "fieldName": "How would you rate the food quality?",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "1 ⭐"
+                  },
+                  {
+                    "option": "2 ⭐⭐"
+                  },
+                  {
+                    "option": "3 ⭐⭐⭐"
+                  },
+                  {
+                    "option": "4 ⭐⭐⭐⭐"
+                  },
+                  {
+                    "option": "5 ⭐⭐⭐⭐⭐"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Service Rating",
+              "fieldType": "dropdown",
+              "fieldName": "How would you rate our service?",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "1 ⭐"
+                  },
+                  {
+                    "option": "2 ⭐⭐"
+                  },
+                  {
+                    "option": "3 ⭐⭐⭐"
+                  },
+                  {
+                    "option": "4 ⭐⭐⭐⭐"
+                  },
+                  {
+                    "option": "5 ⭐⭐⭐⭐⭐"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Waiting Time",
+              "fieldType": "dropdown",
+              "fieldName": "How was the waiting time?",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Very Fast"
+                  },
+                  {
+                    "option": "Acceptable"
+                  },
+                  {
+                    "option": "Long"
+                  },
+                  {
+                    "option": "Too Long"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Would You Recommend Us?",
+              "fieldType": "radio",
+              "fieldName": "Would you recommend our restaurant to others?",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Definitely"
+                  },
+                  {
+                    "option": "Probably"
+                  },
+                  {
+                    "option": "Not Sure"
+                  },
+                  {
+                    "option": "Probably Not"
+                  },
+                  {
+                    "option": "Never"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Tell us about your experience",
+              "fieldType": "textarea",
+              "placeholder": "Example: The food was delicious and arrived quickly. The staff were friendly and helpful. However, the waiting time for dessert was longer than expected.",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "What can we improve?",
+              "fieldType": "textarea",
+              "placeholder": "Tell us how we can make your next visit better."
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "customCss": ":root{\n  --font-family:'Inter',sans-serif;\n\n  /* Colors */\n  --color-background:#f7f8fc;\n  --color-card-bg:#ffffff;\n  --color-card-border:#eceef5;\n  --color-card-shadow:rgba(0,0,0,.06);\n\n  --color-header:#1e293b;\n  --color-label:#334155;\n  --color-input-text:#475569;\n  --color-input-border:#dbe3ee;\n  --color-focus-border:#ff6b35;\n\n  --color-submit-btn-bg:#ff6b35;\n  --color-submit-btn-text:#ffffff;\n\n  --font-size-header:28px;\n  --font-size-label:15px;\n  --font-size-input:15px;\n  --font-size-body:14px;\n\n  --border-radius:18px;\n}\n\n/* Card */\n.form-wrapper{\n    max-width:850px;\n}\n\n/* Inputs */\ninput,\ntextarea,\nselect{\n    border-radius:14px !important;\n    padding:14px !important;\n    transition:.3s ease;\n}\n\ninput:focus,\ntextarea:focus,\nselect:focus{\n    box-shadow:0 0 0 4px rgba(255,107,53,.15);\n}\n\n/* Button */\nbutton{\n    border-radius:14px !important;\n    font-weight:600;\n    padding:14px 24px !important;\n    transition:.3s;\n}\n\nbutton:hover{\n    transform:translateY(-2px);\n}"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        16
+      ],
+      "id": "4e29ab9a-2a81-4ed0-be8f-f48ed54bc930",
+      "name": "On form submission",
+      "webhookId": "b5240077-ae74-4617-99b4-893c440e1ce9"
+    },
+    {
+      "parameters": {
+        "jsCode": "const formData = $('On form submission').first().json;\n\nconst aiResponse =\n$input.first().json.content.parts[0].text;\n\nconst analysis = JSON.parse(aiResponse);\n\nreturn [{\njson: {\n\n//////////// CUSTOMER ////////////\n\ncustomer_name:\nformData[\"Customer Name\"],\n\nemail:\nformData[\"Email Address\"],\n\nvisit_date:\nformData[\"When did you visit us?\"],\n\nmeal_type:\nformData[\"Meal Type\"],\n\n//////////// RATINGS ////////////\n\noverall_rating:\nformData[\"Overall Rating\"],\n\nfood_rating:\nformData[\"How would you rate the food quality?\"],\n\nservice_rating:\nformData[\"How would you rate our service?\"],\n\nwaiting_time:\nformData[\"How was the waiting time?\"],\n\nrecommendation:\nformData[\"Would you recommend our restaurant to others?\"],\n\nreview:\nformData[\"Tell us about your experience\"],\n\nimprovement_suggestions:\nformData[\"What can we improve?\"],\n\n//////////// AI ANALYSIS ////////////\n\noverall_sentiment:\nanalysis.overall_sentiment,\n\nsentiment_score:\nanalysis.sentiment_score,\n\nemotion:\nanalysis.emotion,\n\nfood_sentiment:\nanalysis.food_sentiment,\n\nservice_sentiment:\nanalysis.service_sentiment,\n\nwaiting_time_sentiment:\nanalysis.waiting_time_sentiment,\n\nmain_issue:\nanalysis.main_issue,\n\nrecommendation_likelihood:\nanalysis.recommendation_likelihood,\n\nsummary:\nanalysis.summary,\n\n//////////// ARRAYS AS TEXT ////////////\n\nstrengths:\nanalysis.strengths.join(\", \"),\n\ncomplaints:\nanalysis.complaints.join(\", \"),\n\nmanagement_actions:\nanalysis.management_actions.join(\" | \"),\n\n//////////// METRICS ////////////\n\ncomplaint_count:\nanalysis.complaints.length,\n\nstrength_count:\nanalysis.strengths.length,\n\nneeds_attention:\n(\nanalysis.overall_sentiment===\"Negative\" ||\nanalysis.service_sentiment===\"Negative\" ||\nanalysis.waiting_time_sentiment===\"Negative\"\n),\n\ntimestamp:\nnew Date().toISOString()\n\n}\n}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        16
+      ],
+      "id": "0d7a10f3-dc54-4308-b7eb-bf471525253c",
+      "name": "Parser + Flatten"
+    },
+    {
+      "parameters": {
+        "resource": "spreadsheet",
+        "title": "Restaurant Customer Feedback",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1248,
+        112
+      ],
+      "id": "01a7ef68-80b4-421d-b212-aefcde766d6a",
+      "name": "Create spreadsheet",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "b0YIKrEaHBhRaBmi",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.spreadsheetId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gJiFMa-dNoNJ21gdxxcII7LhdV5vVcycuWMRhK5kOjc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "customer_name",
+              "displayName": "customer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "visit_date",
+              "displayName": "visit_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "meal_type",
+              "displayName": "meal_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "overall_rating",
+              "displayName": "overall_rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "food_rating",
+              "displayName": "food_rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "service_rating",
+              "displayName": "service_rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "waiting_time",
+              "displayName": "waiting_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recommendation",
+              "displayName": "recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review",
+              "displayName": "review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "improvement_suggestions",
+              "displayName": "improvement_suggestions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "overall_sentiment",
+              "displayName": "overall_sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sentiment_score",
+              "displayName": "sentiment_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "emotion",
+              "displayName": "emotion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "food_sentiment",
+              "displayName": "food_sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "service_sentiment",
+              "displayName": "service_sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "waiting_time_sentiment",
+              "displayName": "waiting_time_sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "main_issue",
+              "displayName": "main_issue",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recommendation_likelihood",
+              "displayName": "recommendation_likelihood",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "strengths",
+              "displayName": "strengths",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "complaints",
+              "displayName": "complaints",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "management_actions",
+              "displayName": "management_actions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "complaint_count",
+              "displayName": "complaint_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "strength_count",
+              "displayName": "strength_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "needs_attention",
+              "displayName": "needs_attention",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2368,
+        -80
+      ],
+      "id": "78a07537-9fe2-4f4a-b349-4436917b4323",
+      "name": "Append Customer Record",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "b0YIKrEaHBhRaBmi",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "Restaurant Customer Feedback",
+        "filter": {
+          "driveId": {
+            "mode": "list",
+            "value": "My Drive"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        800,
+        16
+      ],
+      "id": "debed1fe-79b6-4b98-b8c1-1e76347ae073",
+      "name": "Search files and folders",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Q8F6AF4nNReCfLij",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ea916146-8cc0-4197-ad4d-c768c68854c1",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1024,
+        16
+      ],
+      "id": "9feaef7b-84e5-4a13-8d04-c296d883966a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "const row = $('Parser + Flatten').first().json;\n\nconst headers = Object.keys(row);\n\nlet obj = {};\n\nheaders.forEach(h => {\n  obj[h] = h;\n});\n\nobj.spreadsheetId = $('Create spreadsheet').first().json.spreadsheetId;\n\nreturn [{json: obj}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        112
+      ],
+      "id": "d7e40e02-1c87-4e4b-96f5-4c862c1c63ee",
+      "name": "Create Header Row"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{$json.spreadsheetId}}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1EQW6qz3cabLElZ_Ou_6c-nPd0hGqGWGgoTM7y1ieRf0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "customer_name",
+              "displayName": "customer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "visit_date",
+              "displayName": "visit_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "meal_type",
+              "displayName": "meal_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "overall_rating",
+              "displayName": "overall_rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "food_rating",
+              "displayName": "food_rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "service_rating",
+              "displayName": "service_rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "waiting_time",
+              "displayName": "waiting_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "recommendation",
+              "displayName": "recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "review",
+              "displayName": "review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "improvement_suggestions",
+              "displayName": "improvement_suggestions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "overall_sentiment",
+              "displayName": "overall_sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sentiment_score",
+              "displayName": "sentiment_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "emotion",
+              "displayName": "emotion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "food_sentiment",
+              "displayName": "food_sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "service_sentiment",
+              "displayName": "service_sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "waiting_time_sentiment",
+              "displayName": "waiting_time_sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "main_issue",
+              "displayName": "main_issue",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "recommendation_likelihood",
+              "displayName": "recommendation_likelihood",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "strengths",
+              "displayName": "strengths",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "complaints",
+              "displayName": "complaints",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "management_actions",
+              "displayName": "management_actions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "complaint_count",
+              "displayName": "complaint_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "strength_count",
+              "displayName": "strength_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "needs_attention",
+              "displayName": "needs_attention",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "spreadsheetId",
+              "displayName": "spreadsheetId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1696,
+        112
+      ],
+      "id": "2e6e350b-3bc4-4d0d-921b-c7fc95e2f473",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "b0YIKrEaHBhRaBmi",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://sheets.googleapis.com/v4/spreadsheets/{{ $('Create spreadsheet').item.json.spreadsheetId }}:batchUpdate",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSheetsOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"requests\": [\n    {\n      \"updateSheetProperties\": {\n        \"properties\": {\n          \"sheetId\": 0,\n          \"gridProperties\": {\n            \"frozenRowCount\": 1\n          }\n        },\n        \"fields\": \"gridProperties.frozenRowCount\"\n      }\n    },\n    {\n      \"repeatCell\": {\n        \"range\": {\n          \"sheetId\": 0,\n          \"startRowIndex\": 0,\n          \"endRowIndex\": 1\n        },\n        \"cell\": {\n          \"userEnteredFormat\": {\n            \"backgroundColor\": {\n              \"red\": 0.1,\n              \"green\": 0.3,\n              \"blue\": 0.7\n            },\n            \"textFormat\": {\n              \"bold\": true,\n              \"foregroundColor\": {\n                \"red\": 1,\n                \"green\": 1,\n                \"blue\": 1\n              }\n            }\n          }\n        },\n        \"fields\": \"userEnteredFormat(backgroundColor,textFormat)\"\n      }\n    },\n    {\n      \"addBanding\": {\n        \"bandedRange\": {\n          \"range\": {\n            \"sheetId\": 0\n          },\n          \"rowProperties\": {\n            \"firstBandColor\": {\n              \"red\": 1,\n              \"green\": 1,\n              \"blue\": 1\n            },\n            \"secondBandColor\": {\n              \"red\": 0.95,\n              \"green\": 0.95,\n              \"blue\": 0.95\n            }\n          }\n        }\n      }\n    },\n    {\n      \"autoResizeDimensions\": {\n        \"dimensions\": {\n          \"sheetId\": 0,\n          \"dimension\": \"COLUMNS\",\n          \"startIndex\": 0,\n          \"endIndex\": 50\n        }\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1920,
+        112
+      ],
+      "id": "6f5f9e3a-8ac5-41f6-81bd-be0854dd5a1f",
+      "name": "Format Sheet",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "b0YIKrEaHBhRaBmi",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{\n$('Create spreadsheet').first()?.json.spreadsheetId\n||\n$('Search files and folders').first()?.json.id\n}}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gJiFMa-dNoNJ21gdxxcII7LhdV5vVcycuWMRhK5kOjc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "customer_name": "={{ $('Parser + Flatten').item.json.customer_name }}",
+            "email": "={{ $('Parser + Flatten').item.json.email }}",
+            "visit_date": "={{ $('Parser + Flatten').item.json.visit_date }}",
+            "meal_type": "={{ $('Parser + Flatten').item.json.meal_type }}",
+            "overall_rating": "={{ $('Parser + Flatten').item.json.overall_rating }}",
+            "food_rating": "={{ $('Parser + Flatten').item.json.food_rating }}",
+            "service_rating": "={{ $('Parser + Flatten').item.json.service_rating }}",
+            "waiting_time": "={{ $('Parser + Flatten').item.json.waiting_time }}",
+            "recommendation": "={{ $('Parser + Flatten').item.json.recommendation }}",
+            "review": "={{ $('Parser + Flatten').item.json.review }}",
+            "improvement_suggestions": "={{ $('Parser + Flatten').item.json.improvement_suggestions }}",
+            "overall_sentiment": "={{ $('Parser + Flatten').item.json.overall_sentiment }}",
+            "sentiment_score": "={{ $('Parser + Flatten').item.json.sentiment_score }}",
+            "emotion": "={{ $('Parser + Flatten').item.json.emotion }}",
+            "food_sentiment": "={{ $('Parser + Flatten').item.json.food_sentiment }}",
+            "service_sentiment": "={{ $('Parser + Flatten').item.json.service_sentiment }}",
+            "waiting_time_sentiment": "={{ $('Parser + Flatten').item.json.waiting_time_sentiment }}",
+            "main_issue": "={{ $('Parser + Flatten').item.json.main_issue }}",
+            "recommendation_likelihood": "={{ $('Parser + Flatten').item.json.recommendation_likelihood }}",
+            "summary": "={{ $('Parser + Flatten').item.json.summary }}",
+            "strengths": "={{ $('Parser + Flatten').item.json.strengths }}",
+            "complaints": "={{ $('Parser + Flatten').item.json.complaints }}",
+            "management_actions": "={{ $('Parser + Flatten').item.json.management_actions }}",
+            "complaint_count": "={{ $('Parser + Flatten').item.json.complaint_count }}",
+            "strength_count": "={{ $('Parser + Flatten').item.json.strength_count }}",
+            "needs_attention": "={{ $('Parser + Flatten').item.json.needs_attention }}",
+            "timestamp": "={{ $('Parser + Flatten').item.json.timestamp }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "customer_name",
+              "displayName": "customer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "visit_date",
+              "displayName": "visit_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "meal_type",
+              "displayName": "meal_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "overall_rating",
+              "displayName": "overall_rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "food_rating",
+              "displayName": "food_rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "service_rating",
+              "displayName": "service_rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "waiting_time",
+              "displayName": "waiting_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recommendation",
+              "displayName": "recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review",
+              "displayName": "review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "improvement_suggestions",
+              "displayName": "improvement_suggestions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "overall_sentiment",
+              "displayName": "overall_sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sentiment_score",
+              "displayName": "sentiment_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "emotion",
+              "displayName": "emotion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "food_sentiment",
+              "displayName": "food_sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "service_sentiment",
+              "displayName": "service_sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "waiting_time_sentiment",
+              "displayName": "waiting_time_sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "main_issue",
+              "displayName": "main_issue",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recommendation_likelihood",
+              "displayName": "recommendation_likelihood",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "strengths",
+              "displayName": "strengths",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "complaints",
+              "displayName": "complaints",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "management_actions",
+              "displayName": "management_actions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "complaint_count",
+              "displayName": "complaint_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "strength_count",
+              "displayName": "strength_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "needs_attention",
+              "displayName": "needs_attention",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2368,
+        112
+      ],
+      "id": "34639508-0c19-466b-956a-ce5e04137a3e",
+      "name": "Append Customer Record1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "b0YIKrEaHBhRaBmi",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://sheets.googleapis.com/v4/spreadsheets/{{$('Create spreadsheet').first().json.spreadsheetId}}:batchUpdate",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSheetsOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"requests\":[\n    {\n      \"setBasicFilter\":{\n        \"filter\":{\n          \"range\":{\n            \"sheetId\":0\n          }\n        }\n      }\n    },\n    {\n      \"autoResizeDimensions\":{\n        \"dimensions\":{\n          \"sheetId\":0,\n          \"dimension\":\"COLUMNS\",\n          \"startIndex\":0,\n          \"endIndex\":27\n        }\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2144,
+        112
+      ],
+      "id": "eefaa139-7431-4f31-8aca-116a7694ab40",
+      "name": "Convert To Table",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "b0YIKrEaHBhRaBmi",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.timeSaved",
+      "typeVersion": 1,
+      "position": [
+        2592,
+        16
+      ],
+      "id": "96d83782-597f-48fe-8c80-bff850b436a1",
+      "name": "Time Saved"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Customer Review:\n{{ $json[\"Tell us about your experience\"] }}\n\nAdditional Information:\nOverall Rating: {{ $json[\"Overall Rating\"] }}\nFood Quality Rating: {{ $json[\"How would you rate the food quality?\"] }}\nService Rating: {{ $json[\"How would you rate our service?\"] }}\nWaiting Time: {{ $json[\"How was the waiting time?\"] }}\nRecommendation: {{ $json[\"Would you recommend our restaurant to others?\"] }}\nImprovement Suggestions: {{ $json[\"What can we improve?\"] }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an expert sentiment analysis model specializing in restaurant customer reviews.  Analyze the customer feedback below and determine the overall sentiment expressed by the customer.  Classification rules:  * Positive: Mostly satisfied, praising the experience, or recommending the restaurant. * Negative: Mostly dissatisfied, complaining, or not recommending the restaurant. * Neutral: Mixed opinions or balanced feedback without a clearly positive or negative overall tone.  Return exactly one of these labels and nothing else:  Positive Negative Neutral"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        224,
+        16
+      ],
+      "id": "5efc66fd-8359-44d0-909e-f2f2f7a3e2c1",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "deepseek-r1:7b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        240,
+        240
+      ],
+      "id": "2bd72dd0-09b4-4eee-9f6d-23c1733f51c4",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "wDe9MCIO6q1M7Gau",
+          "name": "Ollama account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser + Flatten": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create spreadsheet": {
+      "main": [
+        [
+          {
+            "node": "Create Header Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Customer Record": {
+      "main": [
+        [
+          {
+            "node": "Time Saved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Append Customer Record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create spreadsheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Header Row": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Format Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Sheet": {
+      "main": [
+        [
+          {
+            "node": "Convert To Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert To Table": {
+      "main": [
+        [
+          {
+            "node": "Append Customer Record1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Customer Record1": {
+      "main": [
+        [
+          {
+            "node": "Time Saved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Parser + Flatten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "timeSavedMode": "dynamic",
+    "timezone": "Asia/Kuwait",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {
+    "On form submission": [
+      {
+        "json": {
+          "Customer Name": "Mariam Khaled",
+          "Email Address": "mariam.khaled@example.com",
+          "When did you visit us?": "2026-06-18",
+          "Meal Type": "Dinner",
+          "Overall Rating": "⭐⭐⭐⭐ Very Good",
+          "How would you rate the food quality?": "5 ⭐⭐⭐⭐⭐",
+          "How would you rate our service?": "2 ⭐⭐",
+          "How was the waiting time?": "Too Long",
+          "Would you recommend our restaurant to others?": "Probably",
+          "Tell us about your experience": "The steak was amazing and the desserts were fantastic. Unfortunately, we had to wait nearly 40 minutes for our table and another 30 minutes for the food. The waiter seemed overwhelmed and forgot our drinks. Despite the excellent food, the slow service affected the experience.",
+          "What can we improve?": "Increase staffing during busy hours and shorten waiting times."
+        }
+      }
+    ]
+  },
+  "versionId": "69286bc2-aca9-4008-9409-9c3ef586d93f",
+  "activeVersionId": "9c3c1aec-bc01-49b3-b809-caeb6911d6d3",
+  "versionCounter": 416,
+  "triggerCount": 1,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-06-19T19:33:43.536Z",
+      "createdAt": "2026-06-19T19:33:43.536Z",
+      "role": "workflow:owner",
+      "workflowId": "6O7UN5cfWkZ9yGYu",
+      "projectId": "7Kuw5RaGwePDWMtJ",
+      "project": {
+        "updatedAt": "2026-06-09T16:37:14.049Z",
+        "createdAt": "2026-06-09T16:15:53.210Z",
+        "id": "7Kuw5RaGwePDWMtJ",
+        "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

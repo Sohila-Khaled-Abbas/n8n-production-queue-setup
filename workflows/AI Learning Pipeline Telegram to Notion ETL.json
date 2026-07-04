@@ -1,0 +1,515 @@
+{
+  "updatedAt": "2026-07-02T16:56:15.434Z",
+  "createdAt": "2026-07-01T12:51:49.269Z",
+  "id": "NpCAVsDMkGXTqhas",
+  "name": "AI Learning Pipeline: Telegram to Notion ETL",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.message.text;\nconst urlRegex = /(https?:\\/\\/[^\\s]+)/g;\nconst url = text.match(urlRegex)?.[0] || \"\";\nconst directive = text.replace(urlRegex, \"\").trim();\nreturn { json: { url: url, directive: directive } };\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        624
+      ],
+      "id": "5eff3758-32e8-46fc-87f3-63bcccedd04e",
+      "name": "The Parser"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        624
+      ],
+      "id": "c6702e6a-06c9-4daa-81bc-58a7edaa96ab",
+      "name": "The Extraction",
+      "webhookId": "9c77fdb8-5f6a-4dca-8751-7377cc095e79",
+      "credentials": {
+        "telegramApi": {
+          "id": "tDyw6EwwmhJnMKu5",
+          "name": "ETL Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "qwen2.5:3b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        848
+      ],
+      "id": "ee073892-63e1-4944-b026-2b93d4efe517",
+      "name": "Ollama Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "wDe9MCIO6q1M7Gau",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.transcript_text }} || {{ $json.data }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "domain",
+              "description": "The technical category of the text.",
+              "required": true
+            },
+            {
+              "name": "resource_type",
+              "description": "The format of the learning material."
+            },
+            {
+              "name": "priority",
+              "description": "The urgency of learning this material, heavily biased by the user directive."
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "=Extract the schema from the text. Pay strict attention to this user directive:{{ $('The Parser').item.json.directive }} . Bias the priority based on this directive"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        1344,
+        624
+      ],
+      "id": "f2f0380f-9242-4a16-a6d4-25ff00a80c1a",
+      "name": "The Triage AI"
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:3b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1664,
+        848
+      ],
+      "id": "9a54c257-dc10-4504-aec2-16d099ca1c21",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "wDe9MCIO6q1M7Gau",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        1952,
+        848
+      ],
+      "id": "d15e62d8-73f7-4719-93a3-61fc2f20365e",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+          "name": "PostgreSQL — n8n Stack"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=You are an Analytics Engineer mentor. Analyze the provided syllabus and output a Markdown-formatted study roadmap. Break the course into 60-minute execution blocks. Highlight modules related to: {{ $('The Parser').item.json.directive }}."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1760,
+        624
+      ],
+      "id": "c20a4adb-a076-47ce-9bd1-7d96ec20f759",
+      "name": "The Mentor AI"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "39070877-4c80-80f4-915b-efcfc0bcf089",
+          "mode": "list",
+          "cachedResultName": "Learning Paths",
+          "cachedResultUrl": "https://app.notion.com/p/390708774c8080f4915befcfc0bcf089"
+        },
+        "title": "=",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        2160,
+        624
+      ],
+      "id": "4cab3040-5a7e-46c7-a569-c4f84db7ad0a",
+      "name": "Create a database page",
+      "credentials": {
+        "notionApi": {
+          "id": "WTrWPkXdnXFPfOi9",
+          "name": "Notion account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('The Parser').item.json.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        672,
+        720
+      ],
+      "id": "4c641df7-b6f1-4043-a80f-cadd476cebfa",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "model": "openrouter/auto",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1808,
+        848
+      ],
+      "id": "5e923e09-f32c-4ce7-8a6b-73f2a68d5e0e",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "Wfnk5q7gswurynsI",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4810b093-5ee2-47a0-a9f4-c5f3888b634b",
+              "leftValue": "=={{ $json.url }}",
+              "rightValue": "youtube.com",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "c9d3eb03-6ffa-4e0e-b4f3-caf638d60900",
+              "leftValue": "=={{ $json.url }}",
+              "rightValue": "youtu.be",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        624
+      ],
+      "id": "736051c3-9413-4b6f-8de0-5ce83082f6d5",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        896,
+        720
+      ],
+      "id": "1dc99687-c0c4-4f72-980e-221bfb975868",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "html": "j",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        720
+      ],
+      "id": "e679759d-c077-45be-b5d7-42aaea426525",
+      "name": "Markdown"
+    }
+  ],
+  "connections": {
+    "The Extraction": {
+      "main": [
+        [
+          {
+            "node": "The Parser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "The Parser": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "The Triage AI",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "The Triage AI": {
+      "main": [
+        [
+          {
+            "node": "The Mentor AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "The Mentor AI",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "The Mentor AI",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "The Mentor AI": {
+      "main": [
+        [
+          {
+            "node": "Create a database page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a database page": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "The Mentor AI",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "The Triage AI",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "The Triage AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {
+    "The Extraction": [
+      {
+        "json": {
+          "update_id": 276550319,
+          "message": {
+            "message_id": 2,
+            "from": {
+              "id": 1137181888,
+              "is_bot": false,
+              "first_name": "𝚂𝚘𝚑𝚒𝚕𝚊",
+              "last_name": "♡",
+              "username": "sohilakabbas",
+              "language_code": "en"
+            },
+            "chat": {
+              "id": 1137181888,
+              "first_name": "𝚂𝚘𝚑𝚒𝚕𝚊",
+              "last_name": "♡",
+              "username": "sohilakabbas",
+              "type": "private"
+            },
+            "date": 1782927307,
+            "text": "https://www.youtube.com/watch?v=Lrr1w9B0QgI Priority is High. Domain is BI Architecture. Focus the roadmap strictly on extracting the Figma-to-Code plugin workflow, the SVG quotation mark replacement logic, and the exact DAX HTML wrapper structure. Skip the introductory UI design steps.",
+            "entities": [
+              {
+                "offset": 0,
+                "length": 287,
+                "type": "code"
+              }
+            ]
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "51d1c4f2-5e4c-45d7-9576-8c1251dbfc2c",
+  "activeVersionId": null,
+  "versionCounter": 243,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-07-01T12:51:49.269Z",
+      "createdAt": "2026-07-01T12:51:49.269Z",
+      "role": "workflow:owner",
+      "workflowId": "NpCAVsDMkGXTqhas",
+      "projectId": "7Kuw5RaGwePDWMtJ",
+      "project": {
+        "updatedAt": "2026-06-09T16:37:14.049Z",
+        "createdAt": "2026-06-09T16:15:53.210Z",
+        "id": "7Kuw5RaGwePDWMtJ",
+        "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

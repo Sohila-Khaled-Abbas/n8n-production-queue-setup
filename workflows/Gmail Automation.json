@@ -1,0 +1,341 @@
+{
+  "updatedAt": "2026-06-14T19:08:57.467Z",
+  "createdAt": "2026-06-13T18:14:05.782Z",
+  "id": "Qr8hcXKEpW7Gp1g6",
+  "name": "Gmail Automation",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        96
+      ],
+      "id": "6fb54e9e-d58a-4708-9480-0f4f09c1d07d",
+      "name": "When chat message received",
+      "webhookId": "cb9ad217-16d6-4771-8732-cffc595f7883"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Generate the email body as valid HTML.\n\nRequirements:\n- Use <h1>, <h2>, <p>, <ul>, <li>, <strong>, and <em> tags.\n- Do not use Markdown syntax such as ** or *.\n- Return only the HTML body content.\n- Do not wrap the response in JSON.\n- Do not wrap the response in code fences."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        96
+      ],
+      "id": "90842492-6dc4-4559-a90c-3c4076aac235",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        368,
+        320
+      ],
+      "id": "c3381dcb-ea18-49f4-a050-201672beff4e",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+          "name": "PostgreSQL — n8n Stack"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "sohila.k.data@gmail.com",
+        "subject": "=LinkedIn Post",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        800,
+        192
+      ],
+      "id": "c1fc8947-01fa-4099-b7fc-6135899e8ba5",
+      "name": "Send a message",
+      "webhookId": "ff6dad87-ea64-486b-9dbc-bee40fa0cab2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "lnIdGq9BGx5bYyLm",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d24a4230-0899-4ff8-b72f-4f89a9fb3aad",
+              "name": "html",
+              "value": "={{\n$json.output\n.replace(/^### (.*)$/gm,'<h3>$1</h3>')\n.replace(/^## (.*)$/gm,'<h2>$1</h2>')\n.replace(/^# (.*)$/gm,'<h1>$1</h1>')\n.replace(/^> (.*)$/gm,'<blockquote>$1</blockquote>')\n.replace(/\\*\\*(.*?)\\*\\*/g,'<strong>$1</strong>')\n.replace(/\\*(.*?)\\*/g,'<em>$1</em>')\n.replace(/\\n/g,'<br>')\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        576,
+        96
+      ],
+      "id": "5f016fa4-ed7d-479f-876d-9c9b3863bb89",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        320
+      ],
+      "id": "957311a9-e0e6-43dd-940b-9ff1337a9cb1",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "o1WM1pxDXe6yNltX",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1LKPPynQ-HcU2F5CNYr-tiimf8IF9a8mUbvHLdPI5rqs",
+          "mode": "list",
+          "cachedResultName": "Email Tasks",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LKPPynQ-HcU2F5CNYr-tiimf8IF9a8mUbvHLdPI5rqs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LKPPynQ-HcU2F5CNYr-tiimf8IF9a8mUbvHLdPI5rqs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "html"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "EmailBody",
+              "displayName": "EmailBody",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "RAW"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1024,
+        0
+      ],
+      "id": "51e417db-efd6-4414-9715-02dc82a6bf05",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LKFLSWDFvv6fE63D",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $json.html || \"\";\n\nconst title = html.match(/<h1>(.*?)<\\/h1>/i)?.[1] || \"\";\n\nlet emailBody = html\n  .replace(/<br\\s*\\/?>/gi, \"\\n\")\n  .replace(/<\\/p>/gi, \"\\n\")\n  .replace(/<\\/h1>/gi, \"\\n\")\n  .replace(/<\\/h2>/gi, \"\\n\")\n  .replace(/<li>/gi, \"• \")\n  .replace(/<\\/li>/gi, \"\\n\")\n  .replace(/<[^>]+>/g, \"\")\n  .replace(/&nbsp;/g, \" \")\n  .replace(/&amp;/g, \"&\")\n  .replace(/\\r/g, \"\")\n  .replace(/[ \\t]+\\n/g, \"\\n\")\n  .replace(/\\n[ \\t]+/g, \"\\n\")\n  .replace(/\\n{2,}/g, \"\\n\")\n  .trim();\n\nreturn [{\n  json: {\n    Date: new Date().toISOString(),\n    Title: title,\n    EmailBody: emailBody\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        0
+      ],
+      "id": "43c22b2b-caee-495a-937b-63369375dc12",
+      "name": "Extract the generated email into structured columns"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract the generated email into structured columns",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        []
+      ]
+    },
+    "Extract the generated email into structured columns": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Kuwait",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "b94fce85-9124-40e1-9c22-ec3780f06269",
+  "activeVersionId": null,
+  "versionCounter": 143,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-06-13T18:14:05.782Z",
+      "createdAt": "2026-06-13T18:14:05.782Z",
+      "role": "workflow:owner",
+      "workflowId": "Qr8hcXKEpW7Gp1g6",
+      "projectId": "7Kuw5RaGwePDWMtJ",
+      "project": {
+        "updatedAt": "2026-06-09T16:37:14.049Z",
+        "createdAt": "2026-06-09T16:15:53.210Z",
+        "id": "7Kuw5RaGwePDWMtJ",
+        "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

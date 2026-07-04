@@ -1,0 +1,492 @@
+{
+  "updatedAt": "2026-07-02T19:32:59.507Z",
+  "createdAt": "2026-07-01T21:34:06.764Z",
+  "id": "aQau7RvyP2jshTn9",
+  "name": "Delivery Telegram Bot",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "8e801db4-e9cd-41ac-ad46-5a209cbb5431",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "position": [
+        -912,
+        128
+      ],
+      "webhookId": "b33ca01c-3eca-4473-945c-0b13e50d6331",
+      "typeVersion": 1.3,
+      "credentials": {
+        "telegramApi": {
+          "id": "eENVBnEo7fSc5bpP",
+          "name": "Ranch Delivery Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=ROLE:\nYou are the dynamic, conversational AI Ordering Assistant for \"Ranch Pizzeria\". Your sole objective is to interact with customers on Telegram, manage their cart, and output data strictly inside the mandated JSON structure.\n\n==================================================\nPIZZERIA MENU REGISTRY (ONLY use these items)\n==================================================\n* Margherita Pizza [Small: $8, Medium: $12, Large: $16]\n* Pepperoni Passion [Small: $10, Medium: $14, Large: $18]\n* BBQ Chicken Ranch [Small: $11, Medium: $15, Large: $19]\n* Garlic Breadsticks ($4.50) | French Fries ($3.00) | Coca-Cola ($1.50)\n==================================================\n\nCRITICAL MENU REQUEST RULE:\nIf the customer asks to see the menu (e.g., \"send the menu please\", \"what do you have?\"), you must NOT return a custom JSON list or change the JSON schema. You must write out the Pizzeria Menu Registry nicely with emojis inside the \"customer_message\" field, set \"intent\" to \"greet\", set \"ordered_items\" to an empty array [], and set \"ready_for_checkout\" to false.\n\nOUTPUT FORMAT:\nYou must return a single, valid JSON object matching the schema below. Do not wrap the JSON in markdown code blocks. Do not invent keys outside of these four properties:\n\n{\n  \"customer_message\": \"Write your dynamic greeting or write out the complete text menu here if requested.\",\n  \"intent\": \"greet\",\n  \"ordered_items\": [],\n  \"ready_for_checkout\": false\n}\n\n==================================================\nCRITICAL TRANSACTION & BILLING RULES\n==================================================\n1. Handling Price/Delivery Enquiries:\n   - If the user asks \"how much\", \"when\", or \"delivery details\", you must inspect the current cart context.\n   - List the items currently inside their cart, output their calculated prices based on the registry, and state that delivery takes 30-45 minutes.\n   - End your \"customer_message\" strictly with the phrase: 'Would you like to finalize this order? Reply with \"YES\" to proceed to checkout.'\n\n2. Strict Intent Alignment:\n   - If the user says \"yes\", \"place the order\", \"checkout\", or \"confirm\", you must immediately set \"ready_for_checkout\" to true, set \"intent\" to \"checkout_ready\", and set \"ordered_items\" to an empty array [].\n   - Do not ask further questions once a confirmation phrase is uttered."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "eb981f74-1b06-49c9-b283-0aa0c34e855c",
+      "name": "Basic LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        -240,
+        288
+      ],
+      "typeVersion": 1.9
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Fetch existing session data from the database lookup\nconst sessionRow = $items(\"MSSQL: Get Session\")[0]?.json?.cart_json;\nlet currentCart = sessionRow ? (typeof sessionRow === 'string' ? JSON.parse(sessionRow) : sessionRow) : [];\n\n// 2. Safely capture the incoming LLM data\nlet parsedLLM = {};\nif ($json.output) {\n  parsedLLM = $json.output;\n} else if ($json.text) {\n  let cleanText = $json.text.replace(/```json/g, '').replace(/```/g, '').trim();\n  try { parsedLLM = JSON.parse(cleanText); } catch(e) { parsedLLM = $json; }\n} else {\n  parsedLLM = $json;\n}\n\n// DEFENSIVE CHECK: Default cleanly if the model hallucinated\nif (!parsedLLM || typeof parsedLLM !== 'object' || Array.isArray(parsedLLM)) {\n  parsedLLM = { customer_message: \"🤖 To complete your order, just reply with 'YES'. To modify items, tell me what you would like to add or remove!\", ordered_items: [], ready_for_checkout: false };\n}\n\n// 3. ✨ THE FIX: Deterministic Intent Override ✨\nconst triggerItem = $items(\"Telegram Trigger\")[0].json.message;\nconst incomingText = triggerItem.text ? triggerItem.text.toLowerCase().trim() : \"\";\nconst chatId = triggerItem.chat.id;\n\n// Force the checkout flag to TRUE if the user explicitly typed \"yes\"\nlet forceCheckout = parsedLLM.ready_for_checkout === true || parsedLLM.ready_for_checkout === \"true\";\nif (incomingText === 'yes') {\n    forceCheckout = true;\n}\n\n// 4. Reconcile cart state line items safely (Only if we are NOT checking out)\nif (!forceCheckout) {\n    const incomingUpdates = Array.isArray(parsedLLM.ordered_items) ? parsedLLM.ordered_items : [];\n    \n    incomingUpdates.forEach(newItem => {\n      if (!newItem || !newItem.item_name) return; // Skip empty objects\n      \n      const targetName = newItem.item_name.toLowerCase().trim();\n      const targetSize = newItem.size ? newItem.size.toLowerCase().trim() : 'n/a';\n\n      const matchIndex = currentCart.findIndex(cartItem => \n        cartItem.item_name.toLowerCase().trim() === targetName && \n        (cartItem.size ? cartItem.size.toLowerCase().trim() : 'n/a') === targetSize\n      );\n\n      if (matchIndex > -1) {\n        if (newItem.quantity <= 0) {\n          currentCart.splice(matchIndex, 1);\n        } else {\n          currentCart[matchIndex].quantity = newItem.quantity;\n          currentCart[matchIndex].special_instructions = newItem.special_instructions || 'none';\n        }\n      } else if (newItem.quantity > 0) {\n        currentCart.push({\n          item_name: newItem.item_name,\n          size: newItem.size || 'Medium',\n          quantity: newItem.quantity,\n          special_instructions: newItem.special_instructions || 'none'\n        });\n      }\n    });\n}\n\n// 5. Pre-serialize and escape data for safe database integration\nconst safeCartString = JSON.stringify(currentCart).replace(/'/g, \"''\");\n\nreturn {\n  json: {\n    chat_id: chatId,\n    updated_cart: currentCart,\n    cart_json_string: safeCartString,\n    ready_for_checkout: forceCheckout,\n    customer_message: parsedLLM.customer_message || \"🤖 I didn't quite catch that. To complete your order, just reply with 'YES'.\"\n  }\n};"
+      },
+      "id": "d3bfc515-9e55-4d59-91f3-a68f4f781e00",
+      "name": "Code in JavaScript",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        112,
+        288
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT COALESCE((SELECT cart_json FROM user_sessions WHERE chat_id = $1), '[]') AS cart_json;",
+        "options": {
+          "queryReplacement": "={{ $json.message.chat.id }}"
+        }
+      },
+      "id": "0e879574-4b4a-4b20-9f77-c0480dc45751",
+      "name": "MSSQL: Get Session",
+      "type": "n8n-nodes-base.microsoftSql",
+      "position": [
+        -688,
+        128
+      ],
+      "settings": {
+        "alwaysOutputData": true
+      },
+      "typeVersion": 1.1,
+      "alwaysOutputData": true,
+      "credentials": {
+        "microsoftSql": {
+          "id": "686ef1ad-bca6-4919-aed0-ff1f9f801f59",
+          "name": "Microsoft SQL Server — n8n Stack"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "MERGE user_sessions AS target\nUSING (SELECT $1 AS chat_id) AS source\nON (target.chat_id = source.chat_id)\nWHEN MATCHED THEN\n    UPDATE SET cart_json = '{{ $json.cart_json_string }}', updated_at = GETDATE()\nWHEN NOT MATCHED THEN\n    INSERT (chat_id, cart_json, updated_at)\n    VALUES ($1, '{{ $json.cart_json_string }}', GETDATE());",
+        "options": {
+          "queryReplacement": "={{ $json.chat_id }}"
+        }
+      },
+      "id": "662ccd37-1183-40f5-a27b-c3e236ac5594",
+      "name": "MSSQL: Save Session",
+      "type": "n8n-nodes-base.microsoftSql",
+      "position": [
+        336,
+        288
+      ],
+      "typeVersion": 1.1,
+      "credentials": {
+        "microsoftSql": {
+          "id": "686ef1ad-bca6-4919-aed0-ff1f9f801f59",
+          "name": "Microsoft SQL Server — n8n Stack"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "b865c690-7d0b-48d2-b888-a45d384fab60",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.ready_for_checkout }}",
+              "rightValue": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "01ddfec7-ce5b-4c17-ac4e-1bfc3c87c8f4",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        560,
+        288
+      ],
+      "typeVersion": 2.3
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $('Code in JavaScript').item.json.customer_message }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "4495b55e-50ee-4d0c-b513-ccff5ce3cb77",
+      "name": "Send a text message",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        784,
+        384
+      ],
+      "webhookId": "810830d8-21c3-4b3b-a8c1-7424b31aab28",
+      "typeVersion": 1.2,
+      "credentials": {
+        "telegramApi": {
+          "id": "eENVBnEo7fSc5bpP",
+          "name": "Ranch Delivery Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE user_sessions \nSET updated_at = GETDATE() \nWHERE chat_id = $1;",
+        "options": {
+          "queryReplacement": "={{ $json.chat_id }}"
+        }
+      },
+      "id": "6098e828-2fce-4dfb-b1ba-0e82f74380f7",
+      "name": "AWAITING_LOCATION",
+      "type": "n8n-nodes-base.microsoftSql",
+      "position": [
+        784,
+        192
+      ],
+      "typeVersion": 1.1,
+      "credentials": {
+        "microsoftSql": {
+          "id": "686ef1ad-bca6-4919-aed0-ff1f9f801f59",
+          "name": "Microsoft SQL Server — n8n Stack"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8866815723:AAFu4duJr1X3LCB6gHWwL4WDKnwmJtNKFi4/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"chat_id\": \"{{ $('Telegram Trigger').item.json.message.chat.id }}\",\n  \"text\": \"📍 Perfect! To calculate delivery times and dispatch your driver, please share your live delivery location using the button below:\",\n  \"reply_markup\": {\n    \"keyboard\": [\n      [\n        {\n          \"text\": \"📍 Share My Current Location\",\n          \"request_location\": true\n        }\n      ]\n    ],\n    \"resize_keyboard\": true,\n    \"one_time_keyboard\": true\n  }\n}",
+        "options": {}
+      },
+      "id": "9e2f4e95-c0b0-46d9-825f-a6360adab3ef",
+      "name": "Request Location via Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1008,
+        192
+      ],
+      "typeVersion": 4.4
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "🔥 Order Confirmed! Your items have been sent straight to the kitchen. We received your location pin, and a driver will be dispatched shortly.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "3f820e04-5a3e-42ed-9c7d-bebd67dcd1e3",
+      "name": "Final Order Confirmation",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        112,
+        -16
+      ],
+      "webhookId": "3e5d08d7-6941-4321-82b8-50651a948346",
+      "typeVersion": 1.2,
+      "credentials": {
+        "telegramApi": {
+          "id": "eENVBnEo7fSc5bpP",
+          "name": "Ranch Delivery Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cebb394c-b5af-4b01-8b03-efcc81f89c66",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              },
+              "leftValue": "={{ !!$('Telegram Trigger').item.json.message.location }}",
+              "rightValue": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9040fa7a-8669-44c1-997c-9452463cf21e",
+      "name": "Routing Router",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -464,
+        128
+      ],
+      "typeVersion": 2.3
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SET XACT_ABORT ON; -- Forces SQL Server to roll back instantly on errors and reveal the real issue\n\nBEGIN TRANSACTION;\n\nBEGIN TRY\n    DECLARE @NewOrderId INT;\n\n    -- 1. Insert parent order\n    INSERT INTO orders (chat_id, order_status, latitude, longitude, created_at)\n    VALUES ($1, 'PENDING_DISPATCH', $2, $3, GETDATE());\n\n    SET @NewOrderId = SCOPE_IDENTITY();\n\n    -- 2. Fetch serialized JSON string from the session cache\n    DECLARE @RawCart NVARCHAR(MAX);\n    SELECT @RawCart = cart_json FROM user_sessions WHERE chat_id = $1;\n\n    -- 3. Flatten array elements directly into target relational lines\n    INSERT INTO order_items (order_id, item_name, size, quantity, special_instructions)\n    SELECT \n        @NewOrderId,\n        json_values.item_name,\n        json_values.size,\n        json_values.quantity,\n        json_values.special_instructions\n    FROM OPENJSON(@RawCart)\n    WITH (\n        item_name NVARCHAR(100) '$.item_name',\n        size NVARCHAR(20) '$.size',\n        quantity INT '$.quantity',\n        special_instructions NVARCHAR(255) '$.special_instructions'\n    ) AS json_values;\n\n    -- 4. Purge active session cache\n    DELETE FROM user_sessions WHERE chat_id = $1;\n\n    COMMIT TRANSACTION;\n    SELECT 'SUCCESS' AS transaction_status, @NewOrderId AS order_id;\nEND TRY\nBEGIN CATCH\n    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;\n    THROW;\nEND CATCH;",
+        "options": {
+          "queryReplacement": "={{ $('Telegram Trigger').item.json.message.chat.id }}, {{ $('Telegram Trigger').item.json.message.location.latitude }}, {{ $('Telegram Trigger').item.json.message.location.longitude }}"
+        }
+      },
+      "id": "cb86b9cd-437d-4c49-87f7-d7454369378c",
+      "name": "MSSQL: Process Fulfillment",
+      "type": "n8n-nodes-base.microsoftSql",
+      "position": [
+        -176,
+        -16
+      ],
+      "typeVersion": 1.1,
+      "credentials": {
+        "microsoftSql": {
+          "id": "686ef1ad-bca6-4919-aed0-ff1f9f801f59",
+          "name": "Microsoft SQL Server — n8n Stack"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openrouter/free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        512
+      ],
+      "id": "dc673f2c-55c4-4164-8224-f601223c256b",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "UdTsZJeAxhOhPWOE",
+          "name": "OpenRouter account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "MSSQL: Get Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MSSQL: Get Session": {
+      "main": [
+        [
+          {
+            "node": "Routing Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Routing Router": {
+      "main": [
+        [
+          {
+            "node": "MSSQL: Process Fulfillment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "MSSQL: Save Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MSSQL: Save Session": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AWAITING_LOCATION",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AWAITING_LOCATION": {
+      "main": [
+        [
+          {
+            "node": "Request Location via Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MSSQL: Process Fulfillment": {
+      "main": [
+        [
+          {
+            "node": "Final Order Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "timezone": "Africa/Cairo",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 20
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "0c53d795-47c6-4263-adb9-cb9d83115119",
+  "activeVersionId": "0c53d795-47c6-4263-adb9-cb9d83115119",
+  "versionCounter": 200,
+  "triggerCount": 1,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-07-01T21:34:06.764Z",
+      "createdAt": "2026-07-01T21:34:06.764Z",
+      "role": "workflow:owner",
+      "workflowId": "aQau7RvyP2jshTn9",
+      "projectId": "7Kuw5RaGwePDWMtJ",
+      "project": {
+        "updatedAt": "2026-06-09T16:37:14.049Z",
+        "createdAt": "2026-06-09T16:15:53.210Z",
+        "id": "7Kuw5RaGwePDWMtJ",
+        "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 0c53d795",
+    "description": ""
+  }
+}

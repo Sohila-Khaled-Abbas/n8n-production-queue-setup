@@ -12,9 +12,12 @@
 [![Docker Compose](https://img.shields.io/badge/Docker_Compose-v2-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg)](LICENSE)
 
-[Quick Start](#-quick-start) · [Architecture](#-architecture) · [Configuration](#-configuration) · [Autoscaling](#-autoscaling) · [Puppeteer & Playwright](#-puppeteer--playwright) · [Troubleshooting](#-troubleshooting)
+[Quick Start](#-quick-start) · [Architecture](#-architecture) · [Configuration](#-configuration) · [Autoscaling](#-autoscaling) · [Puppeteer & Playwright](#-puppeteer--playwright) · [Troubleshooting](#-troubleshooting) · [Portfolio Showcase](PORTFOLIO.md)
 
 </div>
+
+> 💼 **Looking for the Workflow Portfolio?** Check out our dedicated [Portfolio Showcase](PORTFOLIO.md) detailing 31 production-grade automation workflows with complete business cases and ready-to-import JSON files.
+
 
 ---
 
