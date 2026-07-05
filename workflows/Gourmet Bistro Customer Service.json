@@ -1,18 +1,15 @@
 {
-  "updatedAt": "2026-07-04T22:10:34.572Z",
-  "createdAt": "2026-07-03T13:06:16.201Z",
   "id": "VlIW3f7STg7kVnWn",
   "name": "Gourmet Bistro Customer Service",
-  "description": null,
-  "active": false,
-  "isArchived": false,
   "nodes": [
     {
       "parameters": {
+        "telegramTriggerNotice": "",
         "updates": [
           "message",
           "callback_query"
         ],
+        "attachmentNotice": "",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegramTrigger",
@@ -33,6 +30,8 @@
     },
     {
       "parameters": {
+        "mode": "manual",
+        "duplicateItem": false,
         "assignments": {
           "assignments": [
             {
@@ -55,6 +54,7 @@
             }
           ]
         },
+        "includeOtherFields": false,
         "options": {}
       },
       "type": "n8n-nodes-base.set",
@@ -68,6 +68,7 @@
     },
     {
       "parameters": {
+        "notice": "",
         "model": "qwen2.5:1.5b",
         "options": {
           "numCtx": 2048
@@ -76,7 +77,7 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
       "typeVersion": 1,
       "position": [
-        2544,
+        2608,
         -14192
       ],
       "id": "fa10a7df-4682-4741-8247-807c032c79df",
@@ -90,6 +91,7 @@
     },
     {
       "parameters": {
+        "mode": "rules",
         "rules": {
           "values": [
             {
@@ -201,6 +203,7 @@
             }
           ]
         },
+        "looseTypeValidation": false,
         "options": {
           "fallbackOutput": "extra"
         }
@@ -208,7 +211,7 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        2880,
+        3104,
         -14464
       ],
       "id": "453a3995-f531-4d40-b587-4863437b36c0",
@@ -216,6 +219,7 @@
     },
     {
       "parameters": {
+        "notice": "",
         "model": "qwen2.5:1.5b",
         "options": {
           "temperature": 0,
@@ -225,7 +229,7 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
       "typeVersion": 1,
       "position": [
-        4480,
+        4704,
         -14688
       ],
       "id": "0c575d2d-581f-464e-96cd-a98686fada1c",
@@ -239,12 +243,13 @@
     },
     {
       "parameters": {
+        "notice": "",
         "model": "nomic-embed-text:latest"
       },
       "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
       "typeVersion": 1,
       "position": [
-        4816,
+        5040,
         -14480
       ],
       "id": "e43f8456-159b-436f-9cb9-049fc6ea3601",
@@ -258,13 +263,16 @@
     },
     {
       "parameters": {
+        "notice": "",
         "sessionIdType": "customKey",
-        "sessionKey": "={{ $('Normalize Input').item.json.chat_id }}"
+        "sessionKey": "={{ $('Normalize Input').item.json.chat_id }}",
+        "tableName": "n8n_chat_histories",
+        "contextWindowLength": 5
       },
       "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
       "typeVersion": 1.4,
       "position": [
-        4608,
+        4832,
         -14688
       ],
       "id": "fd8b41de-ffeb-4a00-8c86-efec0842d664",
@@ -272,12 +280,13 @@
       "credentials": {
         "postgres": {
           "id": "5617978f-0b85-4382-8768-f84e14ee6223",
-          "name": "PostgreSQL — n8n Stack"
+          "name": "PostgreSQL â€” n8n Stack"
         }
       }
     },
     {
       "parameters": {
+        "ragStarterCallout": "",
         "mode": "retrieve-as-tool",
         "toolDescription": "Use this tool to search for restaurant opening hours, delivery rules, payment methods, dietary options, and menu item descriptions, prices, or allergens.",
         "tableName": {
@@ -286,6 +295,9 @@
           "mode": "list",
           "cachedResultName": "knowledge_base"
         },
+        "topK": 4,
+        "includeDocumentMetadata": true,
+        "useReranker": false,
         "options": {
           "queryName": "match_kb",
           "metadata": {
@@ -301,7 +313,7 @@
       "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
       "typeVersion": 1.3,
       "position": [
-        4736,
+        4960,
         -14688
       ],
       "id": "1fb64cb3-f156-4a5c-ad07-fca8b1a1a375",
@@ -315,6 +327,9 @@
     },
     {
       "parameters": {
+        "authentication": "oAuth2",
+        "resource": "sheet",
+        "operation": "read",
         "documentId": {
           "__rl": true,
           "value": "1mKSOBh0l5t5D5isQbpwYxT8KU-aeSvJyyo89t9Fj0SY",
@@ -329,12 +344,14 @@
           "cachedResultName": "Gourmet Bistro - Knowledge Base & Menu",
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mKSOBh0l5t5D5isQbpwYxT8KU-aeSvJyyo89t9Fj0SY/edit#gid=1522240775"
         },
+        "filtersUI": {},
+        "combineFilters": "AND",
         "options": {}
       },
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        3104,
+        3328,
         -14256
       ],
       "id": "83b67d6e-f0da-4ac4-b253-2163fe7861b2",
@@ -348,12 +365,15 @@
     },
     {
       "parameters": {
-        "jsCode": "const userText = $('Normalize Input').first().json.user_text.toLowerCase();\nconst extractedItems = $('Manager').first().json.output.extracted_items || [];\nconst menuItems = $input.all();\nlet totalPrice = 0;\nconst validatedItems = [];\n\nfor (const item of menuItems) {\n  const row = item.json;\n  const isAvailable = row.is_available === true || String(row.is_available).toLowerCase() === 'true';\n  if (!isAvailable) continue;\n  \n  // Check if this canonical item was extracted by the manager\n  const hasItem = extractedItems.some(ei => ei.toLowerCase() === row.title_or_question.toLowerCase());\n  if (!hasItem) continue;\n  \n  // Basic word-number or digit matching for quantities (defaults to 1 if unspecified)\n  const regex = new RegExp(`(\\\\d+)\\\\s*(?:x|of)?\\\\s*${row.title_or_question.toLowerCase()}`, 'i');\n  const match = userText.match(regex);\n  const quantity = match ? parseInt(match[1], 10) : 1;\n  \n  const price = parseFloat(row.price) || 0;\n  const itemTotal = price * quantity;\n  totalPrice += itemTotal;\n  \n  validatedItems.push({\n    id: row.id || row.title_or_question,\n    name: row.title_or_question,\n    quantity: quantity,\n    unit_price: price,\n    subtotal: itemTotal\n  });\n}\n\nreturn [{\n  json: {\n    items_summary: validatedItems.map(i => `${i.quantity}x ${i.name}`).join(', '),\n    total_price: totalPrice.toFixed(2),\n    is_valid_order: validatedItems.length > 0\n  }\n}];"
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const userText = $('Normalize Input').first().json.user_text.toLowerCase();\nconst extractedItems = $('Manager').first().json.output.extracted_items || [];\nconst menuItems = $input.all();\nlet totalPrice = 0;\nconst validatedItems = [];\n\nfor (const item of menuItems) {\n  const row = item.json;\n  const isAvailable = row.is_available === true || String(row.is_available).toLowerCase() === 'true';\n  if (!isAvailable) continue;\n  \n  // Check if this canonical item was extracted by the manager\n  const hasItem = extractedItems.some(ei => ei.toLowerCase() === row.title_or_question.toLowerCase());\n  if (!hasItem) continue;\n  \n  // Basic word-number or digit matching for quantities (defaults to 1 if unspecified)\n  const regex = new RegExp(`(\\\\d+)\\\\s*(?:x|of)?\\\\s*${row.title_or_question.toLowerCase()}`, 'i');\n  const match = userText.match(regex);\n  const quantity = match ? parseInt(match[1], 10) : 1;\n  \n  const price = parseFloat(row.price) || 0;\n  const itemTotal = price * quantity;\n  totalPrice += itemTotal;\n  \n  validatedItems.push({\n    id: row.id || row.title_or_question,\n    name: row.title_or_question,\n    quantity: quantity,\n    unit_price: price,\n    subtotal: itemTotal\n  });\n}\n\nreturn [{\n  json: {\n    items_summary: validatedItems.map(i => `${i.quantity}x ${i.name}`).join(', '),\n    total_price: totalPrice.toFixed(2),\n    is_valid_order: validatedItems.length > 0\n  }\n}];",
+        "notice": ""
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3328,
+        3552,
         -14256
       ],
       "id": "a4a66d12-78de-4c9e-bc66-d3e61c859059",
@@ -392,12 +412,13 @@
           ],
           "combinator": "and"
         },
+        "looseTypeValidation": false,
         "options": {}
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        3968,
+        4192,
         -14256
       ],
       "id": "965a8ca5-9415-48f1-8799-b20034b845fa",
@@ -405,8 +426,11 @@
     },
     {
       "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
         "chatId": "={{ $('Normalize Input').item.json.chat_id }}",
         "text": "={{ $json.output }}",
+        "replyMarkup": "none",
         "additionalFields": {
           "appendAttribution": false
         }
@@ -414,7 +438,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        5104,
+        5328,
         -14912
       ],
       "id": "eda73f4f-7740-42de-b5fc-7f70be2e7dd8",
@@ -429,8 +453,11 @@
     },
     {
       "parameters": {
+        "aiAgentStarterCallout": "",
         "promptType": "define",
         "text": "={{ $('Normalize Input').first().json.user_text }}",
+        "hasOutputParser": false,
+        "needsFallback": false,
         "options": {
           "systemMessage": "You are the Menu & FAQ Expert for Gourmet Bistro. Your ONLY job is to answer customer questions accurately using our database.\n\nCRITICAL OPERATIONAL RULES:\n1. YOU MUST NEVER ANSWER FROM MEMORY. You are strictly forbidden from generating an answer without calling the Supabase Vector Store tool first.\n2. Always execute a vector search query against the user's text before writing your response.\n3. If the retrieved database context does not contain the answer, state explicitly: \"I do not have that information in our current menu or policy database. Please contact our host desk directly.\"\n4. Never invent prices, ingredients, or policies. Only state what is explicitly returned by the tool (e.g., our 10 km delivery radius or free delivery over 250 EGP)."
         }
@@ -438,7 +465,7 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        4544,
+        4768,
         -14912
       ],
       "id": "6cf307a2-09c3-4f10-b7e4-7576c22d35a3",
@@ -446,7 +473,11 @@
     },
     {
       "parameters": {
+        "useCustomSchema": false,
+        "resource": "row",
+        "operation": "create",
         "tableId": "orders",
+        "dataToSend": "defineBelow",
         "fieldsUi": {
           "fieldValues": [
             {
@@ -471,7 +502,7 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        3616,
+        3840,
         -14256
       ],
       "id": "8dc4cc93-e3cf-4afd-9fe1-f8c18225512b",
@@ -485,8 +516,10 @@
     },
     {
       "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
         "chatId": "={{ $('Normalize Input').item.json.chat_id }}",
-        "text": "=🚨 NEW ORDER #${{ $('Check Active').item.json.order_id || $('Supabase (Store the Order)').item.json.order_id || $json.order_id }} 🚨  🍽️ Order Details: {{ $('Code Node: Calculate Totals & Quantities').item.json.items_summary || $json.items }}  💵 Total Amount: {{ $('Code Node: Calculate Totals & Quantities').item.json.total_price || $json.total_price }} EGP (COD)  📍 Delivery Address: {{ $json.delivery_address }}  📞 Contact Phone: {{ $json.phone_number }}  ⚡ STATUS: PENDING PREPARATION — Please acknowledge!",
+        "text": "=ًںڑ¨ NEW ORDER #${{ $('Check Active').item.json.order_id || $('Supabase (Store the Order)').item.json.order_id || $json.order_id }} ًںڑ¨  ًںچ½ï¸ڈ Order Details: {{ $('Code Node: Calculate Totals & Quantities').item.json.items_summary || $json.items }}  ًں’µ Total Amount: {{ $('Code Node: Calculate Totals & Quantities').item.json.total_price || $json.total_price }} EGP (COD)  ًں“چ Delivery Address: {{ $json.delivery_address }}  ًں“‍ Contact Phone: {{ $json.phone_number }}  âڑ، STATUS: PENDING PREPARATION â€” Please acknowledge!",
         "replyMarkup": "forceReply",
         "forceReply": {
           "force_reply": true
@@ -498,7 +531,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        4688,
+        4912,
         -14064
       ],
       "id": "bb7c5094-8ff9-4cc1-b517-9426015ae0ea",
@@ -513,14 +546,17 @@
     },
     {
       "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
         "chatId": "={{ $('Normalize Input').item.json.chat_id }}",
-        "text": "=✅ Your order has been placed successfully!\n\n📦 Order Tracking ID: #{{ $('Check Active').item.json.order_id || $('Supabase (Store the Order)').item.json.order_id || $json.order_id }}\n💵 Total to Pay: {{ $('Code Node: Calculate Totals & Quantities').item.json.total_price || $json.total_price }} EGP\n💳 Payment Method: Cash on Delivery / InstaPay upon arrival\n\nEstimated delivery time: 35-45 minutes. We will notify you if we need any clarifications!",
+        "text": "=âœ… Your order has been placed successfully!\n\nًں“¦ Order Tracking ID: #{{ $('Check Active').item.json.order_id || $('Supabase (Store the Order)').item.json.order_id || $json.order_id }}\nًں’µ Total to Pay: {{ $('Code Node: Calculate Totals & Quantities').item.json.total_price || $json.total_price }} EGP\nًں’³ Payment Method: Cash on Delivery / InstaPay upon arrival\n\nEstimated delivery time: 35-45 minutes. We will notify you if we need any clarifications!",
+        "replyMarkup": "none",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        5104,
+        5328,
         -14064
       ],
       "id": "f03bf0d6-f3cf-4abb-838e-111f90179df7",
@@ -535,8 +571,11 @@
     },
     {
       "parameters": {
+        "aiAgentStarterCallout": "",
         "promptType": "define",
         "text": "={{ $('Normalize Input').item.json.user_text }}",
+        "hasOutputParser": false,
+        "needsFallback": false,
         "options": {
           "systemMessage": "You are the Order Cancellation Specialist for Gourmet Bistro. Your goal is to assist customers wishing to cancel or modify their orders.\n\nThe current customer's Telegram Chat ID is {{ $('Normalize Input').item.json.chat_id }}.\n\nMANDATORY OPERATIONAL PROTOCOL:\n1. INVESTIGATE FIRST: You must NEVER attempt to cancel an order or promise a cancellation without executing the `check_order_eligibility` tool first.\n2. VERIFY OWNERSHIP: Ensure the order ID requested belongs to the customer contacting you by comparing the order's customer_chat_id with the customer's Telegram Chat ID.\n3. THE 5-MINUTE GRACE PERIOD: If the `check_order_eligibility` tool returns that an order is older than 5 minutes OR its status is not 'Pending' or 'Draft', you are STRICTLY FORBIDDEN from calling the `cancel_order` tool.\n4. GRACEFUL REFUSAL: If an order cannot be cancelled, explain objectively: \"I cannot cancel Order #[ID] automatically because our kitchen has already begun preparation or it has exceeded the 5-minute grace period. Please contact our host desk directly at 010-XXXX-XXXX for escalation.\""
         }
@@ -544,7 +583,7 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        3552,
+        3776,
         -14656
       ],
       "id": "747fecb1-7ba8-4575-a4f8-877e0bcf6668",
@@ -554,14 +593,17 @@
       "parameters": {
         "descriptionType": "manual",
         "toolDescription": "Use this tool immediately whenever a customer complains about food quality, delivery delays, missing items, or requests to speak to a human manager.",
+        "resource": "message",
+        "operation": "sendMessage",
         "chatId": "={{ $env.TELEGRAM_MANAGER_CHAT_ID || $('Normalize Input').item.json.chat_id }}",
-        "text": "=⚠️ HUMAN ESCALATION REQUIRED ⚠️\n   Customer ID: {{ $('Normalize Input').item.json.chat_id }}\n   Username: @{{ $('Normalize Input').item.json.username }}\n   \n   Last Customer Message:\n   \"{{ $('Normalize Input').item.json.user_text }}\"\n   \n   Reason: Agent detected service complaint or complex anomaly. Please intervene in chat!",
+        "text": "=âڑ ï¸ڈ HUMAN ESCALATION REQUIRED âڑ ï¸ڈ\n   Customer ID: {{ $('Normalize Input').item.json.chat_id }}\n   Username: @{{ $('Normalize Input').item.json.username }}\n   \n   Last Customer Message:\n   \"{{ $('Normalize Input').item.json.user_text }}\"\n   \n   Reason: Agent detected service complaint or complex anomaly. Please intervene in chat!",
+        "replyMarkup": "none",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegramTool",
       "typeVersion": 1.2,
       "position": [
-        3632,
+        3856,
         -14432
       ],
       "id": "9a6ebf6a-4fc0-4cc5-8d29-90b1ebabc259",
@@ -596,12 +638,13 @@
           ],
           "combinator": "and"
         },
+        "looseTypeValidation": false,
         "options": {}
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        4256,
+        4480,
         -13872
       ],
       "id": "93106b63-bf31-42e7-994c-e10b6db15987",
@@ -609,14 +652,17 @@
     },
     {
       "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
         "chatId": "={{ $('Normalize Input').item.json.chat_id }}",
         "text": "I see you want to place an order, but I didn't recognize the items you listed. Please check our menu and use exact item names, like 'Classic Angus Smash Burger' or 'Signature Passionfruit Mojito'.",
+        "replyMarkup": "none",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        5104,
+        5328,
         -13680
       ],
       "id": "00fc61c2-41eb-4166-92de-eebe1afaf914",
@@ -631,8 +677,11 @@
     },
     {
       "parameters": {
+        "aiAgentStarterCallout": "",
         "promptType": "define",
         "text": "={{ $('Normalize Input').first().json.user_text }}",
+        "hasOutputParser": false,
+        "needsFallback": false,
         "options": {
           "systemMessage": "You are the Front Desk Concierge for Gourmet Bistro.\nThe current customer's Telegram Chat ID is {{ $('Normalize Input').item.json.chat_id }}.\n\n   RULES:\n   1. GREETINGS: Respond to simple \"Hello\" or \"Thanks\" warmly in 1-2 sentences. Do NOT use tools.\n   2. QUESTIONS: If the user asks about hours, delivery, allergens, or ingredients, you MUST use the 'search_restaurant_knowledge_base' tool. Do NOT guess.\n   3. COMPLAINTS: If the user is angry, mentions bad food, or explicitly asks for a human manager, use the 'escalate_to_human_manager' tool and reply: \"I have alerted our host desk manager to assist you immediately.\""
         }
@@ -640,7 +689,7 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        4624,
+        4848,
         -13872
       ],
       "id": "391c635d-2f92-4948-afbb-ff81ee10ce81",
@@ -648,8 +697,11 @@
     },
     {
       "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
         "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
         "text": "={{ $json.output }}",
+        "replyMarkup": "none",
         "additionalFields": {
           "appendAttribution": false
         }
@@ -657,7 +709,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        5104,
+        5328,
         -13872
       ],
       "id": "b1b92cbe-533f-4e3e-bca4-82330fde65b3",
@@ -671,11 +723,15 @@
       }
     },
     {
-      "parameters": {},
+      "parameters": {
+        "notice": "",
+        "mode": "once",
+        "minutesSaved": 0
+      },
       "type": "n8n-nodes-base.timeSaved",
       "typeVersion": 1,
       "position": [
-        5328,
+        5552,
         -14288
       ],
       "id": "f842a601-5fd5-475b-be14-42d475de8db6",
@@ -683,9 +739,13 @@
     },
     {
       "parameters": {
+        "useCustomSchema": false,
+        "resource": "row",
         "operation": "getAll",
         "tableId": "orders",
         "returnAll": true,
+        "orderBy": "",
+        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -741,6 +801,7 @@
           ],
           "combinator": "and"
         },
+        "looseTypeValidation": false,
         "options": {}
       },
       "type": "n8n-nodes-base.if",
@@ -754,12 +815,15 @@
     },
     {
       "parameters": {
+        "notice": "",
         "promptType": "define",
         "text": "={{ $('Normalize Input').item.json.user_text }}",
-        "hasOutputParser": true,
+        "hasOutputParser": false,
+        "needsFallback": false,
         "messages": {
           "messageValues": [
             {
+              "type": "SystemMessagePromptTemplate",
               "message": "### ROLE\nYou are the Restaurant Customer Support Manager for Gourmet Bistro. Analyze the customer message, classify it into exactly one employee role, and extract any canonical menu items.\n\n### RULES\nYou must respond ONLY with a raw JSON object. Do not include markdown formatting like \n```json or ```. Do not include conversational text.\n\n### EMPLOYEES\n- \"Menu & FAQ Expert\": For questions about hours, delivery, reservations, payment, or menu details.\n- \"Order Creation Specialist\": For placing orders or buying food/drinks.\n- \"Order Cancellation Specialist\": For cancelling existing orders.\n- \"General Receptionist\": For basic greetings (\"Hi\", \"Thanks\").\n\n### EXTRACTION\nExtract ONLY these exact names if mentioned:\n\"Truffle Arancini\", \"Burrata & Heirloom Tomato Salad\", \"Classic Angus Smash Burger\", \"Pan-Seared Atlantic Salmon\", \"Wild Mushroom Truffle Risotto\", \"Molten Lava Chocolate Cake\", \"Classic Tiramisu\", \"Signature Passionfruit Mojito\", \"Artisanal Iced Spanish Latte\"\n\nIf no food is mentioned, use [].\n\n### OUTPUT FORMAT\n{\n  \"employee\": \"Menu & FAQ Expert\",\n  \"extracted_items\": []\n}"
             }
           ]
@@ -798,12 +862,13 @@
           ],
           "combinator": "and"
         },
+        "looseTypeValidation": false,
         "options": {}
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        3328,
+        3552,
         -13728
       ],
       "id": "a5831fe7-fb55-4ee8-a53c-e1c2688fa999",
@@ -832,12 +897,13 @@
           ],
           "combinator": "and"
         },
+        "looseTypeValidation": false,
         "options": {}
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        3616,
+        3840,
         -13632
       ],
       "id": "9da37b9c-d1c9-4f77-9800-5208d63f92db",
@@ -845,8 +911,11 @@
     },
     {
       "parameters": {
+        "useCustomSchema": false,
+        "resource": "row",
         "operation": "update",
         "tableId": "orders",
+        "filterType": "manual",
         "matchType": "allFilters",
         "filters": {
           "conditions": [
@@ -857,6 +926,7 @@
             }
           ]
         },
+        "dataToSend": "defineBelow",
         "fieldsUi": {
           "fieldValues": [
             {
@@ -877,7 +947,7 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        4256,
+        4480,
         -14064
       ],
       "id": "3db65088-212e-4bbf-966d-99edd4498fa9",
@@ -891,6 +961,8 @@
     },
     {
       "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
         "chatId": "={{ $('Normalize Input').item.json.chat_id }}",
         "text": "I still need a valid Egyptian mobile number (starting with 010, 011, 012, or 015) and your street address to send this to the kitchen. Please reply with both!",
         "replyMarkup": "forceReply",
@@ -904,7 +976,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        3968,
+        4192,
         -13520
       ],
       "id": "44bbeebf-d7c0-485b-b45b-9d82fe7d743a",
@@ -919,8 +991,11 @@
     },
     {
       "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
         "chatId": "={{ $('Normalize Input').item.json.chat_id }}",
-        "text": "=⚠️ We have your order summary: {{ $json.items_summary }} 💰 Total Amount: {{ $json.total_price }} EGP  To dispatch this to the kitchen, we need your delivery details. Please reply to this message with: 1. Your exact physical address (Street, Building, Floor) 2. A valid mobile contact number (e.g., 010xxxxxxxx)",
+        "text": "=âڑ ï¸ڈ We have your order summary: {{ $json.items_summary }} ًں’° Total Amount: {{ $json.total_price }} EGP  To dispatch this to the kitchen, we need your delivery details. Please reply to this message with: 1. Your exact physical address (Street, Building, Floor) 2. A valid mobile contact number (e.g., 010xxxxxxxx)",
+        "replyMarkup": "none",
         "additionalFields": {
           "appendAttribution": false
         }
@@ -928,7 +1003,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        5104,
+        5328,
         -14336
       ],
       "id": "4baa6e80-0a76-4552-b742-cd15f7ffd732",
@@ -946,6 +1021,7 @@
         "text": "={{ $('Normalize Input').item.json.user_text }}",
         "schemaType": "fromJson",
         "jsonSchemaExample": "{\n     \"delivery_address\": \"55 Nile Corniche Road, Damietta\"\n   }",
+        "notice": "",
         "options": {
           "systemPromptTemplate": "You are an expert extraction algorithm.\nOnly extract relevant information from the text.\nIf you do not know the value of an attribute asked to extract, you may omit the attribute's value."
         }
@@ -953,22 +1029,27 @@
       "type": "@n8n/n8n-nodes-langchain.informationExtractor",
       "typeVersion": 1.2,
       "position": [
-        3904,
+        4128,
         -13712
       ],
       "id": "343d7da9-d5ab-46fe-9195-ae19a67b155b",
       "name": "Information Extractor"
     },
     {
-      "parameters": {},
-      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
-      "typeVersion": 1.3,
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const rawOutput = $json.text || $json.output || \"\";\n\ntry {\n  // Strip any markdown code blocks the model might have stubbornly added\n  const cleanJsonStr = rawOutput.replace(/\\n```json/g, '').replace(/```/g, '').trim();\n  const parsed = JSON.parse(cleanJsonStr);\n  \n  return [{\n    json: {\n      employee: parsed.employee,\n      extracted_items: parsed.extracted_items || []\n    }\n  }];\n} catch (error) {\n  // Fallback if the small model hallucinates invalid JSON\n  return [{\n    json: {\n      employee: \"General Receptionist\",\n      extracted_items: []\n    }\n  }];\n}",
+        "notice": ""
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        2672,
-        -14192
+        2880,
+        -14416
       ],
-      "id": "da4e0558-02a6-4a3a-be08-6088afde9a49",
-      "name": "Structured Output Parser"
+      "id": "4e508346-220f-49c3-8d3b-1e54d457c64d",
+      "name": "Parse Manager JSON"
     }
   ],
   "connections": {
@@ -1347,7 +1428,7 @@
       "main": [
         [
           {
-            "node": "Employee Dispatcher",
+            "node": "Parse Manager JSON",
             "type": "main",
             "index": 0
           }
@@ -1405,12 +1486,12 @@
         ]
       ]
     },
-    "Structured Output Parser": {
-      "ai_outputParser": [
+    "Parse Manager JSON": {
+      "main": [
         [
           {
-            "node": "Manager",
-            "type": "ai_outputParser",
+            "node": "Employee Dispatcher",
+            "type": "main",
             "index": 0
           }
         ]
@@ -1428,48 +1509,5 @@
     "saveExecutionProgress": true,
     "saveManualExecutions": true,
     "callerPolicy": "workflowsFromSameOwner"
-  },
-  "staticData": null,
-  "meta": {
-    "templateCredsSetupCompleted": true
-  },
-  "nodeGroups": [],
-  "pinData": {},
-  "versionId": "cac6c6b5-0980-4c71-93d0-9897496c7bbc",
-  "activeVersionId": null,
-  "versionCounter": 473,
-  "triggerCount": 1,
-  "sourceWorkflowId": null,
-  "tags": [
-    {
-      "updatedAt": "2026-07-03T17:52:02.296Z",
-      "createdAt": "2026-07-03T17:52:02.296Z",
-      "id": "Wxdli3aDYMrnIU4o",
-      "name": "Gourmet Bistro"
-    }
-  ],
-  "shared": [
-    {
-      "updatedAt": "2026-07-03T13:06:16.201Z",
-      "createdAt": "2026-07-03T13:06:16.201Z",
-      "role": "workflow:owner",
-      "workflowId": "VlIW3f7STg7kVnWn",
-      "projectId": "7Kuw5RaGwePDWMtJ",
-      "project": {
-        "updatedAt": "2026-06-09T16:37:14.049Z",
-        "createdAt": "2026-06-09T16:15:53.210Z",
-        "id": "7Kuw5RaGwePDWMtJ",
-        "name": "Sohila Abbas <sohila.k.data@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "customTelemetryTags": [],
-        "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
-      }
-    }
-  ],
-  "versionMetadata": {
-    "name": null,
-    "description": null
   }
 }
