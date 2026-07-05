@@ -1,0 +1,266 @@
+{
+  "name": "Google Drive PDF → Qdrant RAG Indexer",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a1b2c3d4-0001-0001-0001-000000000001",
+      "name": "Run Indexer",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-640, 0],
+      "notes": "Click 'Test workflow' to index all PDFs in your Google Drive folder."
+    },
+    {
+      "parameters": {
+        "operation": "filesList",
+        "returnAll": true,
+        "queryFilters": {
+          "combineConditions": "AND",
+          "conditions": [
+            {
+              "field": "mimeType",
+              "value": "application/pdf"
+            },
+            {
+              "field": "trashed",
+              "value": false
+            }
+          ]
+        },
+        "filter": {
+          "whatToSearch": "files",
+          "foldersFilter": "folderId",
+          "folderId": {
+            "__rl": true,
+            "value": "={{$vars.PDF_FOLDER_ID}}",
+            "mode": "id"
+          }
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000002",
+      "name": "List All PDFs",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [-420, 0],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000003",
+      "name": "Process One by One",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [-200, 0]
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {
+          "fileName": "={{ $json.name }}"
+        }
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000004",
+      "name": "Download PDF",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [40, 0],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "n8n-rag",
+          "mode": "list",
+          "cachedResultName": "n8n-rag"
+        },
+        "options": {
+          "embeddingBatchSize": 100
+        }
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000005",
+      "name": "Store in Qdrant",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1,
+      "position": [280, 0],
+      "credentials": {
+        "qdrantApi": {
+          "id": "",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "type": "binary",
+        "loader": "pdfLoader",
+        "binaryDataKey": "data",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000006",
+      "name": "Load PDF",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [280, 220]
+    },
+    {
+      "parameters": {
+        "chunkSize": 1000,
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000007",
+      "name": "Split Text",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [280, 420]
+    },
+    {
+      "parameters": {
+        "baseUrl": "http://ollama:11434",
+        "model": "nomic-embed-text",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000008",
+      "name": "Ollama Embeddings",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [520, 220]
+    },
+    {
+      "parameters": {
+        "content": "## 📂 Google Drive PDF → Qdrant RAG Indexer\n\n### Setup (do once before running):\n\n**1. Set your Google Drive folder ID:**\n- Go to Settings → Variables\n- Add variable: `PDF_FOLDER_ID` = your folder ID\n- (Get it from the URL when you open the folder in Google Drive)\n\n**2. Set credentials on both Google Drive nodes:**\n- Click each Google Drive node\n- Select your existing Google Drive credential\n\n**3. Set Qdrant credential:**\n- URL: `http://qdrant:6333`\n- No API key needed\n\n**4. Verify Ollama has the model:**\n- Run: `docker exec ollama ollama pull nomic-embed-text`\n\n### How it works:\n- Lists ALL PDFs in your folder\n- Downloads and processes them one by one (no memory overload)\n- Splits each PDF into 1000-char chunks with 200 overlap\n- Embeds via Ollama nomic-embed-text (768 dims)\n- Stores everything in Qdrant collection `n8n-rag`",
+        "height": 460,
+        "width": 440,
+        "color": 7
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000009",
+      "name": "Setup Instructions",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-640, 220]
+    }
+  ],
+  "connections": {
+    "Run Indexer": {
+      "main": [
+        [
+          {
+            "node": "List All PDFs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List All PDFs": {
+      "main": [
+        [
+          {
+            "node": "Process One by One",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process One by One": {
+      "main": [
+        [
+          {
+            "node": "Download PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download PDF": {
+      "main": [
+        [
+          {
+            "node": "Store in Qdrant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store in Qdrant": {
+      "main": [
+        [
+          {
+            "node": "Process One by One",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load PDF": {
+      "ai_document": [
+        [
+          {
+            "node": "Store in Qdrant",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Text": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Load PDF",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Store in Qdrant",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": ["RAG", "Qdrant", "Google Drive", "Ollama"],
+  "triggerCount": 0,
+  "updatedAt": "2026-07-06T00:00:00.000Z",
+  "versionId": "1"
+}
