@@ -12,7 +12,7 @@
 [![Docker Compose](https://img.shields.io/badge/Docker_Compose-v2-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg)](LICENSE)
 
-[Quick Start](#-quick-start) · [Architecture](#-architecture) · [Configuration](#-configuration) · [Autoscaling](#-autoscaling) · [Puppeteer & Playwright](#-puppeteer--playwright) · [Troubleshooting](#-troubleshooting) · [Portfolio Showcase](PORTFOLIO.md)
+[Quick Start](#-quick-start) · [Architecture](#-architecture) · [Configuration](#-configuration) · [Autoscaling](#-autoscaling) · [Puppeteer & Playwright](#-puppeteer--playwright) · [Troubleshooting](#-troubleshooting) · [Operations Guide](docs/production_guide.md) · [Scripts Reference](docs/scripts.md) · [Portfolio Showcase](PORTFOLIO.md)
 
 </div>
 
@@ -550,6 +550,18 @@ docker compose exec redis redis-cli LLEN bull:jobs:wait
 
 ---
 
+### Google Drive / API node connection closed unexpectedly (ECONNRESET)
+
+**Symptom:** Operations like downloading a file from Google Drive fail with: `The connection to the server was closed unexpectedly, perhaps it is offline. You can retry the request immediately or wait and retry later.`
+
+**Solution:**
+1. **Switch to Filesystem Storage:** In `.env`, set `N8N_DEFAULT_BINARY_DATA_MODE=filesystem`. This prevents worker container crashes by streaming files to disk rather than buffering them in memory, avoiding Out-Of-Memory (OOM) network/socket terminations.
+2. **Enable Node Retries:** Open the node settings in the editor UI and enable **Retry on Fail** with `3` attempts and `3000`ms wait.
+3. **Reconnect Credentials:** Re-authenticate your Google Drive or API credentials to refresh stale OAuth2 tokens.
+4. See **[troubleshooting.md](docs/troubleshooting.md)** for a complete checklist.
+
+---
+
 ## 🛠️ Operational & Diagnostic Scripts
 
 The `scripts/` directory contains automation and database diagnostic scripts to maintain and troubleshoot the n8n production stack:
@@ -585,6 +597,12 @@ Run these queries inside the PostgreSQL database to troubleshoot workflow perfor
 ├── .env.example                    # Environment variable template
 ├── .env                            # Your configuration (git-ignored)
 ├── .gitignore                      # Excludes secrets and runtime data
+├── docs/                           # Documentation folder
+│   ├── production_guide.md         # Production config & tuning guide
+│   ├── scripts.md                  # Scripts directory index and run instructions
+│   ├── troubleshooting.md          # Exhaustive troubleshooting checklist
+│   ├── architecture.md             # Stack components architecture in-depth
+│   └── infographic.svg             # Component interaction blueprint
 ├── autoscaler/
 │   ├── Dockerfile                  # Autoscaler container (Python 3.12, multi-arch)
 │   ├── autoscaler.py               # Scaling logic (Redis → docker compose)

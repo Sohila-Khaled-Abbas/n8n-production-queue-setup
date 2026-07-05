@@ -686,6 +686,55 @@ $$;
 
 ---
 
+### API Integration Nodes fail with "The connection to the server was closed unexpectedly" (ECONNRESET)
+
+**Symptoms:**
+- A node (like the Google Drive "Download file" node or an "HTTP Request" node) fails after running for several seconds.
+- The node output shows: `The connection to the server was closed unexpectedly, perhaps it is offline. You can retry the request immediately or wait and retry later.`
+
+**Cause:**
+1. **Memory Exhaustion (OOM) via Database Binary Mode**: If `.env` is configured with `N8N_DEFAULT_BINARY_DATA_MODE=database` (or `memory`), n8n reads the entire binary content of the downloaded file (e.g. large PDFs or images) into the container's RAM before sending it to PostgreSQL. When processing large files, the worker process memory usage spikes and exceeds the Docker container memory limit (`1024M`), causing the OS/Docker daemon to abruptly kill the worker process. This severs the connection socket midway.
+2. **Transient Network Socket Drops**: Temporary connection drops or socket resets (`ECONNRESET`) between your local n8n container and external API servers (like `googleapis.com`).
+3. **Stale OAuth Credentials**: The Google Drive API or other authenticated endpoints can occasionally hang or abort the connection if the OAuth2 refresh tokens are stale, malformed, or mismatching the registered Redirect URI.
+
+**Fix:**
+1. **Switch to Filesystem Binary Mode (Global Solution)**:
+   Ensure that `N8N_DEFAULT_BINARY_DATA_MODE=filesystem` is configured in your `.env` file. This tells n8n to stream downloaded files directly to disk `/home/node/.n8n/binaryData` (mapped to host volume `./n8n-data`), maintaining a near-zero memory footprint and completely avoiding OOM-related socket crashes.
+2. **Enable Node-Level Retries**:
+   Open the failing node in the n8n editor, go to its settings (or the parameters panel), and set:
+   - **Retry on Fail**: `true`
+   - **Max Tries**: `3` (or up to 5)
+   - **Wait Between Tries**: `3000` (milliseconds)
+   This ensures that transient socket resets are automatically retried without failing the entire workflow.
+3. **Re-authenticate Credentials**:
+    Go to **Credentials** in the left sidebar, find the Google Drive (or failing API) credential, click **Reconnect** (or edit and re-authenticate), and complete the login flow. This clears out corrupted or stale session/refresh tokens.
+
+---
+
+### Pinecone Console/API Connection Timeout (`ERR_CONNECTION_TIMED_OUT`)
+
+**Symptoms:**
+- Attempting to load `app.pinecone.io` in your browser hangs and eventually fails with: `This site can’t be reached. app.pinecone.io took too long to respond. ERR_CONNECTION_TIMED_OUT`.
+- n8n Vector Store nodes connecting to Pinecone hang and fail with network connection timeouts.
+
+**Cause:**
+- **ISP Routing / Blockages**: Certain regional internet service providers (ISPs)—including major ISPs in Egypt (like WE/Telecom Egypt)—experience routing blackholes or enforce active blockages on specific subnet ranges where Pinecone Console and API endpoints are hosted (often on AWS/GCP regions).
+
+**Fix / Workarounds:**
+1. **Use a VPN (Browser/System level)**:
+   - Route your web browser traffic through a VPN (e.g. ProtonVPN, Windscribe, or NordVPN). Once active, `app.pinecone.io` will load instantly.
+   - For simple browser access, you can also use browsers with built-in free proxies, such as **Opera Browser** with its VPN feature enabled.
+2. **Configure Custom DNS**:
+   Sometimes ISPs block access via DNS manipulation. Change your local device or router's IPv4 DNS servers to public resolvers:
+   - **Google DNS**: Primary `8.8.8.8`, Secondary `8.8.4.4`
+   - **Cloudflare DNS**: Primary `1.1.1.1`, Secondary `1.0.0.1`
+3. **If n8n is running locally**:
+   If your dockerized n8n instance runs on a local machine behind the restricted network, n8n Pinecone nodes will also time out. You must run a system-wide VPN on the host machine to route Docker network traffic through the VPN.
+4. **Deploy to a Cloud VPS**:
+   Deploying this Docker Compose stack to a remote cloud VPS (e.g. DigitalOcean, Hetzner, AWS, GCP) located outside of the restricted region resolves the API connection issue permanently. The remote server will communicate directly with Pinecone's API without regional network interference, even if your local browser needs a VPN to open the editor UI.
+
+---
+
 ## Redis Queue Reference
 
 ```bash
