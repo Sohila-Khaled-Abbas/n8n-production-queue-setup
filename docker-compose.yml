@@ -36,7 +36,7 @@ x-n8n: &service-n8n
     N8N_EDITOR_BASE_URL: ${N8N_EDITOR_BASE_URL}
     WEBHOOK_URL: ${WEBHOOK_URL}
     N8N_PROXY_HOPS: ${N8N_PROXY_HOPS:-1}
-    NODE_OPTIONS: --dns-result-order=ipv4first
+    NODE_OPTIONS: --require /polyfills/dommatrix.js --dns-result-order=ipv4first
     # Security
     N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
     N8N_RUNNERS_AUTH_TOKEN: ${N8N_RUNNERS_AUTH_TOKEN}
@@ -207,6 +207,8 @@ services:
     volumes:
       # ⚠️ ./n8n-data is your existing bind-mount — data preserved here
       - ${N8N_DATA_DIR:-./n8n-data}:/home/node/.n8n
+      # DOMMatrix polyfill: fixes pdfjs-dist PDF parsing in Node.js
+      - ./polyfills:/polyfills:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -258,6 +260,7 @@ services:
           memory: 512M
     volumes:
       - ${N8N_DATA_DIR:-./n8n-data}:/home/node/.n8n
+      - ./polyfills:/polyfills:ro
     depends_on:
       n8n:
         condition: service_healthy
@@ -286,6 +289,7 @@ services:
           memory: 1024M
     volumes:
       - ${N8N_DATA_DIR:-./n8n-data}:/home/node/.n8n
+      - ./polyfills:/polyfills:ro
     depends_on:
       n8n:
         condition: service_healthy
