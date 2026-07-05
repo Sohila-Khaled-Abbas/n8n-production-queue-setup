@@ -12,20 +12,9 @@
     },
     {
       "parameters": {
-        "resource": "file",
-        "operation": "list",
+        "resource": "fileFolder",
+        "queryString": "'1kiyeVdh-lP45tH8uV-_8hpPVQc1DR_NK' in parents and mimeType = 'application/pdf' and trashed = false",
         "returnAll": true,
-        "filter": {
-          "whatToSearch": "files",
-          "foldersFilter": "folderId",
-          "folderId": {
-            "__rl": true,
-            "value": "1kiyeVdh-lP45tH8uV-_8hpPVQc1DR_NK",
-            "mode": "id",
-            "cachedResultName": "My PDF Folder"
-          },
-          "mimeType": "application/pdf"
-        },
         "options": {}
       },
       "id": "a1b2c3d4-0001-0001-0001-000000000002",
