@@ -94,7 +94,20 @@
         "type": "binary",
         "loader": "pdfLoader",
         "binaryDataKey": "data",
-        "options": {}
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "file_id",
+                "value": "={{ $('Process One by One').item.json.id }}"
+              },
+              {
+                "name": "file_name",
+                "value": "={{ $('Process One by One').item.json.name }}"
+              }
+            ]
+          }
+        }
       },
       "id": "a1b2c3d4-0001-0001-0001-000000000006",
       "name": "Load PDF",
