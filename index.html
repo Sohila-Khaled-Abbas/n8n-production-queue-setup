@@ -16,7 +16,7 @@
             errDiv.style.fontSize = '12px';
             errDiv.style.whiteSpace = 'pre-wrap';
             errDiv.innerHTML = '<strong>JS Error:</strong> ' + message + ' at ' + source + ':' + lineno + ':' + colno + '\n' + (error ? error.stack : '');
-            document.body.appendChild(errDiv);
+            (document.body || document.documentElement).appendChild(errDiv);
             return false;
         };
         window.onunhandledrejection = function(event) {
@@ -33,7 +33,7 @@
             errDiv.style.fontSize = '12px';
             errDiv.style.whiteSpace = 'pre-wrap';
             errDiv.innerHTML = '<strong>Promise Rejection:</strong> ' + event.reason + '\n' + (event.reason && event.reason.stack ? event.reason.stack : '');
-            document.body.appendChild(errDiv);
+            (document.body || document.documentElement).appendChild(errDiv);
         };
     </script>
     <meta charset="UTF-8">
@@ -66,6 +66,31 @@
     
     <!-- Custom styling -->
     <style>
+        /* Critical Layout Fixes */
+        html, body {
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #020617; /* bg-slate-950 */
+        }
+        .app-container {
+            display: flex;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+        .app-main {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0; /* CRITICAL: Prevents flex child collapsing or overflowing in Brave/Chromium */
+            height: 100%;
+            overflow: hidden;
+            background-color: #020617; /* bg-slate-950 */
+        }
+
         /* Glassmorphism effects */
         .glass-panel {
             background: rgba(15, 23, 42, 0.45);
@@ -125,7 +150,7 @@
     </style>
 </head>
 <body class="h-screen w-screen font-sans antialiased text-slate-300 bg-slate-950 overflow-hidden">
-    <div class="flex h-full w-full overflow-hidden">
+    <div class="app-container">
         
         <!-- Sidebar Navigation -->
         <aside class="flex flex-col flex-shrink-0 w-64 border-r border-slate-900 bg-slate-950/80 backdrop-blur-xl">
@@ -172,7 +197,7 @@
         </aside>
         
         <!-- Main Content Area -->
-        <main class="flex flex-col flex-1 overflow-hidden bg-slate-950">
+        <main class="app-main">
             
             <!-- Tab Contents -->
             <div class="flex-1 overflow-y-auto px-8 py-8">
