@@ -12,29 +12,19 @@
     },
     {
       "parameters": {
-        "operation": "filesList",
+        "resource": "file",
+        "operation": "list",
         "returnAll": true,
-        "queryFilters": {
-          "combineConditions": "AND",
-          "conditions": [
-            {
-              "field": "mimeType",
-              "value": "application/pdf"
-            },
-            {
-              "field": "trashed",
-              "value": false
-            }
-          ]
-        },
         "filter": {
           "whatToSearch": "files",
           "foldersFilter": "folderId",
           "folderId": {
             "__rl": true,
-            "value": "={{$vars.PDF_FOLDER_ID}}",
-            "mode": "id"
-          }
+            "value": "1kiyeVdh-lP45tH8uV-_8hpPVQc1DR_NK",
+            "mode": "id",
+            "cachedResultName": "My PDF Folder"
+          },
+          "mimeType": "application/pdf"
         },
         "options": {}
       },
@@ -149,7 +139,7 @@
     },
     {
       "parameters": {
-        "content": "## 📂 Google Drive PDF → Qdrant RAG Indexer\n\n### Setup (do once before running):\n\n**1. Set your Google Drive folder ID:**\n- Go to Settings → Variables\n- Add variable: `PDF_FOLDER_ID` = your folder ID\n- (Get it from the URL when you open the folder in Google Drive)\n\n**2. Set credentials on both Google Drive nodes:**\n- Click each Google Drive node\n- Select your existing Google Drive credential\n\n**3. Set Qdrant credential:**\n- URL: `http://qdrant:6333`\n- No API key needed\n\n**4. Verify Ollama has the model:**\n- Run: `docker exec ollama ollama pull nomic-embed-text`\n\n### How it works:\n- Lists ALL PDFs in your folder\n- Downloads and processes them one by one (no memory overload)\n- Splits each PDF into 1000-char chunks with 200 overlap\n- Embeds via Ollama nomic-embed-text (768 dims)\n- Stores everything in Qdrant collection `n8n-rag`",
+        "content": "## 📂 Google Drive PDF → Qdrant RAG Indexer\n\n### Setup (do once before running):\n\n**1. Google Drive Folder:**\n- The folder is pre-configured to your PDF folder (ID: 1kiyeVdh-lP45tH8uV-_8hpPVQc1DR_NK).\n- If you ever want to change it, open the 'List All PDFs' node and change the Folder ID.\n\n**2. Set credentials on both Google Drive nodes:**\n- Click each Google Drive node and select your Google Drive credential.\n\n**3. Set Qdrant credential:**\n- URL: `http://qdrant:6333`\n- No API key is needed.\n\n**4. Verify Ollama has the model:**\n- Ensure you have pulled `nomic-embed-text`.\n\n### How it works:\n- Lists ALL PDFs in your folder\n- Downloads and processes them one by one (avoids running out of memory)\n- Splits each PDF into 1000-char chunks with 200 overlap\n- Embeds via Ollama nomic-embed-text (768 dims)\n- Stores everything in local Qdrant collection `n8n-rag`",
         "height": 460,
         "width": 440,
         "color": 7
