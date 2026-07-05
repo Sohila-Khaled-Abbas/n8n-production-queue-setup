@@ -731,7 +731,25 @@ $$;
 3. **If n8n is running locally**:
    If your dockerized n8n instance runs on a local machine behind the restricted network, n8n Pinecone nodes will also time out. You must run a system-wide VPN on the host machine to route Docker network traffic through the VPN.
 4. **Deploy to a Cloud VPS**:
-   Deploying this Docker Compose stack to a remote cloud VPS (e.g. DigitalOcean, Hetzner, AWS, GCP) located outside of the restricted region resolves the API connection issue permanently. The remote server will communicate directly with Pinecone's API without regional network interference, even if your local browser needs a VPN to open the editor UI.
+    Deploying this Docker Compose stack to a remote cloud VPS (e.g. DigitalOcean, Hetzner, AWS, GCP) located outside of the restricted region resolves the API connection issue permanently. The remote server will communicate directly with Pinecone's API without regional network interference, even if your local browser needs a VPN to open the editor UI.
+
+---
+
+### GitHub Pages Deployment Fails with "Error: Deployment failed, try again later" in `actions/deploy-pages`
+
+**Symptoms:**
+- The GitHub Actions workflow compiles the data and uploads the pages artifact successfully, but fails at the deployment stage with the error:
+  `Error: Deployment failed, try again later.`
+
+**Cause:**
+- **Source Configuration Conflict**: By default, GitHub Pages is configured to build and deploy from a **Branch** (e.g. `main` or `gh-pages`). When the workflow uses `actions/deploy-pages` to deploy the site, GitHub's API rejects it because the repository settings are not configured to authorize deployments from **GitHub Actions**.
+
+**Fix:**
+1. Open your repository on **GitHub.com**.
+2. Navigate to **Settings** (top bar).
+3. In the left sidebar, select **Pages** (under "Code and automation").
+4. Under **Build and deployment** ➡️ **Source**, click the dropdown and change it from **Deploy from a branch** to **GitHub Actions**.
+5. Go to your repository's **Actions** tab, open the failed deployment workflow run, and click **Re-run all jobs**. It will now deploy successfully.
 
 ---
 
