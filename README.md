@@ -562,6 +562,17 @@ docker compose exec redis redis-cli LLEN bull:jobs:wait
 
 ---
 
+### Pinecone Console / API Connection Timeout (`ERR_CONNECTION_TIMED_OUT`)
+
+**Symptom:** Opening `app.pinecone.io` in your browser fails with `ERR_CONNECTION_TIMED_OUT`, or n8n Pinecone nodes time out.
+
+**Solution:**
+1. **Use a VPN:** Route browser and Docker host traffic through a VPN to bypass regional ISP network blockages (e.g. in Egypt).
+2. **Configure Custom DNS:** Switch DNS settings to Google DNS (`8.8.8.8`) or Cloudflare DNS (`1.1.1.1`).
+3. See **[troubleshooting.md](docs/troubleshooting.md)** for details on routing local Docker containers or hosting on VPS outside restricted regions.
+
+---
+
 ## 🛠️ Operational & Diagnostic Scripts
 
 The `scripts/` directory contains automation and database diagnostic scripts to maintain and troubleshoot the n8n production stack:
