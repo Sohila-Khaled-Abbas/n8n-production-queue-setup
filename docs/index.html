@@ -1,6 +1,41 @@
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-slate-950 text-slate-100 dark">
 <head>
+    <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+            const errDiv = document.createElement('div');
+            errDiv.style.position = 'fixed';
+            errDiv.style.top = '0';
+            errDiv.style.left = '0';
+            errDiv.style.width = '100%';
+            errDiv.style.backgroundColor = '#ef4444';
+            errDiv.style.color = '#ffffff';
+            errDiv.style.padding = '12px';
+            errDiv.style.zIndex = '99999';
+            errDiv.style.fontFamily = 'monospace';
+            errDiv.style.fontSize = '12px';
+            errDiv.style.whiteSpace = 'pre-wrap';
+            errDiv.innerHTML = '<strong>JS Error:</strong> ' + message + ' at ' + source + ':' + lineno + ':' + colno + '\n' + (error ? error.stack : '');
+            document.body.appendChild(errDiv);
+            return false;
+        };
+        window.onunhandledrejection = function(event) {
+            const errDiv = document.createElement('div');
+            errDiv.style.position = 'fixed';
+            errDiv.style.top = '0';
+            errDiv.style.left = '0';
+            errDiv.style.width = '100%';
+            errDiv.style.backgroundColor = '#ef4444';
+            errDiv.style.color = '#ffffff';
+            errDiv.style.padding = '12px';
+            errDiv.style.zIndex = '99999';
+            errDiv.style.fontFamily = 'monospace';
+            errDiv.style.fontSize = '12px';
+            errDiv.style.whiteSpace = 'pre-wrap';
+            errDiv.innerHTML = '<strong>Promise Rejection:</strong> ' + event.reason + '\n' + (event.reason && event.reason.stack ? event.reason.stack : '');
+            document.body.appendChild(errDiv);
+        };
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>n8n Production Stack Hub</title>
@@ -369,10 +404,17 @@
                 renderWorkflowsGrid(dbData.workflows);
                 
                 // Initialize guides markdown rendering
-                marked.setOptions({
-                    breaks: true,
-                    gfm: true
-                });
+                if (typeof marked.use === 'function') {
+                    marked.use({
+                        breaks: true,
+                        gfm: true
+                    });
+                } else if (typeof marked.setOptions === 'function') {
+                    marked.setOptions({
+                        breaks: true,
+                        gfm: true
+                    });
+                }
                 
                 // Pre-process custom alert formatting from GFM style
                 switchGuide(activeGuide);
