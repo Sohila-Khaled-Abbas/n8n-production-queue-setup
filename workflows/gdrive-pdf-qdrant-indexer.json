@@ -13,6 +13,8 @@
     {
       "parameters": {
         "resource": "fileFolder",
+        "operation": "search",
+        "searchMethod": "query",
         "queryString": "'1kiyeVdh-lP45tH8uV-_8hpPVQc1DR_NK' in parents and mimeType = 'application/pdf' and trashed = false",
         "returnAll": true,
         "options": {}
