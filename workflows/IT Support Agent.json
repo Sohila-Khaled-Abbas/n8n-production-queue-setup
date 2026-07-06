@@ -1,210 +1,212 @@
-{
-  "updatedAt": "2026-06-19T18:36:10.443Z",
-  "createdAt": "2026-06-18T21:15:17.710Z",
-  "id": "NMO6CYxZtRXOisiB",
-  "name": "IT Support Agent",
-  "description": null,
-  "active": true,
-  "isArchived": false,
-  "nodes": [
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
+[
+  {
+    "updatedAt": "2026-06-19T18:36:10.443Z",
+    "createdAt": "2026-06-18T21:15:17.710Z",
+    "id": "NMO6CYxZtRXOisiB",
+    "name": "IT Support Agent",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "pollTimes": {
+            "item": [
+              {
+                "mode": "everyMinute"
+              }
+            ]
+          },
+          "authentication": "airtableTokenApi",
+          "baseId": {
+            "__rl": true,
+            "value": "https://airtable.com/appuwja928F85i6iZ/tblwHAS83rmhFRxox/viwVDkFXhtyag9XTB?blocks=hide",
+            "mode": "url"
+          },
+          "tableId": {
+            "__rl": true,
+            "value": "https://airtable.com/appuwja928F85i6iZ/tblwHAS83rmhFRxox/viwVDkFXhtyag9XTB?blocks=hide",
+            "mode": "url"
+          },
+          "triggerField": "Ticket ID",
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.airtableTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          -48
+        ],
+        "id": "4115f233-91e1-4661-b920-f7387dd5c3d2",
+        "name": "Airtable Trigger",
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "20J6SJYSB73TnTGD",
+            "name": "Airtable Personal Access Token account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "modelId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "models/gemini-3-flash-preview"
+          },
+          "messages": {
+            "values": [
+              {
+                "content": "=You are the IT Support Team\u2019s coordinator. Your task is to collect incoming information about new support tickets and produce a concise summary to email to the IT management. The email should be signed with \u201cIT Support Team.\u201d\nHere are the details of the support tickets:\nTicket ID: {{ $json.fields['Ticket ID'] }}\nUser: {{ $json.fields.User }}\nIssue: {{ $json.fields.Issue }}\nPriority: {{ $json.fields.Priority }}\nDate Submitted: {{ $json.fields['Date Submitted'] }}\nStatus: {{ $json.fields.Status }}\nPlease provide the following output parameters:\nEmail_subject\nEmail_content\nMake the content clean and with bullet points"
+              }
+            ]
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.googleGemini",
+        "typeVersion": 1.2,
+        "position": [
+          224,
+          -48
+        ],
+        "id": "ce867d48-79b7-4fb9-9c2c-3741e43e4323",
+        "name": "Message a model",
+        "retryOnFail": true,
+        "credentials": {
+          "googlePalmApi": {
+            "id": "o1WM1pxDXe6yNltX",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sendTo": "sohila.k.data@gmail.com",
+          "subject": "={{ $json.Email_subject }}",
+          "emailType": "text",
+          "message": "={{ $json.Email_content }}",
+          "options": {
+            "appendAttribution": false
+          }
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          800,
+          -48
+        ],
+        "id": "6d526767-bac1-42a7-bb45-f250f432e4aa",
+        "name": "Send a message",
+        "webhookId": "668d1d3b-3877-46b1-8488-06ca8bfb94c5",
+        "retryOnFail": true,
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "lnIdGq9BGx5bYyLm",
+            "name": "Gmail account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const text = \n$input.first().json.content.parts[0].text\n\n// Extract subject\nconst subjectMatch = text.match(/\\*\\*Email_subject:\\*\\*\\s*(.*?)\\n\\n/s);\n\n// Extract content\nconst contentMatch = text.match(/\\*\\*Email_content:\\*\\*\\n([\\s\\S]*)/);\n\nlet subject = subjectMatch ? subjectMatch[1].trim() : \"\";\nlet content = contentMatch ? contentMatch[1].trim() : \"\";\n\n// Remove markdown bold\ncontent = content.replace(/\\*\\*/g, \"\");\n\n// Convert markdown bullets\ncontent = content.replace(/\\*\\s+/g, \"\u2022 \");\n\nreturn [{\n  Email_subject: subject,\n  Email_content: content\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          576,
+          -48
+        ],
+        "id": "54e74294-931c-4794-b68b-35eaa9524624",
+        "name": "Code in JavaScript"
+      }
+    ],
+    "connections": {
+      "Airtable Trigger": {
+        "main": [
+          [
             {
-              "mode": "everyMinute"
+              "node": "Message a model",
+              "type": "main",
+              "index": 0
             }
           ]
-        },
-        "authentication": "airtableTokenApi",
-        "baseId": {
-          "__rl": true,
-          "value": "https://airtable.com/appuwja928F85i6iZ/tblwHAS83rmhFRxox/viwVDkFXhtyag9XTB?blocks=hide",
-          "mode": "url"
-        },
-        "tableId": {
-          "__rl": true,
-          "value": "https://airtable.com/appuwja928F85i6iZ/tblwHAS83rmhFRxox/viwVDkFXhtyag9XTB?blocks=hide",
-          "mode": "url"
-        },
-        "triggerField": "Ticket ID",
-        "additionalFields": {}
+        ]
       },
-      "type": "n8n-nodes-base.airtableTrigger",
-      "typeVersion": 1,
-      "position": [
-        0,
-        -48
-      ],
-      "id": "4115f233-91e1-4661-b920-f7387dd5c3d2",
-      "name": "Airtable Trigger",
-      "credentials": {
-        "airtableTokenApi": {
-          "id": "20J6SJYSB73TnTGD",
-          "name": "Airtable Personal Access Token account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "modelId": {
-          "__rl": true,
-          "mode": "list",
-          "value": "models/gemini-3-flash-preview"
-        },
-        "messages": {
-          "values": [
+      "Message a model": {
+        "main": [
+          [
             {
-              "content": "=You are the IT Support Team’s coordinator. Your task is to collect incoming information about new support tickets and produce a concise summary to email to the IT management. The email should be signed with “IT Support Team.”\nHere are the details of the support tickets:\nTicket ID: {{ $json.fields['Ticket ID'] }}\nUser: {{ $json.fields.User }}\nIssue: {{ $json.fields.Issue }}\nPriority: {{ $json.fields.Priority }}\nDate Submitted: {{ $json.fields['Date Submitted'] }}\nStatus: {{ $json.fields.Status }}\nPlease provide the following output parameters:\nEmail_subject\nEmail_content\nMake the content clean and with bullet points"
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
             }
           ]
-        },
-        "builtInTools": {},
-        "options": {}
+        ]
       },
-      "type": "@n8n/n8n-nodes-langchain.googleGemini",
-      "typeVersion": 1.2,
-      "position": [
-        224,
-        -48
-      ],
-      "id": "ce867d48-79b7-4fb9-9c2c-3741e43e4323",
-      "name": "Message a model",
-      "retryOnFail": true,
-      "credentials": {
-        "googlePalmApi": {
-          "id": "o1WM1pxDXe6yNltX",
-          "name": "Google Gemini(PaLM) Api account"
-        }
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "Send a message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
-    {
-      "parameters": {
-        "sendTo": "sohila.k.data@gmail.com",
-        "subject": "={{ $json.Email_subject }}",
-        "emailType": "text",
-        "message": "={{ $json.Email_content }}",
-        "options": {
-          "appendAttribution": false
-        }
-      },
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.2,
-      "position": [
-        800,
-        -48
-      ],
-      "id": "6d526767-bac1-42a7-bb45-f250f432e4aa",
-      "name": "Send a message",
-      "webhookId": "668d1d3b-3877-46b1-8488-06ca8bfb94c5",
-      "retryOnFail": true,
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "lnIdGq9BGx5bYyLm",
-          "name": "Gmail account"
-        }
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": true,
+      "timeSavedMode": "fixed",
+      "timezone": "Asia/Kuwait",
+      "callerPolicy": "workflowsFromSameOwner",
+      "saveDataErrorExecution": "all",
+      "saveDataSuccessExecution": "all",
+      "saveExecutionProgress": true,
+      "saveManualExecutions": true,
+      "timeSavedPerExecution": 20
+    },
+    "staticData": {
+      "node:Airtable Trigger": {
+        "lastTimeChecked": "2026-07-06T11:54:39Z"
       }
     },
-    {
-      "parameters": {
-        "jsCode": "const text = \n$input.first().json.content.parts[0].text\n\n// Extract subject\nconst subjectMatch = text.match(/\\*\\*Email_subject:\\*\\*\\s*(.*?)\\n\\n/s);\n\n// Extract content\nconst contentMatch = text.match(/\\*\\*Email_content:\\*\\*\\n([\\s\\S]*)/);\n\nlet subject = subjectMatch ? subjectMatch[1].trim() : \"\";\nlet content = contentMatch ? contentMatch[1].trim() : \"\";\n\n// Remove markdown bold\ncontent = content.replace(/\\*\\*/g, \"\");\n\n// Convert markdown bullets\ncontent = content.replace(/\\*\\s+/g, \"• \");\n\nreturn [{\n  Email_subject: subject,\n  Email_content: content\n}];"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        576,
-        -48
-      ],
-      "id": "54e74294-931c-4794-b68b-35eaa9524624",
-      "name": "Code in JavaScript"
-    }
-  ],
-  "connections": {
-    "Airtable Trigger": {
-      "main": [
-        [
-          {
-            "node": "Message a model",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+    "meta": {
+      "templateCredsSetupCompleted": true
     },
-    "Message a model": {
-      "main": [
-        [
-          {
-            "node": "Code in JavaScript",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code in JavaScript": {
-      "main": [
-        [
-          {
-            "node": "Send a message",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
-  },
-  "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": true,
-    "timeSavedMode": "fixed",
-    "timezone": "Asia/Kuwait",
-    "callerPolicy": "workflowsFromSameOwner",
-    "saveDataErrorExecution": "all",
-    "saveDataSuccessExecution": "all",
-    "saveExecutionProgress": true,
-    "saveManualExecutions": true,
-    "timeSavedPerExecution": 20
-  },
-  "staticData": {
-    "node:Airtable Trigger": {
-      "lastTimeChecked": "2026-07-04T17:13:21Z"
-    }
-  },
-  "meta": {
-    "templateCredsSetupCompleted": true
-  },
-  "nodeGroups": [],
-  "pinData": {},
-  "versionId": "db8e745f-cfe3-4f3b-88a3-4134e4187a5d",
-  "activeVersionId": "3bd745d2-57ad-4575-8e35-0f19e22adfab",
-  "versionCounter": 75,
-  "triggerCount": 1,
-  "sourceWorkflowId": null,
-  "tags": [],
-  "shared": [
-    {
-      "updatedAt": "2026-06-18T21:15:17.710Z",
-      "createdAt": "2026-06-18T21:15:17.710Z",
-      "role": "workflow:owner",
-      "workflowId": "NMO6CYxZtRXOisiB",
-      "projectId": "7Kuw5RaGwePDWMtJ",
-      "project": {
-        "updatedAt": "2026-06-09T16:37:14.049Z",
-        "createdAt": "2026-06-09T16:15:53.210Z",
-        "id": "7Kuw5RaGwePDWMtJ",
-        "name": "Sohila Abbas <sohila.k.data@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "customTelemetryTags": [],
-        "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "db8e745f-cfe3-4f3b-88a3-4134e4187a5d",
+    "activeVersionId": "3bd745d2-57ad-4575-8e35-0f19e22adfab",
+    "versionCounter": 75,
+    "triggerCount": 1,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-06-18T21:15:17.710Z",
+        "createdAt": "2026-06-18T21:15:17.710Z",
+        "role": "workflow:owner",
+        "workflowId": "NMO6CYxZtRXOisiB",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
       }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
     }
-  ],
-  "versionMetadata": {
-    "name": null,
-    "description": null
   }
-}
+]

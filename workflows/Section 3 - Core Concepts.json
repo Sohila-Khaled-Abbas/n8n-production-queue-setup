@@ -1,377 +1,379 @@
-{
-  "updatedAt": "2026-07-01T12:46:53.367Z",
-  "createdAt": "2026-06-10T21:22:44.265Z",
-  "id": "pwMNMJCTAJfeUDrS",
-  "name": "Section 3 - Core Concepts",
-  "description": null,
-  "active": false,
-  "isArchived": false,
-  "nodes": [
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
-      "position": [
-        -128,
-        752
-      ],
-      "id": "db88de9a-766a-40ac-a301-d34e820a285c",
-      "name": "When clicking ‘Execute workflow’"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "e41fe6b5-9fba-4fdf-aa92-7dbe63e4a77f",
-              "name": "name",
-              "value": "Sohila Khaled",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
+[
+  {
+    "updatedAt": "2026-07-01T12:46:53.367Z",
+    "createdAt": "2026-06-10T21:22:44.265Z",
+    "id": "pwMNMJCTAJfeUDrS",
+    "name": "Section 3 - Core Concepts",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          -128,
+          752
+        ],
+        "id": "db88de9a-766a-40ac-a301-d34e820a285c",
+        "name": "When clicking \u2018Execute workflow\u2019"
       },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -128,
-        0
-      ],
-      "id": "ea43f01b-e692-4139-8e7f-e71f1128d189",
-      "name": "Edit Fields"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        96,
-        0
-      ],
-      "id": "cc5a3b22-e79b-40c7-839f-96feecafc14a",
-      "name": "Edit Fields1"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "60471b81-f360-4371-8f4e-9c1f4aab2a8c",
-              "name": "example_array",
-              "value": "['metallica', 'megadeth']",
-              "type": "array"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -128,
-        336
-      ],
-      "id": "cd00259a-3a4f-4613-ac67-c83b5a3c3b06",
-      "name": "Edit Fields2"
-    },
-    {
-      "parameters": {
-        "fieldToSplitOut": "example_array",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitOut",
-      "typeVersion": 1,
-      "position": [
-        160,
-        336
-      ],
-      "id": "11f664e2-0367-4575-a7e9-ecd60070520f",
-      "name": "Split Out"
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=what was the most popular album for {{ $json.example_array }}",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3.1,
-      "position": [
-        448,
-        336
-      ],
-      "id": "d1bb9178-52c7-46cc-afde-df06126b7267",
-      "name": "AI Agent"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "864e9e9f-945b-49da-83ff-0b75b3dfe31a",
-              "name": "last_name",
-              "value": "Nolan",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -128,
-        528
-      ],
-      "id": "0089e8f0-d490-4787-8926-5607727345b4",
-      "name": "Edit Fields3"
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=Who is the most famous person with the name: {{ $json.last_name }}",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3.1,
-      "position": [
-        96,
-        528
-      ],
-      "id": "faaf877e-6df9-4638-b326-6b85b49c6b4b",
-      "name": "AI Agent1"
-    },
-    {
-      "parameters": {
-        "content": "Build your first workflow\nHello World of n8n\n\nManual Trigger -> Set Node -> \"Hello World, I'm Learning n8n!\"",
-        "height": 144,
-        "width": 736
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        -1264,
-        96
-      ],
-      "typeVersion": 1,
-      "id": "998ee501-a40a-4b13-bdeb-4ecba2306fd0",
-      "name": "Sticky Note"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "7db14d53-0899-48eb-9aa7-659b51c2fea9",
-              "name": "hello_world",
-              "value": "Hello World, I'm Learning n8n!",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        96,
-        752
-      ],
-      "id": "05cae194-444d-4dac-b6f5-0fbc2fea1422",
-      "name": "Print Hello World",
-      "notesInFlow": true,
-      "notes": "Print Hello World, I'm Learning n8n"
-    },
-    {
-      "parameters": {
-        "model": "llama3.2:3b",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
-      "position": [
-        464,
-        560
-      ],
-      "id": "b0d4d6b4-9baf-427b-a36d-cdef73cc8f77",
-      "name": "Ollama Chat Model",
-      "credentials": {
-        "ollamaApi": {
-          "id": "wDe9MCIO6q1M7Gau",
-          "name": "Ollama account"
-        }
-      }
-    }
-  ],
-  "connections": {
-    "When clicking ‘Execute workflow’": {
-      "main": [
-        [
-          {
-            "node": "Print Hello World",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Edit Fields": {
-      "main": [
-        [
-          {
-            "node": "Edit Fields1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Edit Fields2": {
-      "main": [
-        [
-          {
-            "node": "Split Out",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Split Out": {
-      "main": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Edit Fields3": {
-      "main": [
-        [
-          {
-            "node": "AI Agent1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Ollama Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_languageModel",
-            "index": 0
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "e41fe6b5-9fba-4fdf-aa92-7dbe63e4a77f",
+                "name": "name",
+                "value": "Sohila Khaled",
+                "type": "string"
+              }
+            ]
           },
-          {
-            "node": "AI Agent1",
-            "type": "ai_languageModel",
-            "index": 0
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -128,
+          0
+        ],
+        "id": "ea43f01b-e692-4139-8e7f-e71f1128d189",
+        "name": "Edit Fields"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          96,
+          0
+        ],
+        "id": "cc5a3b22-e79b-40c7-839f-96feecafc14a",
+        "name": "Edit Fields1"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "60471b81-f360-4371-8f4e-9c1f4aab2a8c",
+                "name": "example_array",
+                "value": "['metallica', 'megadeth']",
+                "type": "array"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -128,
+          336
+        ],
+        "id": "cd00259a-3a4f-4613-ac67-c83b5a3c3b06",
+        "name": "Edit Fields2"
+      },
+      {
+        "parameters": {
+          "fieldToSplitOut": "example_array",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitOut",
+        "typeVersion": 1,
+        "position": [
+          160,
+          336
+        ],
+        "id": "11f664e2-0367-4575-a7e9-ecd60070520f",
+        "name": "Split Out"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=what was the most popular album for {{ $json.example_array }}",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          448,
+          336
+        ],
+        "id": "d1bb9178-52c7-46cc-afde-df06126b7267",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "864e9e9f-945b-49da-83ff-0b75b3dfe31a",
+                "name": "last_name",
+                "value": "Nolan",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -128,
+          528
+        ],
+        "id": "0089e8f0-d490-4787-8926-5607727345b4",
+        "name": "Edit Fields3"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Who is the most famous person with the name: {{ $json.last_name }}",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          96,
+          528
+        ],
+        "id": "faaf877e-6df9-4638-b326-6b85b49c6b4b",
+        "name": "AI Agent1"
+      },
+      {
+        "parameters": {
+          "content": "Build your first workflow\nHello World of n8n\n\nManual Trigger -> Set Node -> \"Hello World, I'm Learning n8n!\"",
+          "height": 144,
+          "width": 736
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          -1264,
+          96
+        ],
+        "typeVersion": 1,
+        "id": "998ee501-a40a-4b13-bdeb-4ecba2306fd0",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "7db14d53-0899-48eb-9aa7-659b51c2fea9",
+                "name": "hello_world",
+                "value": "Hello World, I'm Learning n8n!",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          96,
+          752
+        ],
+        "id": "05cae194-444d-4dac-b6f5-0fbc2fea1422",
+        "name": "Print Hello World",
+        "notesInFlow": true,
+        "notes": "Print Hello World, I'm Learning n8n"
+      },
+      {
+        "parameters": {
+          "model": "llama3.2:3b",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+        "typeVersion": 1,
+        "position": [
+          464,
+          560
+        ],
+        "id": "b0d4d6b4-9baf-427b-a36d-cdef73cc8f77",
+        "name": "Ollama Chat Model",
+        "credentials": {
+          "ollamaApi": {
+            "id": "wDe9MCIO6q1M7Gau",
+            "name": "Ollama account"
           }
-        ]
-      ]
-    }
-  },
-  "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": false
-  },
-  "staticData": null,
-  "meta": {
-    "templateCredsSetupCompleted": true
-  },
-  "nodeGroups": [],
-  "pinData": {
-    "AI Agent": [
-      {
-        "json": {
-          "output": "Metallica’s most popular album is widely considered to be Metallica (commonly called The Black Album), released in 1991. It’s their biggest commercial success — certified 16× Platinum in the U.S. (16 million) and estimated to have sold around 30+ million copies worldwide — and includes hits like “Enter Sandman,” “Nothing Else Matters” and “The Unforgiven.”\n\nIf you meant “most popular” by a different measure (critical acclaim, streaming numbers, or fan favorites), tell me which and I can give that ranking too."
-        },
-        "pairedItem": {
-          "item": 0
-        }
-      },
-      {
-        "json": {
-          "output": "If you mean commercially the most popular, it's generally considered to be Countdown to Extinction (1992). It peaked at No. 2 on the US Billboard 200, is certified double-platinum in the U.S., and spawned big radio/video hits such as \"Symphony of Destruction\" and \"Sweating Bullets.\"\n\nIf you mean \"most popular\" in terms of critical acclaim or fan-favorite status, many fans and critics point to Rust in Peace (1990) as Megadeth's high-water mark. Want sales, chart positions, or streaming stats for any of these?"
-        },
-        "pairedItem": {
-          "item": 1
         }
       }
     ],
-    "Split Out": [
-      {
-        "json": {
-          "example_array": "metallica"
-        },
-        "pairedItem": {
-          "item": 0
-        }
-      },
-      {
-        "json": {
-          "example_array": "megadeth"
-        },
-        "pairedItem": {
-          "item": 0
-        }
-      }
-    ],
-    "Edit Fields2": [
-      {
-        "json": {
-          "example_array": [
-            "metallica",
-            "slayer"
+    "connections": {
+      "When clicking \u2018Execute workflow\u2019": {
+        "main": [
+          [
+            {
+              "node": "Print Hello World",
+              "type": "main",
+              "index": 0
+            }
           ]
+        ]
+      },
+      "Edit Fields": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields2": {
+        "main": [
+          [
+            {
+              "node": "Split Out",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Split Out": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields3": {
+        "main": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Ollama Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            },
+            {
+              "node": "AI Agent1",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {
+      "AI Agent": [
+        {
+          "json": {
+            "output": "Metallica\u2019s most popular album is widely considered to be Metallica (commonly called The Black Album), released in 1991. It\u2019s their biggest commercial success \u2014 certified 16\u00d7 Platinum in the U.S. (16 million) and estimated to have sold around 30+ million copies worldwide \u2014 and includes hits like \u201cEnter Sandman,\u201d \u201cNothing Else Matters\u201d and \u201cThe Unforgiven.\u201d\n\nIf you meant \u201cmost popular\u201d by a different measure (critical acclaim, streaming numbers, or fan favorites), tell me which and I can give that ranking too."
+          },
+          "pairedItem": {
+            "item": 0
+          }
+        },
+        {
+          "json": {
+            "output": "If you mean commercially the most popular, it's generally considered to be Countdown to Extinction (1992). It peaked at No. 2 on the US Billboard 200, is certified double-platinum in the U.S., and spawned big radio/video hits such as \"Symphony of Destruction\" and \"Sweating Bullets.\"\n\nIf you mean \"most popular\" in terms of critical acclaim or fan-favorite status, many fans and critics point to Rust in Peace (1990) as Megadeth's high-water mark. Want sales, chart positions, or streaming stats for any of these?"
+          },
+          "pairedItem": {
+            "item": 1
+          }
+        }
+      ],
+      "Split Out": [
+        {
+          "json": {
+            "example_array": "metallica"
+          },
+          "pairedItem": {
+            "item": 0
+          }
+        },
+        {
+          "json": {
+            "example_array": "megadeth"
+          },
+          "pairedItem": {
+            "item": 0
+          }
+        }
+      ],
+      "Edit Fields2": [
+        {
+          "json": {
+            "example_array": [
+              "metallica",
+              "slayer"
+            ]
+          }
+        }
+      ],
+      "When clicking \u2018Execute workflow\u2019": [
+        {
+          "json": {},
+          "pairedItem": {
+            "item": 0
+          }
+        }
+      ]
+    },
+    "versionId": "2295fa97-0a67-4bab-bdf2-36c29159273b",
+    "activeVersionId": null,
+    "versionCounter": 25,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-06-10T21:22:44.265Z",
+        "createdAt": "2026-06-10T21:22:44.265Z",
+        "role": "workflow:owner",
+        "workflowId": "pwMNMJCTAJfeUDrS",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
         }
       }
     ],
-    "When clicking ‘Execute workflow’": [
-      {
-        "json": {},
-        "pairedItem": {
-          "item": 0
-        }
-      }
-    ]
-  },
-  "versionId": "2295fa97-0a67-4bab-bdf2-36c29159273b",
-  "activeVersionId": null,
-  "versionCounter": 25,
-  "triggerCount": 0,
-  "sourceWorkflowId": null,
-  "tags": [],
-  "shared": [
-    {
-      "updatedAt": "2026-06-10T21:22:44.265Z",
-      "createdAt": "2026-06-10T21:22:44.265Z",
-      "role": "workflow:owner",
-      "workflowId": "pwMNMJCTAJfeUDrS",
-      "projectId": "7Kuw5RaGwePDWMtJ",
-      "project": {
-        "updatedAt": "2026-06-09T16:37:14.049Z",
-        "createdAt": "2026-06-09T16:15:53.210Z",
-        "id": "7Kuw5RaGwePDWMtJ",
-        "name": "Sohila Abbas <sohila.k.data@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "customTelemetryTags": [],
-        "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
-      }
+    "versionMetadata": {
+      "name": null,
+      "description": null
     }
-  ],
-  "versionMetadata": {
-    "name": null,
-    "description": null
   }
-}
+]

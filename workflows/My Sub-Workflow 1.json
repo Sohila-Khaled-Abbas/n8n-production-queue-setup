@@ -1,86 +1,88 @@
-{
-  "updatedAt": "2026-06-13T17:53:07.981Z",
-  "createdAt": "2026-06-13T17:36:23.695Z",
-  "id": "uHQt5BV6nT0g0oH5",
-  "name": "My Sub-Workflow 1",
-  "description": null,
-  "active": false,
-  "isArchived": true,
-  "nodes": [
-    {
-      "parameters": {
-        "inputSource": "passthrough"
-      },
-      "id": "c055762a-8fe7-4141-a639-df2372f30060",
-      "typeVersion": 1.1,
-      "name": "When Executed by Another Workflow",
-      "type": "n8n-nodes-base.executeWorkflowTrigger",
-      "position": [
-        272,
-        352
-      ]
-    },
-    {
-      "parameters": {},
-      "id": "b5942df6-0160-4ef7-965d-57583acdc8aa",
-      "name": "Replace me with your logic",
-      "type": "n8n-nodes-base.noOp",
-      "position": [
-        528,
-        352
-      ]
-    }
-  ],
-  "connections": {
-    "When Executed by Another Workflow": {
-      "main": [
-        [
-          {
-            "node": "Replace me with your logic",
-            "type": "main",
-            "index": 0
-          }
+[
+  {
+    "updatedAt": "2026-06-13T17:53:07.981Z",
+    "createdAt": "2026-06-13T17:36:23.695Z",
+    "id": "uHQt5BV6nT0g0oH5",
+    "name": "My Sub-Workflow 1",
+    "description": null,
+    "active": false,
+    "isArchived": true,
+    "nodes": [
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "id": "c055762a-8fe7-4141-a639-df2372f30060",
+        "typeVersion": 1.1,
+        "name": "When Executed by Another Workflow",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "position": [
+          272,
+          352
         ]
-      ]
-    }
-  },
-  "settings": {
-    "executionOrder": "v1",
-    "availableInMCP": false,
-    "binaryMode": "separate"
-  },
-  "staticData": null,
-  "meta": null,
-  "nodeGroups": [],
-  "pinData": {},
-  "versionId": "74edd8e1-5228-4213-bcb6-56216186afc9",
-  "activeVersionId": null,
-  "versionCounter": 2,
-  "triggerCount": 0,
-  "sourceWorkflowId": null,
-  "tags": [],
-  "shared": [
-    {
-      "updatedAt": "2026-06-13T17:36:23.695Z",
-      "createdAt": "2026-06-13T17:36:23.695Z",
-      "role": "workflow:owner",
-      "workflowId": "uHQt5BV6nT0g0oH5",
-      "projectId": "7Kuw5RaGwePDWMtJ",
-      "project": {
-        "updatedAt": "2026-06-09T16:37:14.049Z",
-        "createdAt": "2026-06-09T16:15:53.210Z",
-        "id": "7Kuw5RaGwePDWMtJ",
-        "name": "Sohila Abbas <sohila.k.data@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "customTelemetryTags": [],
-        "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+      },
+      {
+        "parameters": {},
+        "id": "b5942df6-0160-4ef7-965d-57583acdc8aa",
+        "name": "Replace me with your logic",
+        "type": "n8n-nodes-base.noOp",
+        "position": [
+          528,
+          352
+        ]
       }
+    ],
+    "connections": {
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "Replace me with your logic",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "availableInMCP": false,
+      "binaryMode": "separate"
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "74edd8e1-5228-4213-bcb6-56216186afc9",
+    "activeVersionId": null,
+    "versionCounter": 2,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-06-13T17:36:23.695Z",
+        "createdAt": "2026-06-13T17:36:23.695Z",
+        "role": "workflow:owner",
+        "workflowId": "uHQt5BV6nT0g0oH5",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
     }
-  ],
-  "versionMetadata": {
-    "name": null,
-    "description": null
   }
-}
+]

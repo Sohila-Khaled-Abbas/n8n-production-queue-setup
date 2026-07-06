@@ -1,0 +1,430 @@
+[
+  {
+    "updatedAt": "2026-07-01T13:05:53.778Z",
+    "createdAt": "2026-07-01T13:03:28.757Z",
+    "id": "pJpZcQ6fHtqAi1nL",
+    "name": "Section 4 - Most Common Ways to Start the Workflow (Easy)",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          -96,
+          0
+        ],
+        "id": "de8984f5-8462-4e5f-9ed1-5e8bb4cbd9c5",
+        "name": "When clicking \u2018Execute workflow\u2019"
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {},
+              {
+                "field": "months"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          -96,
+          192
+        ],
+        "id": "e5fe1d26-7f84-4c17-b628-9ce1f45271de",
+        "name": "Schedule Trigger"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          128,
+          96
+        ],
+        "id": "eba733ba-7c17-4d2b-84d3-1e2812433f10",
+        "name": "Edit Fields"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          -96,
+          528
+        ],
+        "id": "38099211-b011-47d4-8616-3be137859cde",
+        "name": "When chat message received",
+        "webhookId": "19a0f852-dd0d-4349-aedc-5fab84fc1ba6"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          128,
+          528
+        ],
+        "id": "dc825986-5836-4b62-a9b0-3964881d8104",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "formTitle": "n8n starter form",
+          "formDescription": "take user input",
+          "formFields": {
+            "values": [
+              {
+                "fieldName": "person_name",
+                "fieldLabel": "What is your name"
+              },
+              {
+                "fieldName": "n8n_skill_level",
+                "fieldLabel": "What is your n8n skill level",
+                "fieldType": "dropdown",
+                "defaultValue": "Beginner",
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "Beginner"
+                    },
+                    {
+                      "option": "Advanced"
+                    }
+                  ]
+                }
+              },
+              {
+                "fieldName": "used_n8n_before",
+                "fieldLabel": "Have you used n8n before",
+                "fieldType": "checkbox",
+                "defaultValue": "Yes",
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "Yes"
+                    },
+                    {
+                      "option": "No"
+                    }
+                  ]
+                },
+                "limitSelection": "exact"
+              }
+            ]
+          },
+          "options": {
+            "customCss": ":root {\n\t--font-family: 'Open Sans', sans-serif;\n\t--font-weight-normal: 400;\n\t--font-weight-bold: 600;\n\t--font-size-body: 12px;\n\t--font-size-label: 14px;\n\t--font-size-test-notice: 12px;\n\t--font-size-input: 14px;\n\t--font-size-header: 20px;\n\t--font-size-paragraph: 14px;\n\t--font-size-link: 12px;\n\t--font-size-error: 12px;\n\t--font-size-html-h1: 28px;\n\t--font-size-html-h2: 20px;\n\t--font-size-html-h3: 16px;\n\t--font-size-html-h4: 14px;\n\t--font-size-html-h5: 12px;\n\t--font-size-html-h6: 10px;\n\t--font-size-subheader: 14px;\n\n\t/* Colors */\n\t--color-background: #fbfcfe;\n\t--color-test-notice-text: #e6a23d;\n\t--color-test-notice-bg: #fefaf6;\n\t--color-test-notice-border: #f6dcb7;\n\t--color-card-bg: #ffffff;\n\t--color-card-border: #dbdfe7;\n\t--color-card-shadow: rgba(99, 77, 255, 0.06);\n\t--color-link: #7e8186;\n\t--color-header: #525356;\n\t--color-label: #555555;\n\t--color-input-border: #dbdfe7;\n\t--color-input-text: #71747A;\n\t--color-focus-border: rgb(90, 76, 194);\n\t--color-submit-btn-bg: #ff6d5a;\n\t--color-submit-btn-text: #ffffff;\n\t--color-error: #ea1f30;\n\t--color-required: #ff6d5a;\n\t--color-clear-button-bg: #7e8186;\n\t--color-html-text: #555;\n\t--color-html-link: #ff6d5a;\n\t--color-header-subtext: #7e8186;\n\n\t/* Border Radii */\n\t--border-radius-card: 8px;\n\t--border-radius-input: 6px;\n\t--border-radius-clear-btn: 50%;\n\t--card-border-radius: 8px;\n\n\t/* Spacing */\n\t--padding-container-top: 24px;\n\t--padding-card: 24px;\n\t--padding-test-notice-vertical: 12px;\n\t--padding-test-notice-horizontal: 24px;\n\t--margin-bottom-card: 16px;\n\t--padding-form-input: 12px;\n\t--card-padding: 24px;\n\t--card-margin-bottom: 16px;\n\n\t/* Dimensions */\n\t--container-width: 448px;\n\t--submit-btn-height: 48px;\n\t--checkbox-size: 18px;\n\n\t/* Others */\n\t--box-shadow-card: 0px 4px 16px 0px var(--color-card-shadow);\n\t--opacity-placeholder: 0.5;\n}"
+          }
+        },
+        "type": "n8n-nodes-base.formTrigger",
+        "typeVersion": 2.4,
+        "position": [
+          -96,
+          848
+        ],
+        "id": "fc3aaa40-633c-4693-af18-28cae0015abb",
+        "name": "On form submission",
+        "webhookId": "b7a23b9e-bd96-4718-bdfc-c7e884434cfd"
+      },
+      {
+        "parameters": {
+          "content": "Step 1\nBuild n8n form that asks about your job\nTry different form elements\n\n1. Job Title\n2. Job Description\n3. Join Date for the job\n4. fake work email\n5. Salary\n\nAdd edit set field after this",
+          "height": 288,
+          "width": 800
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          800,
+          240
+        ],
+        "typeVersion": 1,
+        "id": "964460c9-00b1-46a8-85b6-3c9ae9a683a6",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "formTitle": "Job Form",
+          "formDescription": "Job form for n8n video",
+          "formFields": {
+            "values": [
+              {
+                "fieldName": "job_name",
+                "fieldLabel": "What is your job title"
+              },
+              {
+                "fieldName": "Job Description",
+                "fieldLabel": "Job Description",
+                "fieldType": "textarea"
+              },
+              {
+                "fieldName": "Join Date for the job",
+                "fieldLabel": "Join Date for the job",
+                "fieldType": "date"
+              },
+              {
+                "fieldName": "work email",
+                "fieldLabel": "work email",
+                "fieldType": "email"
+              },
+              {
+                "fieldName": "Salary",
+                "fieldLabel": "Salary",
+                "fieldType": "number"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.formTrigger",
+        "typeVersion": 2.4,
+        "position": [
+          -96,
+          1072
+        ],
+        "id": "898b8fec-7f79-4442-bccb-2fb8ebd38f15",
+        "name": "On form submission1",
+        "webhookId": "f5c1b641-d92c-4489-90c2-c449b3dd6555"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "e723be90-06db-4c97-b378-5ae35c6c1f24",
+                "name": "job_name",
+                "value": "={{ $json.job_name }}",
+                "type": "string"
+              },
+              {
+                "id": "5f01aca7-af71-4718-bdc6-06a7669f40f7",
+                "name": "Job Description",
+                "value": "={{ $json['Job Description'] }}",
+                "type": "string"
+              },
+              {
+                "id": "49ed4388-e136-4c3a-8205-76ea0b30557b",
+                "name": "Join Date for the job",
+                "value": "={{ $json['Join Date for the job'] }}",
+                "type": "string"
+              },
+              {
+                "id": "1afac804-58ef-4f74-b080-986404039a58",
+                "name": "Salary",
+                "value": "={{ $json.Salary }}",
+                "type": "number"
+              },
+              {
+                "id": "33e08fdd-0491-42a9-bf6e-ecb33ff4e7ee",
+                "name": "submittedAt",
+                "value": "={{ $json.submittedAt }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          128,
+          1072
+        ],
+        "id": "a642b3e0-5426-4c87-a485-3ccee8bab148",
+        "name": "Edit Fields1"
+      },
+      {
+        "parameters": {
+          "formTitle": "n8n starter form",
+          "formDescription": "take user input",
+          "formFields": {
+            "values": [
+              {
+                "fieldName": "person_name",
+                "fieldLabel": "What is your name"
+              },
+              {
+                "fieldName": "n8n_skill_level",
+                "fieldLabel": "What is your n8n skill level",
+                "fieldType": "dropdown",
+                "defaultValue": "Beginner",
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "Beginner"
+                    },
+                    {
+                      "option": "Advanced"
+                    }
+                  ]
+                }
+              },
+              {
+                "fieldName": "used_n8n_before",
+                "fieldLabel": "Have you used n8n before",
+                "fieldType": "checkbox",
+                "defaultValue": "Yes",
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "Yes"
+                    },
+                    {
+                      "option": "No"
+                    }
+                  ]
+                },
+                "limitSelection": "exact"
+              }
+            ]
+          },
+          "options": {
+            "customCss": ":root {\n\t--font-family: 'Open Sans', sans-serif;\n\t--font-weight-normal: 400;\n\t--font-weight-bold: 600;\n\t--font-size-body: 12px;\n\t--font-size-label: 14px;\n\t--font-size-test-notice: 12px;\n\t--font-size-input: 14px;\n\t--font-size-header: 20px;\n\t--font-size-paragraph: 14px;\n\t--font-size-link: 12px;\n\t--font-size-error: 12px;\n\t--font-size-html-h1: 28px;\n\t--font-size-html-h2: 20px;\n\t--font-size-html-h3: 16px;\n\t--font-size-html-h4: 14px;\n\t--font-size-html-h5: 12px;\n\t--font-size-html-h6: 10px;\n\t--font-size-subheader: 14px;\n\t/* Colors */\n\t--color-background: #1a1a1a;\n\t--color-test-notice-text: #ff4444;\n\t--color-test-notice-bg: #2a1a1a;\n\t--color-test-notice-border: #ff4444;\n\t--color-card-bg: #000000;\n\t--color-card-border: #ff0000;\n\t--color-card-shadow: rgba(255, 0, 0, 0.2);\n\t--color-link: #ff6666;\n\t--color-header: #ffffff;\n\t--color-label: #e0e0e0;\n\t--color-input-border: #ff0000;\n\t--color-input-text: #ffffff;\n\t--color-focus-border: #ff0000;\n\t--color-submit-btn-bg: #ff0000;\n\t--color-submit-btn-text: #000000;\n\t--color-error: #ff4444;\n\t--color-required: #ff0000;\n\t--color-clear-button-bg: #333333;\n\t--color-html-text: #e0e0e0;\n\t--color-html-link: #ff6666;\n\t--color-header-subtext: #999999;\n\t/* Border Radii */\n\t--border-radius-card: 8px;\n\t--border-radius-input: 6px;\n\t--border-radius-clear-btn: 50%;\n\t--card-border-radius: 8px;\n\t/* Spacing */\n\t--padding-container-top: 24px;\n\t--padding-card: 24px;\n\t--padding-test-notice-vertical: 12px;\n\t--padding-test-notice-horizontal: 24px;\n\t--margin-bottom-card: 16px;\n\t--padding-form-input: 12px;\n\t--card-padding: 24px;\n\t--card-margin-bottom: 16px;\n\t/* Dimensions */\n\t--container-width: 448px;\n\t--submit-btn-height: 48px;\n\t--checkbox-size: 18px;\n\t/* Others */\n\t--box-shadow-card: 0px 4px 16px 0px var(--color-card-shadow);\n\t--opacity-placeholder: 0.5;\n}"
+          }
+        },
+        "type": "n8n-nodes-base.formTrigger",
+        "typeVersion": 2.4,
+        "position": [
+          -96,
+          1296
+        ],
+        "id": "b5053a67-dff6-430b-80a7-ebbf13461db4",
+        "name": "On form submission2",
+        "webhookId": "5129d1a7-f969-4d10-bca8-d7b636be9b7d"
+      },
+      {
+        "parameters": {
+          "model": "llama3.2:3b",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+        "typeVersion": 1,
+        "position": [
+          -16,
+          736
+        ],
+        "id": "b0ec3dff-17cd-4554-8b17-d8ca2bb6fa5d",
+        "name": "Ollama Chat Model",
+        "credentials": {
+          "ollamaApi": {
+            "id": "wDe9MCIO6q1M7Gau",
+            "name": "Ollama account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When clicking \u2018Execute workflow\u2019": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "On form submission1": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Ollama Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": {
+      "node:Schedule Trigger": {
+        "recurrenceRules": []
+      }
+    },
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "9849c370-f963-4c73-87c9-54ac483af382",
+    "activeVersionId": "9849c370-f963-4c73-87c9-54ac483af382",
+    "versionCounter": 6,
+    "triggerCount": 5,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-07-01T13:03:28.757Z",
+        "createdAt": "2026-07-01T13:03:28.757Z",
+        "role": "workflow:owner",
+        "workflowId": "pJpZcQ6fHtqAi1nL",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version 9849c370",
+      "description": ""
+    }
+  }
+]

@@ -1,0 +1,356 @@
+[
+  {
+    "updatedAt": "2026-07-05T21:48:40.074Z",
+    "createdAt": "2026-07-05T13:16:13.684Z",
+    "id": "PF38bb0iXFIqG7al",
+    "name": "Google Drive PDF \u2192 Qdrant RAG Indexer",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "id": "22b7b813-26b0-4b7a-b956-67af72f0725d",
+        "name": "Run Indexer",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          4816,
+          1968
+        ],
+        "notes": "Click 'Test workflow' to index all PDFs in your Google Drive folder."
+      },
+      {
+        "parameters": {
+          "resource": "fileFolder",
+          "searchMethod": "query",
+          "queryString": "'1kiyeVdh-lP45tH8uV-_8hpPVQc1DR_NK' in parents and mimeType = 'application/pdf' and trashed = false",
+          "returnAll": true,
+          "filter": {},
+          "options": {}
+        },
+        "id": "a10aad4d-2703-4328-9384-0276a64d16bd",
+        "name": "List All PDFs",
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          5040,
+          1968
+        ],
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "Q8F6AF4nNReCfLij",
+            "name": "Google Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "4940c393-0e5a-40f4-a288-b71a071b6a65",
+        "name": "Process One by One",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          5264,
+          1968
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "download",
+          "fileId": {
+            "__rl": true,
+            "value": "={{ $json.id }}",
+            "mode": "id"
+          },
+          "options": {
+            "fileName": "={{ $json.name }}"
+          }
+        },
+        "id": "c2cfe8a8-3bd9-4921-8ad1-d3e271e077b5",
+        "name": "Download PDF",
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          5488,
+          1888
+        ],
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "Q8F6AF4nNReCfLij",
+            "name": "Google Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "insert",
+          "qdrantCollection": {
+            "__rl": true,
+            "value": "n8n-rag",
+            "mode": "list",
+            "cachedResultName": "n8n-rag"
+          },
+          "options": {}
+        },
+        "id": "ccc21d27-c17a-4363-ae5a-1c2e7bbd492b",
+        "name": "Store in Qdrant",
+        "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+        "typeVersion": 1,
+        "position": [
+          5744,
+          1968
+        ],
+        "credentials": {
+          "qdrantApi": {
+            "id": "bH2hk1EtEFghgicV",
+            "name": "Qdrant account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {
+            "metadata": {
+              "metadataValues": [
+                {
+                  "name": "file_id",
+                  "value": "={{ $('Process One by One').item.json.id }}"
+                },
+                {
+                  "name": "file_name",
+                  "value": "={{ $('Process One by One').item.json.name }}"
+                }
+              ]
+            }
+          }
+        },
+        "id": "05c8e93a-2ab4-4c57-98be-ee9caece0350",
+        "name": "Load PDF",
+        "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+        "typeVersion": 1,
+        "position": [
+          5840,
+          2192
+        ]
+      },
+      {
+        "parameters": {
+          "chunkOverlap": 200,
+          "options": {}
+        },
+        "id": "84c03f6d-334a-405e-b224-fa9bf0b75609",
+        "name": "Split Text",
+        "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+        "typeVersion": 1,
+        "position": [
+          5920,
+          2400
+        ]
+      },
+      {
+        "parameters": {
+          "model": "nomic-embed-text:latest"
+        },
+        "id": "555955fd-5056-4412-bdf5-0a51f5b71b93",
+        "name": "Ollama Embeddings",
+        "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+        "typeVersion": 1,
+        "position": [
+          5712,
+          2192
+        ],
+        "credentials": {
+          "ollamaApi": {
+            "id": "wDe9MCIO6q1M7Gau",
+            "name": "Ollama account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "## \ud83d\udcc2 Google Drive PDF \u2192 Qdrant RAG Indexer\n\n### Setup (do once before running):\n\n**1. Google Drive Folder:**\n- The folder is pre-configured to your PDF folder (ID: 1kiyeVdh-lP45tH8uV-_8hpPVQc1DR_NK).\n- If you ever want to change it, open the 'List All PDFs' node and change the Folder ID.\n\n**2. Set credentials on both Google Drive nodes:**\n- Click each Google Drive node and select your Google Drive credential.\n\n**3. Set Qdrant credential:**\n- URL: `http://qdrant:6333`\n- No API key is needed.\n\n**4. Verify Ollama has the model:**\n- Ensure you have pulled `nomic-embed-text`.\n\n### How it works:\n- Lists ALL PDFs in your folder\n- Downloads and processes them one by one (avoids running out of memory)\n- Splits each PDF into 1000-char chunks with 200 overlap\n- Embeds via Ollama nomic-embed-text (768 dims)\n- Stores everything in local Qdrant collection `n8n-rag`",
+          "height": 748,
+          "width": 440,
+          "color": 7
+        },
+        "id": "0841d1fd-4e32-4509-ae3c-767b8b510375",
+        "name": "Setup Instructions",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          4192,
+          1824
+        ]
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.timeSaved",
+        "typeVersion": 1,
+        "position": [
+          6208,
+          1968
+        ],
+        "id": "1364d950-5522-46da-8a5a-b1831624147e",
+        "name": "Time Saved"
+      }
+    ],
+    "connections": {
+      "Run Indexer": {
+        "main": [
+          [
+            {
+              "node": "List All PDFs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "List All PDFs": {
+        "main": [
+          [
+            {
+              "node": "Process One by One",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Process One by One": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Download PDF",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download PDF": {
+        "main": [
+          [
+            {
+              "node": "Store in Qdrant",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Store in Qdrant": {
+        "main": [
+          [
+            {
+              "node": "Process One by One",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Time Saved",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Load PDF": {
+        "ai_document": [
+          [
+            {
+              "node": "Store in Qdrant",
+              "type": "ai_document",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Split Text": {
+        "ai_textSplitter": [
+          [
+            {
+              "node": "Load PDF",
+              "type": "ai_textSplitter",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Ollama Embeddings": {
+        "ai_embedding": [
+          [
+            {
+              "node": "Store in Qdrant",
+              "type": "ai_embedding",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": true,
+      "timeSavedMode": "fixed",
+      "timezone": "Africa/Cairo",
+      "saveDataErrorExecution": "all",
+      "saveDataSuccessExecution": "none",
+      "saveExecutionProgress": false,
+      "saveManualExecutions": true,
+      "callerPolicy": "workflowsFromSameOwner"
+    },
+    "staticData": {
+      "node:Google Drive Trigger": {
+        "lastTimeChecked": "2026-07-06T11:54:53Z"
+      }
+    },
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "36467f06-ee21-4e4f-92f4-45569bbf6ca4",
+    "activeVersionId": "36560695-2703-42a2-992e-8ad6dc3ec8a9",
+    "versionCounter": 128,
+    "triggerCount": 1,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-05T20:54:10.312Z",
+        "createdAt": "2026-07-05T20:54:10.312Z",
+        "id": "YPOBiRLmef0fLiKM",
+        "name": "RAG"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-05T13:16:13.684Z",
+        "createdAt": "2026-07-05T13:16:13.684Z",
+        "role": "workflow:owner",
+        "workflowId": "PF38bb0iXFIqG7al",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

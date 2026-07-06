@@ -12,7 +12,7 @@
 [![Docker Compose](https://img.shields.io/badge/Docker_Compose-v2-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg)](LICENSE)
 
-[Quick Start](#-quick-start) · [Architecture](#-architecture) · [Configuration](#-configuration) · [Autoscaling](#-autoscaling) · [Puppeteer & Playwright](#-puppeteer--playwright) · [Troubleshooting](#-troubleshooting) · [Operations Guide](docs/production_guide.md) · [Scripts Reference](docs/scripts.md) · [Portfolio Showcase](PORTFOLIO.md) · [Changelog](changelog.md) · [Contribution Guide](contribution.md)
+[Quick Start](#-quick-start) · [Architecture](#-architecture) · [Configuration](#-configuration) · [Autoscaling](#-autoscaling) · [Puppeteer & Playwright](#-puppeteer--playwright) · [Troubleshooting](#-troubleshooting) · [Operations Guide](docs/production_guide.md) · [Scripts Reference](docs/scripts.md) · [Portfolio Showcase](PORTFOLIO.md) · [Changelog](CHANGELOG.md) · [Contributing Guide](CONTRIBUTING.md)
 
 </div>
 
@@ -583,6 +583,12 @@ docker compose exec redis redis-cli LLEN bull:jobs:wait
 
 The `scripts/` directory contains automation and database diagnostic scripts to maintain and troubleshoot the n8n production stack:
 
+### Workflow Export Automation
+- **[export_workflows.py](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/export_workflows.py)**: A Windows/Unix-compatible Python script that automates exporting all workflows from the n8n container database and splitting them into separate formatted JSON files inside the `workflows/` directory. Run this whenever you create new workflows or edit existing ones to sync them to the git repository:
+  ```bash
+  python scripts/export_workflows.py
+  ```
+
 ### Workflow Node Automation (Ollama VRAM Optimization)
 If you run into GPU Out-of-Memory (OOM) crashes on constrained GPUs (like a 4GB GTX 1650) when running local LLMs, you can batch-optimize your workflows:
 - **[parse_nodes.py](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/parse_nodes.py)**: Scans a raw JSON workflow export (`workflow_nodes_raw.json`) and prints details of all Ollama chat model nodes.
@@ -631,7 +637,13 @@ Run these queries inside the PostgreSQL database to troubleshoot workflow perfor
 │   ├── Dockerfile                  # Backup container
 │   ├── backup.py                   # pg_dump + Redis + rclone logic
 │   └── rclone.conf.example         # Example rclone cloud storage config
+├── CHANGELOG.md                    # Project version history
+├── CONTRIBUTING.md                 # Development & contribution guidelines
+├── LICENSE                         # MIT License
+├── PORTFOLIO.md                    # Workflow portfolio details
+├── README.md                       # This file
 ├── scripts/
+│   ├── export_workflows.py         # Automates workflow backup and extraction
 │   ├── provision.js                # One-shot credential provisioner (n8n-init)
 │   ├── cleanup.sql                 # Database cleanup and VACUUM script
 │   ├── count_chat.sql              # Aggregates chat count by session
@@ -644,7 +656,6 @@ Run these queries inside the PostgreSQL database to troubleshoot workflow perfor
 │   └── modify_workflow.py          # Batch configures Ollama nodes (model & context)
 ├── n8n-data/                       # n8n user data (git-ignored)
 ├── backups/                        # Local backup output (git-ignored)
-└── README.md                       # This file
 ```
 
 ---

@@ -1,708 +1,710 @@
-{
-  "updatedAt": "2026-07-02T17:50:17.434Z",
-  "createdAt": "2026-07-02T16:59:21.858Z",
-  "id": "AxphLuDjjiGXwxhO",
-  "name": "Emaar Towers Lead Qualification Agent",
-  "description": null,
-  "active": true,
-  "isArchived": false,
-  "nodes": [
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "={{ $json.message.text }}",
-        "needsFallback": true,
-        "options": {
-          "systemMessage": "=You are an advanced AI Investment Consultant for Emaar Towers, managing customer inquiry and qualification paths for the Egyptian real estate market. You have access to real-time property inventory data via tools.\n\n## Core Operational Directives\n1. Conversational RAG (Information Retrieval): If the user asks about property availability, unit types, prices, or locations, you MUST use the 'property_inventory_lookup' tool to retrieve actual data. Never guess, approximate, or fabricate real estate details. If the data is not in the tool, state that the specific unit is currently under review by developer operations.\n2. Lead Qualification: While answering property questions using data from the lookup tool, you must smoothly steer the conversation to capture the user's profiling metrics. Do not provide deep pricing lists until you have gathered their core qualification data points.\n\n## Qualification Parameters to Extract (One by One)\nCheck chat logs to verify if parameters have been explicitly given or naturally implied before generating questions:\n- Full_Name: User's name.\n- Contact_Handle: Mobile number or Telegram handle.\n- Intent: Residential use (سكن) vs. Investment/Inflation Hedge (استثمار).\n- Preferred_Location: Target hub (e.g., New Cairo, Sheikh Zayed, North Coast, New Capital).\n- Total_Budget_EGP: Financial threshold capability in raw numeric values.\n- Max_Down_Payment_EGP: Upfront cash availability in raw numeric values.\n- Installment_Years: Preferred installment duration.\n- Timeline: Delivery roadmap preference (Immediate vs. Off-Plan).\n\n## Execution Sequence\n1. Greet the client politely and process any initial property information requests using the 'property_inventory_lookup' tool.\n2. Interleave qualification questions naturally between your data answers.\n3. Once all 8 qualification parameters are extracted, pause your property pitch. Present a clean, bulleted summary of their metrics back to the user and request explicit confirmation.\n4. Upon explicit verification (\"Correct\", \"تمام\", etc.), calculate the internal qualification score and execute your data logging tools.\n\n## Mathematical Scoring Logic (Process Internally)\nAdd up the values below to derive the 'AI_Score':\n- Intent: Investment = 15 | Residential = 10\n- Location: Within prime hubs (New Cairo, Fifth Settlement, Sheikh Zayed, North Coast, Sahel, New Capital) = 15 | Other = 10\n- Total Budget: >= 20M EGP = 20 | 10M-20M EGP = 15 | < 10M EGP = 5\n- Max Down Payment: >= 2M EGP = 20 | 1M-2M EGP = 15 | < 1M EGP = 5\n- Installment Years: 1-7 Years = 15 | 8-9 Years = 10 | 10+ Years = 5\n- Timeline: Off-Plan = 15 | Immediate = 10\n\n## Database Routing Instructions\n- Step A: For EVERY confirmed lead profile, you must invoke the 'sheet_save_master_db' tool immediately to log the profile data.\n- Step B: If the calculated score is 80 or above, you MUST immediately invoke the 'sheet_save_sales_pipeline' tool as well. Set Sales_Stage to \"New Lead\", and map Deal_Value_EGP to their Total_Budget_EGP. If the score is under 80, do not trigger this tool.\n\n## Post-Submission Script\n- If score >= 80: Request their immediate schedule availability so a senior human investment executive can contact them to coordinate an on-site viewing.\n- If score < 80: Thank them for their time and let them know that matching portfolio brochures are being delivered to their contact handle."
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 2.1,
-      "position": [
-        592,
-        -32
-      ],
-      "id": "f402aa66-fafb-42f8-a510-f08a3728d107",
-      "name": "AI Agent"
-    },
-    {
-      "parameters": {
-        "updates": [
-          "message"
-        ],
-        "additionalFields": {}
-      },
-      "type": "n8n-nodes-base.telegramTrigger",
-      "typeVersion": 1.2,
-      "position": [
-        -144,
-        224
-      ],
-      "id": "b76bc583-fc99-4d48-976a-571a955628db",
-      "name": "Telegram Trigger",
-      "webhookId": "ef774c7b-eb6e-4186-bee0-3c24203372d8",
-      "credentials": {
-        "telegramApi": {
-          "id": "TxUGvbPbde30Zbnd",
-          "name": "Emaar Egy Bot"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
-        "text": "={{ $json.output }}",
-        "additionalFields": {
-          "appendAttribution": false
-        }
-      },
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        1280,
-        80
-      ],
-      "id": "7fc71ed0-8a45-4c98-a143-3c25b111dca7",
-      "name": "Send a text message",
-      "webhookId": "fd48d485-d9aa-4e2f-8b30-8cd51dfbd62c",
-      "credentials": {
-        "telegramApi": {
-          "id": "TxUGvbPbde30Zbnd",
-          "name": "Emaar Egy Bot"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "model": "openrouter/auto",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        368,
-        176
-      ],
-      "id": "6b4969f2-d619-4c75-83d9-ae8ff6f1c1b4",
-      "name": "OpenRouter Chat Model",
-      "credentials": {
-        "openRouterApi": {
-          "id": "Wfnk5q7gswurynsI",
-          "name": "OpenRouter account 2"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "conditions": {
+[
+  {
+    "updatedAt": "2026-07-02T17:50:17.434Z",
+    "createdAt": "2026-07-02T16:59:21.858Z",
+    "id": "AxphLuDjjiGXwxhO",
+    "name": "Emaar Towers Lead Qualification Agent",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.message.text }}",
+          "needsFallback": true,
           "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "698ba8f2-45bc-4ace-9d26-b9e097eb30fb",
-              "leftValue": "={{ $json.message.text }}",
-              "rightValue": {},
-              "operator": {
-                "type": "string",
-                "operation": "notEmpty",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        80,
-        224
-      ],
-      "id": "7813a076-f76a-440b-af95-70c87324dcf1",
-      "name": "If"
-    },
-    {
-      "parameters": {
-        "model": "llama3.2:3b",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
-      "position": [
-        512,
-        208
-      ],
-      "id": "81da77b7-f237-400e-b90d-763c6f8cc702",
-      "name": "Ollama Chat Model",
-      "credentials": {
-        "ollamaApi": {
-          "id": "wDe9MCIO6q1M7Gau",
-          "name": "Ollama account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "descriptionType": "manual",
-        "toolDescription": "Use this tool to search for available properties, apartments, villas, and compound availability at Emaar Towers. You can filter by 'Location' or 'Bedrooms'. Use this tool whenever a user asks about what units are available, layout options, or pricing structures.",
-        "documentId": {
-          "__rl": true,
-          "value": "1Skq7Va303lPWZnUPaRoCCSfuAlLk8b-oViojHnWu_lY",
-          "mode": "list",
-          "cachedResultName": "Emaar Towers - Master Lead Database",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Skq7Va303lPWZnUPaRoCCSfuAlLk8b-oViojHnWu_lY/edit?usp=drivesdk"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": 201970888,
-          "mode": "list",
-          "cachedResultName": "Emaar Towers - Master Lead Database",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Skq7Va303lPWZnUPaRoCCSfuAlLk8b-oViojHnWu_lY/edit#gid=201970888"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.googleSheetsTool",
-      "typeVersion": 4.7,
-      "position": [
-        816,
-        208
-      ],
-      "id": "dd03de3f-549f-43a0-ac0d-ec9fe6e867f2",
-      "name": "property_inventory_lookup",
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "LKFLSWDFvv6fE63D",
-          "name": "Google Sheets account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "append",
-        "documentId": {
-          "__rl": true,
-          "value": "1hZ6Vk0uEpHqXzB0a7X9XMCOm1pc7mE8VK556Q4L_J1g",
-          "mode": "list",
-          "cachedResultName": "Emaar Towers - Sales Lead Qualification Tracking",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1hZ6Vk0uEpHqXzB0a7X9XMCOm1pc7mE8VK556Q4L_J1g/edit?usp=drivesdk"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "gid=0",
-          "mode": "list",
-          "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IksvImB-NHmPiAguRxmMUolItOe72b47DKD9Gm9bDOM/edit#gid=0"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "Property type": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Property_type', ``, 'string') }}",
-            "Buy/Rent": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Buy_Rent', ``, 'string') }}",
-            "New/Resale": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('New_Resale', ``, 'string') }}",
-            "First purchase": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('First_purchase', ``, 'string') }}",
-            "Timeline": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Timeline', ``, 'string') }}",
-            "Budget": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Budget', ``, 'string') }}",
-            "Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Name', ``, 'string') }}",
-            "Email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Email', ``, 'string') }}",
-            "Score": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Score', ``, 'string') }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "Property type",
-              "displayName": "Property type",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Buy/Rent",
-              "displayName": "Buy/Rent",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "New/Resale",
-              "displayName": "New/Resale",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "First purchase",
-              "displayName": "First purchase",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Timeline",
-              "displayName": "Timeline",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Budget",
-              "displayName": "Budget",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Name",
-              "displayName": "Name",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Email",
-              "displayName": "Email",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Score",
-              "displayName": "Score",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.googleSheetsTool",
-      "typeVersion": 4.6,
-      "position": [
-        992,
-        208
-      ],
-      "id": "edd4b19a-95dc-46b9-9aa0-335a966138ba",
-      "name": "sheet_save_sales_pipeline",
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "LKFLSWDFvv6fE63D",
-          "name": "Google Sheets account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "append",
-        "documentId": {
-          "__rl": true,
-          "value": "1Skq7Va303lPWZnUPaRoCCSfuAlLk8b-oViojHnWu_lY",
-          "mode": "list",
-          "cachedResultName": "Emaar Towers - Master Lead Database",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Skq7Va303lPWZnUPaRoCCSfuAlLk8b-oViojHnWu_lY/edit?usp=drivesdk"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": 201970888,
-          "mode": "list",
-          "cachedResultName": "Emaar Towers - Master Lead Database",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Skq7Va303lPWZnUPaRoCCSfuAlLk8b-oViojHnWu_lY/edit#gid=201970888"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "Lead_ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Lead_ID', ``, 'string') }}",
-            "Timestamp": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Timestamp', ``, 'string') }}",
-            "Full_Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Full_Name', ``, 'string') }}",
-            "Contact_Handle": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Contact_Handle', ``, 'string') }}",
-            "Intent": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Intent', ``, 'string') }}",
-            "Preferred_Location": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Preferred_Location', ``, 'string') }}",
-            "Total_Budget_EGP": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Total_Budget_EGP', ``, 'string') }}",
-            "Max_Down_Payment_EGP": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Max_Down_Payment_EGP', ``, 'string') }}",
-            "Installment_Years": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Installment_Years', ``, 'string') }}",
-            "Timeline": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Timeline', ``, 'string') }}",
-            "AI_Score": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('AI_Score', ``, 'string') }}",
-            "Assigned_Route": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Assigned_Route', ``, 'string') }}",
-            "AI_Summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('AI_Summary', ``, 'string') }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "Lead_ID",
-              "displayName": "Lead_ID",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Timestamp",
-              "displayName": "Timestamp",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Full_Name",
-              "displayName": "Full_Name",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Contact_Handle",
-              "displayName": "Contact_Handle",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Intent",
-              "displayName": "Intent",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Preferred_Location",
-              "displayName": "Preferred_Location",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Total_Budget_EGP",
-              "displayName": "Total_Budget_EGP",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Max_Down_Payment_EGP",
-              "displayName": "Max_Down_Payment_EGP",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Installment_Years",
-              "displayName": "Installment_Years",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Timeline",
-              "displayName": "Timeline",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "AI_Score",
-              "displayName": "AI_Score",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Assigned_Route",
-              "displayName": "Assigned_Route",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "AI_Summary",
-              "displayName": "AI_Summary",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.googleSheetsTool",
-      "typeVersion": 4.7,
-      "position": [
-        1168,
-        208
-      ],
-      "id": "71966699-2974-4e51-b86f-a50ab9e324be",
-      "name": "sheet_save_master_db",
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "LKFLSWDFvv6fE63D",
-          "name": "Google Sheets account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "sessionIdType": "customKey",
-        "sessionKey": "={{ $workflow.id }}",
-        "contextWindowLength": 100
-      },
-      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-      "typeVersion": 1.4,
-      "position": [
-        656,
-        208
-      ],
-      "id": "5b7185af-dc20-4c94-9b07-9b78d3e00ccf",
-      "name": "Simple Memory"
-    },
-    {
-      "parameters": {
-        "errorMessage": "Error in the bot."
-      },
-      "type": "n8n-nodes-base.stopAndError",
-      "typeVersion": 1,
-      "position": [
-        336,
-        368
-      ],
-      "id": "0777edcd-8c50-474e-8306-6e6f50ad0e67",
-      "name": "Stop and Error"
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.timeSaved",
-      "typeVersion": 1,
-      "position": [
-        1488,
-        80
-      ],
-      "id": "ce59701e-0c1b-46a8-a242-fe0a83e03673",
-      "name": "Time Saved"
-    }
-  ],
-  "connections": {
-    "AI Agent": {
-      "main": [
-        [
-          {
-            "node": "Send a text message",
-            "type": "main",
-            "index": 0
+            "systemMessage": "=You are an advanced AI Investment Consultant for Emaar Towers, managing customer inquiry and qualification paths for the Egyptian real estate market. You have access to real-time property inventory data via tools.\n\n## Core Operational Directives\n1. Conversational RAG (Information Retrieval): If the user asks about property availability, unit types, prices, or locations, you MUST use the 'property_inventory_lookup' tool to retrieve actual data. Never guess, approximate, or fabricate real estate details. If the data is not in the tool, state that the specific unit is currently under review by developer operations.\n2. Lead Qualification: While answering property questions using data from the lookup tool, you must smoothly steer the conversation to capture the user's profiling metrics. Do not provide deep pricing lists until you have gathered their core qualification data points.\n\n## Qualification Parameters to Extract (One by One)\nCheck chat logs to verify if parameters have been explicitly given or naturally implied before generating questions:\n- Full_Name: User's name.\n- Contact_Handle: Mobile number or Telegram handle.\n- Intent: Residential use (\u0633\u0643\u0646) vs. Investment/Inflation Hedge (\u0627\u0633\u062a\u062b\u0645\u0627\u0631).\n- Preferred_Location: Target hub (e.g., New Cairo, Sheikh Zayed, North Coast, New Capital).\n- Total_Budget_EGP: Financial threshold capability in raw numeric values.\n- Max_Down_Payment_EGP: Upfront cash availability in raw numeric values.\n- Installment_Years: Preferred installment duration.\n- Timeline: Delivery roadmap preference (Immediate vs. Off-Plan).\n\n## Execution Sequence\n1. Greet the client politely and process any initial property information requests using the 'property_inventory_lookup' tool.\n2. Interleave qualification questions naturally between your data answers.\n3. Once all 8 qualification parameters are extracted, pause your property pitch. Present a clean, bulleted summary of their metrics back to the user and request explicit confirmation.\n4. Upon explicit verification (\"Correct\", \"\u062a\u0645\u0627\u0645\", etc.), calculate the internal qualification score and execute your data logging tools.\n\n## Mathematical Scoring Logic (Process Internally)\nAdd up the values below to derive the 'AI_Score':\n- Intent: Investment = 15 | Residential = 10\n- Location: Within prime hubs (New Cairo, Fifth Settlement, Sheikh Zayed, North Coast, Sahel, New Capital) = 15 | Other = 10\n- Total Budget: >= 20M EGP = 20 | 10M-20M EGP = 15 | < 10M EGP = 5\n- Max Down Payment: >= 2M EGP = 20 | 1M-2M EGP = 15 | < 1M EGP = 5\n- Installment Years: 1-7 Years = 15 | 8-9 Years = 10 | 10+ Years = 5\n- Timeline: Off-Plan = 15 | Immediate = 10\n\n## Database Routing Instructions\n- Step A: For EVERY confirmed lead profile, you must invoke the 'sheet_save_master_db' tool immediately to log the profile data.\n- Step B: If the calculated score is 80 or above, you MUST immediately invoke the 'sheet_save_sales_pipeline' tool as well. Set Sales_Stage to \"New Lead\", and map Deal_Value_EGP to their Total_Budget_EGP. If the score is under 80, do not trigger this tool.\n\n## Post-Submission Script\n- If score >= 80: Request their immediate schedule availability so a senior human investment executive can contact them to coordinate an on-site viewing.\n- If score < 80: Thank them for their time and let them know that matching portfolio brochures are being delivered to their contact handle."
           }
-        ]
-      ]
-    },
-    "Telegram Trigger": {
-      "main": [
-        [
-          {
-            "node": "If",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "OpenRouter Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If": {
-      "main": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "main",
-            "index": 0
-          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.1,
+        "position": [
+          592,
+          -32
         ],
-        [
-          {
-            "node": "Stop and Error",
-            "type": "main",
-            "index": 0
+        "id": "f402aa66-fafb-42f8-a510-f08a3728d107",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "updates": [
+            "message"
+          ],
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.telegramTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -144,
+          224
+        ],
+        "id": "b76bc583-fc99-4d48-976a-571a955628db",
+        "name": "Telegram Trigger",
+        "webhookId": "ef774c7b-eb6e-4186-bee0-3c24203372d8",
+        "credentials": {
+          "telegramApi": {
+            "id": "TxUGvbPbde30Zbnd",
+            "name": "Emaar Egy Bot"
           }
-        ]
-      ]
-    },
-    "Ollama Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_languageModel",
-            "index": 1
+        }
+      },
+      {
+        "parameters": {
+          "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+          "text": "={{ $json.output }}",
+          "additionalFields": {
+            "appendAttribution": false
           }
-        ]
-      ]
-    },
-    "property_inventory_lookup": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          1280,
+          80
+        ],
+        "id": "7fc71ed0-8a45-4c98-a143-3c25b111dca7",
+        "name": "Send a text message",
+        "webhookId": "fd48d485-d9aa-4e2f-8b30-8cd51dfbd62c",
+        "credentials": {
+          "telegramApi": {
+            "id": "TxUGvbPbde30Zbnd",
+            "name": "Emaar Egy Bot"
           }
-        ]
-      ]
-    },
-    "sheet_save_sales_pipeline": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
+        }
+      },
+      {
+        "parameters": {
+          "model": "openrouter/auto",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          368,
+          176
+        ],
+        "id": "6b4969f2-d619-4c75-83d9-ae8ff6f1c1b4",
+        "name": "OpenRouter Chat Model",
+        "credentials": {
+          "openRouterApi": {
+            "id": "Wfnk5q7gswurynsI",
+            "name": "OpenRouter account 2"
           }
-        ]
-      ]
-    },
-    "sheet_save_master_db": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "698ba8f2-45bc-4ace-9d26-b9e097eb30fb",
+                "leftValue": "={{ $json.message.text }}",
+                "rightValue": {},
+                "operator": {
+                  "type": "string",
+                  "operation": "notEmpty",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          80,
+          224
+        ],
+        "id": "7813a076-f76a-440b-af95-70c87324dcf1",
+        "name": "If"
+      },
+      {
+        "parameters": {
+          "model": "llama3.2:3b",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+        "typeVersion": 1,
+        "position": [
+          512,
+          208
+        ],
+        "id": "81da77b7-f237-400e-b90d-763c6f8cc702",
+        "name": "Ollama Chat Model",
+        "credentials": {
+          "ollamaApi": {
+            "id": "wDe9MCIO6q1M7Gau",
+            "name": "Ollama account"
           }
-        ]
-      ]
-    },
-    "Simple Memory": {
-      "ai_memory": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_memory",
-            "index": 0
+        }
+      },
+      {
+        "parameters": {
+          "descriptionType": "manual",
+          "toolDescription": "Use this tool to search for available properties, apartments, villas, and compound availability at Emaar Towers. You can filter by 'Location' or 'Bedrooms'. Use this tool whenever a user asks about what units are available, layout options, or pricing structures.",
+          "documentId": {
+            "__rl": true,
+            "value": "1Skq7Va303lPWZnUPaRoCCSfuAlLk8b-oViojHnWu_lY",
+            "mode": "list",
+            "cachedResultName": "Emaar Towers - Master Lead Database",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Skq7Va303lPWZnUPaRoCCSfuAlLk8b-oViojHnWu_lY/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 201970888,
+            "mode": "list",
+            "cachedResultName": "Emaar Towers - Master Lead Database",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Skq7Va303lPWZnUPaRoCCSfuAlLk8b-oViojHnWu_lY/edit#gid=201970888"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheetsTool",
+        "typeVersion": 4.7,
+        "position": [
+          816,
+          208
+        ],
+        "id": "dd03de3f-549f-43a0-ac0d-ec9fe6e867f2",
+        "name": "property_inventory_lookup",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "LKFLSWDFvv6fE63D",
+            "name": "Google Sheets account"
           }
-        ]
-      ]
-    },
-    "Send a text message": {
-      "main": [
-        [
-          {
-            "node": "Time Saved",
-            "type": "main",
-            "index": 0
+        }
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "1hZ6Vk0uEpHqXzB0a7X9XMCOm1pc7mE8VK556Q4L_J1g",
+            "mode": "list",
+            "cachedResultName": "Emaar Towers - Sales Lead Qualification Tracking",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1hZ6Vk0uEpHqXzB0a7X9XMCOm1pc7mE8VK556Q4L_J1g/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Sheet1",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IksvImB-NHmPiAguRxmMUolItOe72b47DKD9Gm9bDOM/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Property type": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Property_type', ``, 'string') }}",
+              "Buy/Rent": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Buy_Rent', ``, 'string') }}",
+              "New/Resale": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('New_Resale', ``, 'string') }}",
+              "First purchase": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('First_purchase', ``, 'string') }}",
+              "Timeline": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Timeline', ``, 'string') }}",
+              "Budget": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Budget', ``, 'string') }}",
+              "Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Name', ``, 'string') }}",
+              "Email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Email', ``, 'string') }}",
+              "Score": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Score', ``, 'string') }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "Property type",
+                "displayName": "Property type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "Buy/Rent",
+                "displayName": "Buy/Rent",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "New/Resale",
+                "displayName": "New/Resale",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "First purchase",
+                "displayName": "First purchase",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "Timeline",
+                "displayName": "Timeline",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "Budget",
+                "displayName": "Budget",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "Name",
+                "displayName": "Name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "Email",
+                "displayName": "Email",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "Score",
+                "displayName": "Score",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheetsTool",
+        "typeVersion": 4.6,
+        "position": [
+          992,
+          208
+        ],
+        "id": "edd4b19a-95dc-46b9-9aa0-335a966138ba",
+        "name": "sheet_save_sales_pipeline",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "LKFLSWDFvv6fE63D",
+            "name": "Google Sheets account"
           }
-        ]
-      ]
-    }
-  },
-  "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": true,
-    "timeSavedMode": "fixed",
-    "timezone": "Africa/Cairo",
-    "saveDataErrorExecution": "all",
-    "saveDataSuccessExecution": "all",
-    "saveExecutionProgress": true,
-    "saveManualExecutions": true,
-    "callerPolicy": "workflowsFromSameOwner"
-  },
-  "staticData": null,
-  "meta": {
-    "templateCredsSetupCompleted": true
-  },
-  "nodeGroups": [],
-  "pinData": {},
-  "versionId": "5b1b66c9-fce1-4ba0-adc3-8ddc39e81110",
-  "activeVersionId": "5b1b66c9-fce1-4ba0-adc3-8ddc39e81110",
-  "versionCounter": 134,
-  "triggerCount": 1,
-  "sourceWorkflowId": null,
-  "tags": [],
-  "shared": [
-    {
-      "updatedAt": "2026-07-02T16:59:21.858Z",
-      "createdAt": "2026-07-02T16:59:21.858Z",
-      "role": "workflow:owner",
-      "workflowId": "AxphLuDjjiGXwxhO",
-      "projectId": "7Kuw5RaGwePDWMtJ",
-      "project": {
-        "updatedAt": "2026-06-09T16:37:14.049Z",
-        "createdAt": "2026-06-09T16:15:53.210Z",
-        "id": "7Kuw5RaGwePDWMtJ",
-        "name": "Sohila Abbas <sohila.k.data@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "customTelemetryTags": [],
-        "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "1Skq7Va303lPWZnUPaRoCCSfuAlLk8b-oViojHnWu_lY",
+            "mode": "list",
+            "cachedResultName": "Emaar Towers - Master Lead Database",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Skq7Va303lPWZnUPaRoCCSfuAlLk8b-oViojHnWu_lY/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 201970888,
+            "mode": "list",
+            "cachedResultName": "Emaar Towers - Master Lead Database",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Skq7Va303lPWZnUPaRoCCSfuAlLk8b-oViojHnWu_lY/edit#gid=201970888"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Lead_ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Lead_ID', ``, 'string') }}",
+              "Timestamp": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Timestamp', ``, 'string') }}",
+              "Full_Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Full_Name', ``, 'string') }}",
+              "Contact_Handle": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Contact_Handle', ``, 'string') }}",
+              "Intent": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Intent', ``, 'string') }}",
+              "Preferred_Location": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Preferred_Location', ``, 'string') }}",
+              "Total_Budget_EGP": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Total_Budget_EGP', ``, 'string') }}",
+              "Max_Down_Payment_EGP": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Max_Down_Payment_EGP', ``, 'string') }}",
+              "Installment_Years": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Installment_Years', ``, 'string') }}",
+              "Timeline": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Timeline', ``, 'string') }}",
+              "AI_Score": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('AI_Score', ``, 'string') }}",
+              "Assigned_Route": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Assigned_Route', ``, 'string') }}",
+              "AI_Summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('AI_Summary', ``, 'string') }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "Lead_ID",
+                "displayName": "Lead_ID",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Timestamp",
+                "displayName": "Timestamp",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Full_Name",
+                "displayName": "Full_Name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Contact_Handle",
+                "displayName": "Contact_Handle",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Intent",
+                "displayName": "Intent",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Preferred_Location",
+                "displayName": "Preferred_Location",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Total_Budget_EGP",
+                "displayName": "Total_Budget_EGP",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Max_Down_Payment_EGP",
+                "displayName": "Max_Down_Payment_EGP",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Installment_Years",
+                "displayName": "Installment_Years",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Timeline",
+                "displayName": "Timeline",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "AI_Score",
+                "displayName": "AI_Score",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Assigned_Route",
+                "displayName": "Assigned_Route",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "AI_Summary",
+                "displayName": "AI_Summary",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheetsTool",
+        "typeVersion": 4.7,
+        "position": [
+          1168,
+          208
+        ],
+        "id": "71966699-2974-4e51-b86f-a50ab9e324be",
+        "name": "sheet_save_master_db",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "LKFLSWDFvv6fE63D",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $workflow.id }}",
+          "contextWindowLength": 100
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.4,
+        "position": [
+          656,
+          208
+        ],
+        "id": "5b7185af-dc20-4c94-9b07-9b78d3e00ccf",
+        "name": "Simple Memory"
+      },
+      {
+        "parameters": {
+          "errorMessage": "Error in the bot."
+        },
+        "type": "n8n-nodes-base.stopAndError",
+        "typeVersion": 1,
+        "position": [
+          336,
+          368
+        ],
+        "id": "0777edcd-8c50-474e-8306-6e6f50ad0e67",
+        "name": "Stop and Error"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.timeSaved",
+        "typeVersion": 1,
+        "position": [
+          1488,
+          80
+        ],
+        "id": "ce59701e-0c1b-46a8-a242-fe0a83e03673",
+        "name": "Time Saved"
       }
+    ],
+    "connections": {
+      "AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Send a text message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telegram Trigger": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Stop and Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Ollama Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "property_inventory_lookup": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "sheet_save_sales_pipeline": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "sheet_save_master_db": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send a text message": {
+        "main": [
+          [
+            {
+              "node": "Time Saved",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": true,
+      "timeSavedMode": "fixed",
+      "timezone": "Africa/Cairo",
+      "saveDataErrorExecution": "all",
+      "saveDataSuccessExecution": "all",
+      "saveExecutionProgress": true,
+      "saveManualExecutions": true,
+      "callerPolicy": "workflowsFromSameOwner"
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "5b1b66c9-fce1-4ba0-adc3-8ddc39e81110",
+    "activeVersionId": "5b1b66c9-fce1-4ba0-adc3-8ddc39e81110",
+    "versionCounter": 134,
+    "triggerCount": 1,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-07-02T16:59:21.858Z",
+        "createdAt": "2026-07-02T16:59:21.858Z",
+        "role": "workflow:owner",
+        "workflowId": "AxphLuDjjiGXwxhO",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version 5b1b66c9",
+      "description": ""
     }
-  ],
-  "versionMetadata": {
-    "name": "Version 5b1b66c9",
-    "description": ""
   }
-}
+]

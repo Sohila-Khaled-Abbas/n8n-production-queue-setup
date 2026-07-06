@@ -1,151 +1,153 @@
-{
-  "updatedAt": "2026-06-25T21:52:20.509Z",
-  "createdAt": "2026-06-25T20:47:28.333Z",
-  "id": "10iR4R9qqtrcXEBq",
-  "name": "Deepseek_Model",
-  "description": null,
-  "active": false,
-  "isArchived": false,
-  "nodes": [
-    {
-      "parameters": {
-        "options": {}
+[
+  {
+    "updatedAt": "2026-06-25T21:52:20.509Z",
+    "createdAt": "2026-06-25T20:47:28.333Z",
+    "id": "10iR4R9qqtrcXEBq",
+    "name": "Deepseek_Model",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          0
+        ],
+        "id": "f396eeb8-9920-43ba-9e9f-43d2f8fa3149",
+        "name": "When chat message received",
+        "webhookId": "8ed844b1-ebc0-43fd-aac9-dba70063a0c3"
       },
-      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
-      "typeVersion": 1.4,
-      "position": [
-        0,
-        0
-      ],
-      "id": "f396eeb8-9920-43ba-9e9f-43d2f8fa3149",
-      "name": "When chat message received",
-      "webhookId": "8ed844b1-ebc0-43fd-aac9-dba70063a0c3"
-    },
-    {
-      "parameters": {
-        "options": {}
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          224,
+          0
+        ],
+        "id": "da298a79-f73f-4f54-b74d-ceaaf1f874d0",
+        "name": "AI Agent"
       },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3.1,
-      "position": [
-        224,
-        0
-      ],
-      "id": "da298a79-f73f-4f54-b74d-ceaaf1f874d0",
-      "name": "AI Agent"
-    },
-    {
-      "parameters": {
-        "model": "deepseek-r1:7b",
-        "options": {}
+      {
+        "parameters": {
+          "model": "deepseek-r1:7b",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+        "typeVersion": 1,
+        "position": [
+          240,
+          224
+        ],
+        "id": "0915172b-5e2b-401a-8732-130f8640dbc7",
+        "name": "Ollama Chat Model",
+        "credentials": {
+          "ollamaApi": {
+            "id": "d8cf8822-263b-4a6a-b12d-10396b70e4cc",
+            "name": "Ollama \u2014 n8n Stack"
+          }
+        }
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
-      "position": [
-        240,
-        224
-      ],
-      "id": "0915172b-5e2b-401a-8732-130f8640dbc7",
-      "name": "Ollama Chat Model",
-      "credentials": {
-        "ollamaApi": {
-          "id": "d8cf8822-263b-4a6a-b12d-10396b70e4cc",
-          "name": "Ollama — n8n Stack"
+      {
+        "parameters": {},
+        "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+        "typeVersion": 1.4,
+        "position": [
+          368,
+          224
+        ],
+        "id": "29c3c52d-f941-4b8a-8d4a-15c6546febaf",
+        "name": "Postgres Chat Memory",
+        "credentials": {
+          "postgres": {
+            "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+            "name": "PostgreSQL \u2014 n8n Stack"
+          }
         }
       }
+    ],
+    "connections": {
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Ollama Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Postgres Chat Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      }
     },
-    {
-      "parameters": {},
-      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
-      "typeVersion": 1.4,
-      "position": [
-        368,
-        224
-      ],
-      "id": "29c3c52d-f941-4b8a-8d4a-15c6546febaf",
-      "name": "Postgres Chat Memory",
-      "credentials": {
-        "postgres": {
-          "id": "5617978f-0b85-4382-8768-f84e14ee6223",
-          "name": "PostgreSQL — n8n Stack"
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "6e5bd6a0-7d06-4b76-867a-c28875f87795",
+    "activeVersionId": null,
+    "versionCounter": 8,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-06-25T20:47:28.333Z",
+        "createdAt": "2026-06-25T20:47:28.333Z",
+        "role": "workflow:owner",
+        "workflowId": "10iR4R9qqtrcXEBq",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
         }
       }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
     }
-  ],
-  "connections": {
-    "When chat message received": {
-      "main": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Ollama Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Postgres Chat Memory": {
-      "ai_memory": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_memory",
-            "index": 0
-          }
-        ]
-      ]
-    }
-  },
-  "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": false
-  },
-  "staticData": null,
-  "meta": {
-    "templateCredsSetupCompleted": true
-  },
-  "nodeGroups": [],
-  "pinData": {},
-  "versionId": "6e5bd6a0-7d06-4b76-867a-c28875f87795",
-  "activeVersionId": null,
-  "versionCounter": 8,
-  "triggerCount": 0,
-  "sourceWorkflowId": null,
-  "tags": [],
-  "shared": [
-    {
-      "updatedAt": "2026-06-25T20:47:28.333Z",
-      "createdAt": "2026-06-25T20:47:28.333Z",
-      "role": "workflow:owner",
-      "workflowId": "10iR4R9qqtrcXEBq",
-      "projectId": "7Kuw5RaGwePDWMtJ",
-      "project": {
-        "updatedAt": "2026-06-09T16:37:14.049Z",
-        "createdAt": "2026-06-09T16:15:53.210Z",
-        "id": "7Kuw5RaGwePDWMtJ",
-        "name": "Sohila Abbas <sohila.k.data@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "customTelemetryTags": [],
-        "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
-      }
-    }
-  ],
-  "versionMetadata": {
-    "name": null,
-    "description": null
   }
-}
+]

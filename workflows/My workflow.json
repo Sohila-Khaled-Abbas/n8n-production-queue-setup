@@ -1,52 +1,54 @@
-{
-  "updatedAt": "2026-06-28T15:47:28.833Z",
-  "createdAt": "2026-06-28T14:59:59.560Z",
-  "id": "SD6FmjElVZAhuLV5",
-  "name": "My workflow",
-  "description": null,
-  "active": false,
-  "isArchived": true,
-  "nodes": [],
-  "connections": {},
-  "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": false
-  },
-  "staticData": null,
-  "meta": {
-    "templateCredsSetupCompleted": true
-  },
-  "nodeGroups": [],
-  "pinData": {},
-  "versionId": "b73399e8-1c56-4288-b2ed-4712f6f18b8f",
-  "activeVersionId": null,
-  "versionCounter": 17,
-  "triggerCount": 0,
-  "sourceWorkflowId": null,
-  "tags": [],
-  "shared": [
-    {
-      "updatedAt": "2026-06-28T14:59:59.560Z",
-      "createdAt": "2026-06-28T14:59:59.560Z",
-      "role": "workflow:owner",
-      "workflowId": "SD6FmjElVZAhuLV5",
-      "projectId": "7Kuw5RaGwePDWMtJ",
-      "project": {
-        "updatedAt": "2026-06-09T16:37:14.049Z",
-        "createdAt": "2026-06-09T16:15:53.210Z",
-        "id": "7Kuw5RaGwePDWMtJ",
-        "name": "Sohila Abbas <sohila.k.data@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "customTelemetryTags": [],
-        "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+[
+  {
+    "updatedAt": "2026-06-28T15:47:28.833Z",
+    "createdAt": "2026-06-28T14:59:59.560Z",
+    "id": "SD6FmjElVZAhuLV5",
+    "name": "My workflow",
+    "description": null,
+    "active": false,
+    "isArchived": true,
+    "nodes": [],
+    "connections": {},
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "b73399e8-1c56-4288-b2ed-4712f6f18b8f",
+    "activeVersionId": null,
+    "versionCounter": 17,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-06-28T14:59:59.560Z",
+        "createdAt": "2026-06-28T14:59:59.560Z",
+        "role": "workflow:owner",
+        "workflowId": "SD6FmjElVZAhuLV5",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
       }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
     }
-  ],
-  "versionMetadata": {
-    "name": null,
-    "description": null
   }
-}
+]

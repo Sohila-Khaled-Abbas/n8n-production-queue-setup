@@ -1,96 +1,98 @@
-{
-  "updatedAt": "2026-06-25T13:51:41.402Z",
-  "createdAt": "2026-06-21T18:09:01.802Z",
-  "id": "n8VFdZddopQuqrQ1",
-  "name": "Weather Real-time",
-  "description": null,
-  "active": false,
-  "isArchived": true,
-  "nodes": [
-    {
-      "parameters": {
-        "url": "https://api.open-meteo.com/v1/forecast?latitude=31.5021&longitude=31.8303&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation,precipitation_probability,snow_depth,showers,snowfall,rain,weather_code,pressure_msl,surface_pressure,cloud_cover,cloud_cover_mid,cloud_cover_high,cloud_cover_low,visibility,evapotranspiration,et0_fao_evapotranspiration,vapour_pressure_deficit,wind_speed_10m,wind_speed_120m,wind_speed_80m,wind_direction_10m,wind_direction_180m,temperature_120m,temperature_180m,wind_speed_180m,wind_direction_80m,temperature_80m,wind_gusts_10m,wind_direction_120m,soil_temperature_0cm,soil_temperature_18cm,soil_moisture_0_to_1cm,soil_moisture_1_to_3cm,soil_temperature_54cm,soil_temperature_6cm,soil_moisture_3_to_9cm,soil_moisture_27_to_81cm,soil_moisture_9_to_27cm,uv_index_clear_sky,uv_index,sunshine_duration,is_day,wet_bulb_temperature_2m,total_column_integrated_water_vapour,lifted_index,convective_inhibition,cape,freezing_level_height,boundary_layer_height,shortwave_radiation,diffuse_radiation,direct_radiation,global_tilted_irradiance,direct_normal_irradiance,terrestrial_radiation,shortwave_radiation_instant,direct_radiation_instant,diffuse_radiation_instant,direct_normal_irradiance_instant,global_tilted_irradiance_instant,terrestrial_radiation_instant&models=best_match&timezone=Africa%2FCairo",
-        "options": {}
+[
+  {
+    "updatedAt": "2026-06-25T13:51:41.402Z",
+    "createdAt": "2026-06-21T18:09:01.802Z",
+    "id": "n8VFdZddopQuqrQ1",
+    "name": "Weather Real-time",
+    "description": null,
+    "active": false,
+    "isArchived": true,
+    "nodes": [
+      {
+        "parameters": {
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=31.5021&longitude=31.8303&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation,precipitation_probability,snow_depth,showers,snowfall,rain,weather_code,pressure_msl,surface_pressure,cloud_cover,cloud_cover_mid,cloud_cover_high,cloud_cover_low,visibility,evapotranspiration,et0_fao_evapotranspiration,vapour_pressure_deficit,wind_speed_10m,wind_speed_120m,wind_speed_80m,wind_direction_10m,wind_direction_180m,temperature_120m,temperature_180m,wind_speed_180m,wind_direction_80m,temperature_80m,wind_gusts_10m,wind_direction_120m,soil_temperature_0cm,soil_temperature_18cm,soil_moisture_0_to_1cm,soil_moisture_1_to_3cm,soil_temperature_54cm,soil_temperature_6cm,soil_moisture_3_to_9cm,soil_moisture_27_to_81cm,soil_moisture_9_to_27cm,uv_index_clear_sky,uv_index,sunshine_duration,is_day,wet_bulb_temperature_2m,total_column_integrated_water_vapour,lifted_index,convective_inhibition,cape,freezing_level_height,boundary_layer_height,shortwave_radiation,diffuse_radiation,direct_radiation,global_tilted_irradiance,direct_normal_irradiance,terrestrial_radiation,shortwave_radiation_instant,direct_radiation_instant,diffuse_radiation_instant,direct_normal_irradiance_instant,global_tilted_irradiance_instant,terrestrial_radiation_instant&models=best_match&timezone=Africa%2FCairo",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          208,
+          -16
+        ],
+        "id": "3a2b0dee-2cf8-4704-b590-4cdf76fb2db0",
+        "name": "HTTP Request"
       },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        208,
-        -16
-      ],
-      "id": "3a2b0dee-2cf8-4704-b590-4cdf76fb2db0",
-      "name": "HTTP Request"
-    },
-    {
-      "parameters": {
-        "rule": {
-          "interval": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          -16,
+          -16
+        ],
+        "id": "dea5aaaf-629e-4bd5-89b3-fb6069e72f29",
+        "name": "Schedule Trigger"
+      }
+    ],
+    "connections": {
+      "Schedule Trigger": {
+        "main": [
+          [
             {
-              "field": "minutes"
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
             }
           ]
-        }
-      },
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.3,
-      "position": [
-        -16,
-        -16
-      ],
-      "id": "dea5aaaf-629e-4bd5-89b3-fb6069e72f29",
-      "name": "Schedule Trigger"
-    }
-  ],
-  "connections": {
-    "Schedule Trigger": {
-      "main": [
-        [
-          {
-            "node": "HTTP Request",
-            "type": "main",
-            "index": 0
-          }
         ]
-      ]
-    }
-  },
-  "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": false
-  },
-  "staticData": null,
-  "meta": null,
-  "nodeGroups": [],
-  "pinData": {},
-  "versionId": "65d9df6f-f9b6-4703-ae00-bb753f293377",
-  "activeVersionId": null,
-  "versionCounter": 11,
-  "triggerCount": 0,
-  "sourceWorkflowId": null,
-  "tags": [],
-  "shared": [
-    {
-      "updatedAt": "2026-06-21T18:09:01.802Z",
-      "createdAt": "2026-06-21T18:09:01.802Z",
-      "role": "workflow:owner",
-      "workflowId": "n8VFdZddopQuqrQ1",
-      "projectId": "7Kuw5RaGwePDWMtJ",
-      "project": {
-        "updatedAt": "2026-06-09T16:37:14.049Z",
-        "createdAt": "2026-06-09T16:15:53.210Z",
-        "id": "7Kuw5RaGwePDWMtJ",
-        "name": "Sohila Abbas <sohila.k.data@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "customTelemetryTags": [],
-        "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
       }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "65d9df6f-f9b6-4703-ae00-bb753f293377",
+    "activeVersionId": null,
+    "versionCounter": 11,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-06-21T18:09:01.802Z",
+        "createdAt": "2026-06-21T18:09:01.802Z",
+        "role": "workflow:owner",
+        "workflowId": "n8VFdZddopQuqrQ1",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
     }
-  ],
-  "versionMetadata": {
-    "name": null,
-    "description": null
   }
-}
+]

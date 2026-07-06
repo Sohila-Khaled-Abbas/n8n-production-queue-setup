@@ -1,668 +1,670 @@
-{
-  "updatedAt": "2026-06-26T19:30:03.417Z",
-  "createdAt": "2026-06-26T18:35:51.436Z",
-  "id": "QWJwznptYNNtn7nm",
-  "name": "Sentiment Analysis Agent Simple",
-  "description": null,
-  "active": true,
-  "isArchived": false,
-  "nodes": [
-    {
-      "parameters": {
-        "formTitle": "Restaurant Experience Feedback",
-        "formDescription": "Thank you for dining with us! Your feedback helps us improve our food and service. Please take a minute to share your experience.",
-        "formFields": {
-          "values": [
-            {
-              "fieldLabel": "Customer Name",
-              "placeholder": "e.g. Sarah Ahmed"
-            },
-            {
-              "fieldLabel": "Email Address",
-              "fieldType": "email",
-              "placeholder": "example@email.com"
-            },
-            {
-              "fieldLabel": "Date of Visit",
-              "fieldType": "date",
-              "fieldName": "When did you visit us?",
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "Meal Type",
-              "fieldType": "dropdown",
-              "fieldOptions": {
-                "values": [
-                  {
-                    "option": "Breakfast"
-                  },
-                  {
-                    "option": "Lunch"
-                  },
-                  {
-                    "option": "Dinner"
-                  },
-                  {
-                    "option": "Snack"
-                  }
-                ]
-              },
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "Overall Rating",
-              "fieldType": "radio",
-              "fieldOptions": {
-                "values": [
-                  {
-                    "option": "⭐⭐⭐⭐⭐ Excellent"
-                  },
-                  {
-                    "option": "⭐⭐⭐⭐ Very Good"
-                  },
-                  {
-                    "option": "⭐⭐⭐ Average"
-                  },
-                  {
-                    "option": "⭐⭐ Poor"
-                  },
-                  {
-                    "option": "⭐ Very Poor"
-                  }
-                ]
-              },
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "Food Quality Rating",
-              "fieldType": "radio",
-              "fieldName": "How would you rate the food quality?",
-              "fieldOptions": {
-                "values": [
-                  {
-                    "option": "1 ⭐"
-                  },
-                  {
-                    "option": "2 ⭐⭐"
-                  },
-                  {
-                    "option": "3 ⭐⭐⭐"
-                  },
-                  {
-                    "option": "4 ⭐⭐⭐⭐"
-                  },
-                  {
-                    "option": "5 ⭐⭐⭐⭐⭐"
-                  }
-                ]
-              },
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "Service Rating",
-              "fieldType": "dropdown",
-              "fieldName": "How would you rate our service?",
-              "fieldOptions": {
-                "values": [
-                  {
-                    "option": "1 ⭐"
-                  },
-                  {
-                    "option": "2 ⭐⭐"
-                  },
-                  {
-                    "option": "3 ⭐⭐⭐"
-                  },
-                  {
-                    "option": "4 ⭐⭐⭐⭐"
-                  },
-                  {
-                    "option": "5 ⭐⭐⭐⭐⭐"
-                  }
-                ]
-              },
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "Waiting Time",
-              "fieldType": "dropdown",
-              "fieldName": "How was the waiting time?",
-              "fieldOptions": {
-                "values": [
-                  {
-                    "option": "Very Fast"
-                  },
-                  {
-                    "option": "Acceptable"
-                  },
-                  {
-                    "option": "Long"
-                  },
-                  {
-                    "option": "Too Long"
-                  }
-                ]
-              },
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "Would You Recommend Us?",
-              "fieldType": "radio",
-              "fieldName": "Would you recommend our restaurant to others?",
-              "fieldOptions": {
-                "values": [
-                  {
-                    "option": "Definitely"
-                  },
-                  {
-                    "option": "Probably"
-                  },
-                  {
-                    "option": "Not Sure"
-                  },
-                  {
-                    "option": "Probably Not"
-                  },
-                  {
-                    "option": "Never"
-                  }
-                ]
-              },
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "Tell us about your experience",
-              "fieldType": "textarea",
-              "placeholder": "Example: The food was delicious and arrived quickly. The staff were friendly and helpful. However, the waiting time for dessert was longer than expected.",
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "What can we improve?",
-              "fieldType": "textarea",
-              "placeholder": "Tell us how we can make your next visit better."
-            }
-          ]
-        },
-        "options": {
-          "appendAttribution": false,
-          "customCss": ":root{\n  --font-family:'Inter',sans-serif;\n\n  /* Colors */\n  --color-background:#f7f8fc;\n  --color-card-bg:#ffffff;\n  --color-card-border:#eceef5;\n  --color-card-shadow:rgba(0,0,0,.06);\n\n  --color-header:#1e293b;\n  --color-label:#334155;\n  --color-input-text:#475569;\n  --color-input-border:#dbe3ee;\n  --color-focus-border:#ff6b35;\n\n  --color-submit-btn-bg:#ff6b35;\n  --color-submit-btn-text:#ffffff;\n\n  --font-size-header:28px;\n  --font-size-label:15px;\n  --font-size-input:15px;\n  --font-size-body:14px;\n\n  --border-radius:18px;\n}\n\n/* Card */\n.form-wrapper{\n    max-width:850px;\n}\n\n/* Inputs */\ninput,\ntextarea,\nselect{\n    border-radius:14px !important;\n    padding:14px !important;\n    transition:.3s ease;\n}\n\ninput:focus,\ntextarea:focus,\nselect:focus{\n    box-shadow:0 0 0 4px rgba(255,107,53,.15);\n}\n\n/* Button */\nbutton{\n    border-radius:14px !important;\n    font-weight:600;\n    padding:14px 24px !important;\n    transition:.3s;\n}\n\nbutton:hover{\n    transform:translateY(-2px);\n}"
-        }
-      },
-      "type": "n8n-nodes-base.formTrigger",
-      "typeVersion": 2.6,
-      "position": [
-        0,
-        -80
-      ],
-      "id": "3591f991-caf7-4198-b7bd-b256e25a0a43",
-      "name": "On form submission",
-      "webhookId": "dc8d0200-c0c9-44f6-9637-8839d908a336"
-    },
-    {
-      "parameters": {
-        "operation": "append",
-        "documentId": {
-          "__rl": true,
-          "value": "1aRBf44TVfuamK5L3vMMTfYNmHw4dGnrSJrnyMGPWANY",
-          "mode": "list",
-          "cachedResultName": "Restaurant Customer Feedback",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aRBf44TVfuamK5L3vMMTfYNmHw4dGnrSJrnyMGPWANY/edit?usp=drivesdk"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "gid=0",
-          "mode": "list",
-          "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aRBf44TVfuamK5L3vMMTfYNmHw4dGnrSJrnyMGPWANY/edit#gid=0"
-        },
-        "columns": {
-          "mappingMode": "autoMapInputData",
-          "value": {},
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "customer_name",
-              "displayName": "customer_name",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "email",
-              "displayName": "email",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "visit_date",
-              "displayName": "visit_date",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "meal_type",
-              "displayName": "meal_type",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "overall_rating",
-              "displayName": "overall_rating",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "food_rating",
-              "displayName": "food_rating",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "service_rating",
-              "displayName": "service_rating",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "waiting_time",
-              "displayName": "waiting_time",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "recommendation",
-              "displayName": "recommendation",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "review",
-              "displayName": "review",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "improvement_suggestions",
-              "displayName": "improvement_suggestions",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "overall_sentiment",
-              "displayName": "overall_sentiment",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "sentiment_score",
-              "displayName": "sentiment_score",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "emotion",
-              "displayName": "emotion",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "food_sentiment",
-              "displayName": "food_sentiment",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "service_sentiment",
-              "displayName": "service_sentiment",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "waiting_time_sentiment",
-              "displayName": "waiting_time_sentiment",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "main_issue",
-              "displayName": "main_issue",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "recommendation_likelihood",
-              "displayName": "recommendation_likelihood",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "summary",
-              "displayName": "summary",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "strengths",
-              "displayName": "strengths",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "complaints",
-              "displayName": "complaints",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "management_actions",
-              "displayName": "management_actions",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "complaint_count",
-              "displayName": "complaint_count",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "strength_count",
-              "displayName": "strength_count",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "needs_attention",
-              "displayName": "needs_attention",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "timestamp",
-              "displayName": "timestamp",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.7,
-      "position": [
-        800,
-        -80
-      ],
-      "id": "bb555ef2-2107-4a14-b0b6-aa7ef1ea6d8e",
-      "name": "Append Customer Record",
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "b0YIKrEaHBhRaBmi",
-          "name": "Google Sheets account 2"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=Customer Review: {{ $json[\"Tell us about your experience\"] }}  Additional Information: Overall Rating: {{ $json[\"Overall Rating\"] }} Food Quality Rating: {{ $json[\"How would you rate the food quality?\"] }} Service Rating: {{ $json[\"How would you rate our service?\"] }} Waiting Time: {{ $json[\"How was the waiting time?\"] }} Recommendation: {{ $json[\"Would you recommend our restaurant to others?\"] }} Improvement Suggestions: {{ $json[\"What can we improve?\"] }}",
-        "hasOutputParser": true,
-        "messages": {
-          "messageValues": [
-            {
-              "message": "You are an expert sentiment analysis model specializing in restaurant customer reviews.  Analyze the customer feedback below and determine the overall sentiment expressed by the customer.  Classification rules:  * Positive: Mostly satisfied, praising the experience, or recommending the restaurant. * Negative: Mostly dissatisfied, complaining, or not recommending the restaurant. * Neutral: Mixed opinions or balanced feedback without a clearly positive or negative overall tone.  Return exactly one of these labels and nothing else:  Positive Negative Neutral"
-            },
-            {
-              "type": "HumanMessagePromptTemplate",
-              "message": "=Customer Review: {{ $json[\"Tell us about your experience\"] }}  Additional Information: Overall Rating: {{ $json[\"Overall Rating\"] }} Food Quality Rating: {{ $json[\"How would you rate the food quality?\"] }} Service Rating: {{ $json[\"How would you rate our service?\"] }} Waiting Time: {{ $json[\"How was the waiting time?\"] }} Recommendation: {{ $json[\"Would you recommend our restaurant to others?\"] }} Improvement Suggestions: {{ $json[\"What can we improve?\"] }}"
-            }
-          ]
-        },
-        "batching": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.chainLlm",
-      "typeVersion": 1.9,
-      "position": [
-        224,
-        48
-      ],
-      "id": "9e6bc77b-1158-4acd-8831-851e89ff4038",
-      "name": "Basic LLM Chain"
-    },
-    {
-      "parameters": {
-        "model": "llama3.2:latest",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
-      "position": [
-        304,
-        272
-      ],
-      "id": "d3da64c3-05ce-4be6-aeb9-3ae185d4fda5",
-      "name": "Ollama Chat Model",
-      "credentials": {
-        "ollamaApi": {
-          "id": "wDe9MCIO6q1M7Gau",
-          "name": "Ollama account"
-        }
-      }
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        576,
-        -80
-      ],
-      "id": "1d0e7ec7-8e4e-44c7-b6d5-5030404d2ef3",
-      "name": "Merge"
-    }
-  ],
-  "connections": {
-    "On form submission": {
-      "main": [
-        [
-          {
-            "node": "Merge",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Basic LLM Chain",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Append Customer Record": {
-      "main": [
-        []
-      ]
-    },
-    "Ollama Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Basic LLM Chain",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Basic LLM Chain": {
-      "main": [
-        [
-          {
-            "node": "Merge",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "Merge": {
-      "main": [
-        [
-          {
-            "node": "Append Customer Record",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
-  },
-  "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": false,
-    "timeSavedMode": "dynamic",
-    "timezone": "Asia/Kuwait",
-    "saveDataErrorExecution": "all",
-    "saveDataSuccessExecution": "all",
-    "saveExecutionProgress": true,
-    "saveManualExecutions": true,
-    "callerPolicy": "workflowsFromSameOwner"
-  },
-  "staticData": null,
-  "meta": {
-    "templateCredsSetupCompleted": true
-  },
-  "nodeGroups": [],
-  "pinData": {
-    "On form submission": [
+[
+  {
+    "updatedAt": "2026-06-26T19:30:03.417Z",
+    "createdAt": "2026-06-26T18:35:51.436Z",
+    "id": "QWJwznptYNNtn7nm",
+    "name": "Sentiment Analysis Agent Simple",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
       {
-        "json": {
-          "Customer Name": "Mariam Khaled",
-          "Email Address": "mariam.khaled@example.com",
-          "When did you visit us?": "2026-06-18",
-          "Meal Type": "Dinner",
-          "Overall Rating": "⭐⭐⭐⭐ Very Good",
-          "How would you rate the food quality?": "5 ⭐⭐⭐⭐⭐",
-          "How would you rate our service?": "2 ⭐⭐",
-          "How was the waiting time?": "Too Long",
-          "Would you recommend our restaurant to others?": "Probably",
-          "Tell us about your experience": "The steak was amazing and the desserts were fantastic. Unfortunately, we had to wait nearly 40 minutes for our table and another 30 minutes for the food. The waiter seemed overwhelmed and forgot our drinks. Despite the excellent food, the slow service affected the experience.",
-          "What can we improve?": "Increase staffing during busy hours and shorten waiting times."
+        "parameters": {
+          "formTitle": "Restaurant Experience Feedback",
+          "formDescription": "Thank you for dining with us! Your feedback helps us improve our food and service. Please take a minute to share your experience.",
+          "formFields": {
+            "values": [
+              {
+                "fieldLabel": "Customer Name",
+                "placeholder": "e.g. Sarah Ahmed"
+              },
+              {
+                "fieldLabel": "Email Address",
+                "fieldType": "email",
+                "placeholder": "example@email.com"
+              },
+              {
+                "fieldLabel": "Date of Visit",
+                "fieldType": "date",
+                "fieldName": "When did you visit us?",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "Meal Type",
+                "fieldType": "dropdown",
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "Breakfast"
+                    },
+                    {
+                      "option": "Lunch"
+                    },
+                    {
+                      "option": "Dinner"
+                    },
+                    {
+                      "option": "Snack"
+                    }
+                  ]
+                },
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "Overall Rating",
+                "fieldType": "radio",
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "\u2b50\u2b50\u2b50\u2b50\u2b50 Excellent"
+                    },
+                    {
+                      "option": "\u2b50\u2b50\u2b50\u2b50 Very Good"
+                    },
+                    {
+                      "option": "\u2b50\u2b50\u2b50 Average"
+                    },
+                    {
+                      "option": "\u2b50\u2b50 Poor"
+                    },
+                    {
+                      "option": "\u2b50 Very Poor"
+                    }
+                  ]
+                },
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "Food Quality Rating",
+                "fieldType": "radio",
+                "fieldName": "How would you rate the food quality?",
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "1 \u2b50"
+                    },
+                    {
+                      "option": "2 \u2b50\u2b50"
+                    },
+                    {
+                      "option": "3 \u2b50\u2b50\u2b50"
+                    },
+                    {
+                      "option": "4 \u2b50\u2b50\u2b50\u2b50"
+                    },
+                    {
+                      "option": "5 \u2b50\u2b50\u2b50\u2b50\u2b50"
+                    }
+                  ]
+                },
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "Service Rating",
+                "fieldType": "dropdown",
+                "fieldName": "How would you rate our service?",
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "1 \u2b50"
+                    },
+                    {
+                      "option": "2 \u2b50\u2b50"
+                    },
+                    {
+                      "option": "3 \u2b50\u2b50\u2b50"
+                    },
+                    {
+                      "option": "4 \u2b50\u2b50\u2b50\u2b50"
+                    },
+                    {
+                      "option": "5 \u2b50\u2b50\u2b50\u2b50\u2b50"
+                    }
+                  ]
+                },
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "Waiting Time",
+                "fieldType": "dropdown",
+                "fieldName": "How was the waiting time?",
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "Very Fast"
+                    },
+                    {
+                      "option": "Acceptable"
+                    },
+                    {
+                      "option": "Long"
+                    },
+                    {
+                      "option": "Too Long"
+                    }
+                  ]
+                },
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "Would You Recommend Us?",
+                "fieldType": "radio",
+                "fieldName": "Would you recommend our restaurant to others?",
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "Definitely"
+                    },
+                    {
+                      "option": "Probably"
+                    },
+                    {
+                      "option": "Not Sure"
+                    },
+                    {
+                      "option": "Probably Not"
+                    },
+                    {
+                      "option": "Never"
+                    }
+                  ]
+                },
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "Tell us about your experience",
+                "fieldType": "textarea",
+                "placeholder": "Example: The food was delicious and arrived quickly. The staff were friendly and helpful. However, the waiting time for dessert was longer than expected.",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "What can we improve?",
+                "fieldType": "textarea",
+                "placeholder": "Tell us how we can make your next visit better."
+              }
+            ]
+          },
+          "options": {
+            "appendAttribution": false,
+            "customCss": ":root{\n  --font-family:'Inter',sans-serif;\n\n  /* Colors */\n  --color-background:#f7f8fc;\n  --color-card-bg:#ffffff;\n  --color-card-border:#eceef5;\n  --color-card-shadow:rgba(0,0,0,.06);\n\n  --color-header:#1e293b;\n  --color-label:#334155;\n  --color-input-text:#475569;\n  --color-input-border:#dbe3ee;\n  --color-focus-border:#ff6b35;\n\n  --color-submit-btn-bg:#ff6b35;\n  --color-submit-btn-text:#ffffff;\n\n  --font-size-header:28px;\n  --font-size-label:15px;\n  --font-size-input:15px;\n  --font-size-body:14px;\n\n  --border-radius:18px;\n}\n\n/* Card */\n.form-wrapper{\n    max-width:850px;\n}\n\n/* Inputs */\ninput,\ntextarea,\nselect{\n    border-radius:14px !important;\n    padding:14px !important;\n    transition:.3s ease;\n}\n\ninput:focus,\ntextarea:focus,\nselect:focus{\n    box-shadow:0 0 0 4px rgba(255,107,53,.15);\n}\n\n/* Button */\nbutton{\n    border-radius:14px !important;\n    font-weight:600;\n    padding:14px 24px !important;\n    transition:.3s;\n}\n\nbutton:hover{\n    transform:translateY(-2px);\n}"
+          }
+        },
+        "type": "n8n-nodes-base.formTrigger",
+        "typeVersion": 2.6,
+        "position": [
+          0,
+          -80
+        ],
+        "id": "3591f991-caf7-4198-b7bd-b256e25a0a43",
+        "name": "On form submission",
+        "webhookId": "dc8d0200-c0c9-44f6-9637-8839d908a336"
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "1aRBf44TVfuamK5L3vMMTfYNmHw4dGnrSJrnyMGPWANY",
+            "mode": "list",
+            "cachedResultName": "Restaurant Customer Feedback",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aRBf44TVfuamK5L3vMMTfYNmHw4dGnrSJrnyMGPWANY/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Sheet1",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aRBf44TVfuamK5L3vMMTfYNmHw4dGnrSJrnyMGPWANY/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "autoMapInputData",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "customer_name",
+                "displayName": "customer_name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "email",
+                "displayName": "email",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "visit_date",
+                "displayName": "visit_date",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "meal_type",
+                "displayName": "meal_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "overall_rating",
+                "displayName": "overall_rating",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "food_rating",
+                "displayName": "food_rating",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "service_rating",
+                "displayName": "service_rating",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "waiting_time",
+                "displayName": "waiting_time",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "recommendation",
+                "displayName": "recommendation",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "review",
+                "displayName": "review",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "improvement_suggestions",
+                "displayName": "improvement_suggestions",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "overall_sentiment",
+                "displayName": "overall_sentiment",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "sentiment_score",
+                "displayName": "sentiment_score",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "emotion",
+                "displayName": "emotion",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "food_sentiment",
+                "displayName": "food_sentiment",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "service_sentiment",
+                "displayName": "service_sentiment",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "waiting_time_sentiment",
+                "displayName": "waiting_time_sentiment",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "main_issue",
+                "displayName": "main_issue",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "recommendation_likelihood",
+                "displayName": "recommendation_likelihood",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "summary",
+                "displayName": "summary",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "strengths",
+                "displayName": "strengths",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "complaints",
+                "displayName": "complaints",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "management_actions",
+                "displayName": "management_actions",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "complaint_count",
+                "displayName": "complaint_count",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "strength_count",
+                "displayName": "strength_count",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "needs_attention",
+                "displayName": "needs_attention",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "timestamp",
+                "displayName": "timestamp",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          800,
+          -80
+        ],
+        "id": "bb555ef2-2107-4a14-b0b6-aa7ef1ea6d8e",
+        "name": "Append Customer Record",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "b0YIKrEaHBhRaBmi",
+            "name": "Google Sheets account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Customer Review: {{ $json[\"Tell us about your experience\"] }}  Additional Information: Overall Rating: {{ $json[\"Overall Rating\"] }} Food Quality Rating: {{ $json[\"How would you rate the food quality?\"] }} Service Rating: {{ $json[\"How would you rate our service?\"] }} Waiting Time: {{ $json[\"How was the waiting time?\"] }} Recommendation: {{ $json[\"Would you recommend our restaurant to others?\"] }} Improvement Suggestions: {{ $json[\"What can we improve?\"] }}",
+          "hasOutputParser": true,
+          "messages": {
+            "messageValues": [
+              {
+                "message": "You are an expert sentiment analysis model specializing in restaurant customer reviews.  Analyze the customer feedback below and determine the overall sentiment expressed by the customer.  Classification rules:  * Positive: Mostly satisfied, praising the experience, or recommending the restaurant. * Negative: Mostly dissatisfied, complaining, or not recommending the restaurant. * Neutral: Mixed opinions or balanced feedback without a clearly positive or negative overall tone.  Return exactly one of these labels and nothing else:  Positive Negative Neutral"
+              },
+              {
+                "type": "HumanMessagePromptTemplate",
+                "message": "=Customer Review: {{ $json[\"Tell us about your experience\"] }}  Additional Information: Overall Rating: {{ $json[\"Overall Rating\"] }} Food Quality Rating: {{ $json[\"How would you rate the food quality?\"] }} Service Rating: {{ $json[\"How would you rate our service?\"] }} Waiting Time: {{ $json[\"How was the waiting time?\"] }} Recommendation: {{ $json[\"Would you recommend our restaurant to others?\"] }} Improvement Suggestions: {{ $json[\"What can we improve?\"] }}"
+              }
+            ]
+          },
+          "batching": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chainLlm",
+        "typeVersion": 1.9,
+        "position": [
+          224,
+          48
+        ],
+        "id": "9e6bc77b-1158-4acd-8831-851e89ff4038",
+        "name": "Basic LLM Chain"
+      },
+      {
+        "parameters": {
+          "model": "llama3.2:latest",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+        "typeVersion": 1,
+        "position": [
+          304,
+          272
+        ],
+        "id": "d3da64c3-05ce-4be6-aeb9-3ae185d4fda5",
+        "name": "Ollama Chat Model",
+        "credentials": {
+          "ollamaApi": {
+            "id": "wDe9MCIO6q1M7Gau",
+            "name": "Ollama account"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          576,
+          -80
+        ],
+        "id": "1d0e7ec7-8e4e-44c7-b6d5-5030404d2ef3",
+        "name": "Merge"
+      }
+    ],
+    "connections": {
+      "On form submission": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Basic LLM Chain",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Append Customer Record": {
+        "main": [
+          []
+        ]
+      },
+      "Ollama Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Basic LLM Chain",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Basic LLM Chain": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Merge": {
+        "main": [
+          [
+            {
+              "node": "Append Customer Record",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false,
+      "timeSavedMode": "dynamic",
+      "timezone": "Asia/Kuwait",
+      "saveDataErrorExecution": "all",
+      "saveDataSuccessExecution": "all",
+      "saveExecutionProgress": true,
+      "saveManualExecutions": true,
+      "callerPolicy": "workflowsFromSameOwner"
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {
+      "On form submission": [
+        {
+          "json": {
+            "Customer Name": "Mariam Khaled",
+            "Email Address": "mariam.khaled@example.com",
+            "When did you visit us?": "2026-06-18",
+            "Meal Type": "Dinner",
+            "Overall Rating": "\u2b50\u2b50\u2b50\u2b50 Very Good",
+            "How would you rate the food quality?": "5 \u2b50\u2b50\u2b50\u2b50\u2b50",
+            "How would you rate our service?": "2 \u2b50\u2b50",
+            "How was the waiting time?": "Too Long",
+            "Would you recommend our restaurant to others?": "Probably",
+            "Tell us about your experience": "The steak was amazing and the desserts were fantastic. Unfortunately, we had to wait nearly 40 minutes for our table and another 30 minutes for the food. The waiter seemed overwhelmed and forgot our drinks. Despite the excellent food, the slow service affected the experience.",
+            "What can we improve?": "Increase staffing during busy hours and shorten waiting times."
+          }
+        }
+      ]
+    },
+    "versionId": "e2e0db7c-46e5-4772-93ba-e256409dc1f7",
+    "activeVersionId": "a321ce0c-990b-4643-8d47-881ace8b56c7",
+    "versionCounter": 22,
+    "triggerCount": 1,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-06-26T18:35:51.436Z",
+        "createdAt": "2026-06-26T18:35:51.436Z",
+        "role": "workflow:owner",
+        "workflowId": "QWJwznptYNNtn7nm",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
         }
       }
-    ]
-  },
-  "versionId": "e2e0db7c-46e5-4772-93ba-e256409dc1f7",
-  "activeVersionId": "a321ce0c-990b-4643-8d47-881ace8b56c7",
-  "versionCounter": 22,
-  "triggerCount": 1,
-  "sourceWorkflowId": null,
-  "tags": [],
-  "shared": [
-    {
-      "updatedAt": "2026-06-26T18:35:51.436Z",
-      "createdAt": "2026-06-26T18:35:51.436Z",
-      "role": "workflow:owner",
-      "workflowId": "QWJwznptYNNtn7nm",
-      "projectId": "7Kuw5RaGwePDWMtJ",
-      "project": {
-        "updatedAt": "2026-06-09T16:37:14.049Z",
-        "createdAt": "2026-06-09T16:15:53.210Z",
-        "id": "7Kuw5RaGwePDWMtJ",
-        "name": "Sohila Abbas <sohila.k.data@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "customTelemetryTags": [],
-        "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
-      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
     }
-  ],
-  "versionMetadata": {
-    "name": null,
-    "description": null
   }
-}
+]

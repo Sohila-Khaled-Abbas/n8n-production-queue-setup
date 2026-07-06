@@ -1,6 +1,6 @@
 [
   {
-    "updatedAt": "2026-07-06T18:43:00.682Z",
+    "updatedAt": "2026-07-06T20:09:53.485Z",
     "createdAt": "2026-07-06T18:36:34.367Z",
     "id": "Wc9PIqfsQdkxvp5S",
     "name": "Apple RAG Chatbot V2",
@@ -36,6 +36,7 @@
       {
         "parameters": {
           "dataType": "binary",
+          "loader": "pdfLoader",
           "textSplittingMode": "custom",
           "options": {
             "metadata": {
@@ -46,15 +47,13 @@
                 }
               ]
             }
-          },
-          "loader": "pdfLoader",
-          "binaryDataKey": "data"
+          }
         },
         "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
         "typeVersion": 1.1,
         "position": [
           -384,
-          448
+          416
         ],
         "id": "a55d60c5-d6b4-4569-85dc-e07ee9e5374f",
         "name": "Default Data Loader"
@@ -62,7 +61,7 @@
       {
         "parameters": {
           "content": "# Knowledge Base\n",
-          "height": 796,
+          "height": 636,
           "width": 1372,
           "color": 4
         },
@@ -70,7 +69,7 @@
         "typeVersion": 1,
         "position": [
           -1472,
-          32
+          96
         ],
         "id": "d04a382a-7a4c-406d-a97f-ed34a3b1823e",
         "name": "Sticky Note"
@@ -78,14 +77,14 @@
       {
         "parameters": {
           "content": "# RAG Chatbot\n",
-          "height": 780,
+          "height": 748,
           "width": 968,
           "color": 3
         },
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
-          -32,
+          -48,
           64
         ],
         "id": "d4e74cfd-4018-4f97-935f-1084f1e97b69",
@@ -102,8 +101,8 @@
         "type": "@n8n/n8n-nodes-langchain.agent",
         "typeVersion": 2,
         "position": [
-          400,
-          176
+          384,
+          144
         ],
         "id": "3ffa7b3a-6636-478a-9c2e-2e80a6a006f7",
         "name": "AI Agent"
@@ -116,8 +115,8 @@
         "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
         "typeVersion": 1.1,
         "position": [
-          592,
-          432
+          608,
+          368
         ],
         "id": "8d507096-2a7f-46da-85ec-5d2a7e7b4268",
         "name": "Answer questions with a vector store"
@@ -130,8 +129,8 @@
         "type": "@n8n/n8n-nodes-langchain.chatTrigger",
         "typeVersion": 1.1,
         "position": [
-          16,
-          176
+          0,
+          144
         ],
         "id": "389ebf1c-4ed3-45da-abce-a93c215c9aee",
         "name": "When chat message received",
@@ -161,7 +160,7 @@
         "typeVersion": 1,
         "position": [
           -1424,
-          144
+          176
         ],
         "id": "53b00d9f-0a86-4643-aaa2-f16f0dc89fc3",
         "name": "Google Drive Trigger",
@@ -200,8 +199,8 @@
         "type": "n8n-nodes-base.googleDrive",
         "typeVersion": 3,
         "position": [
-          -1280,
-          496
+          -1232,
+          352
         ],
         "id": "ed28ebb6-569e-4e53-9d2f-b24724f78522",
         "name": "Search files and folders",
@@ -225,8 +224,8 @@
         "type": "n8n-nodes-base.googleDrive",
         "typeVersion": 3,
         "position": [
-          -912,
-          496
+          -848,
+          352
         ],
         "id": "19eb87ac-130f-45c7-a75c-7e85a8e6e9ca",
         "name": "Download file1",
@@ -244,8 +243,8 @@
         "type": "n8n-nodes-base.splitInBatches",
         "typeVersion": 3,
         "position": [
-          -688,
-          80
+          -704,
+          176
         ],
         "id": "f0fb0a74-3f85-44fd-9d28-e12bea739713",
         "name": "Loop Over Items"
@@ -258,7 +257,7 @@
         "typeVersion": 1,
         "position": [
           -432,
-          656
+          576
         ],
         "id": "e8e7d2c1-8a65-4659-aad2-54bd01f470c8",
         "name": "Recursive Character Text Splitter"
@@ -286,8 +285,8 @@
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
         "position": [
-          -1104,
-          416
+          -1024,
+          352
         ],
         "id": "f6ec22cb-795b-422b-9800-4f21633f80ea",
         "name": "Edit Fields"
@@ -309,8 +308,8 @@
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
         "position": [
-          192,
-          176
+          176,
+          144
         ],
         "id": "3b4789b3-bb21-4ae7-a5a7-2ae9f4d43aa5",
         "name": "Edit Fields1"
@@ -330,7 +329,7 @@
         "typeVersion": 1.3,
         "position": [
           -464,
-          144
+          192
         ],
         "id": "45d4be8b-8eb7-419b-b5d8-988cc834e3cf",
         "name": "Qdrant Vector Store",
@@ -348,8 +347,8 @@
         "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
         "typeVersion": 1,
         "position": [
-          -480,
-          320
+          -576,
+          416
         ],
         "id": "ce2f7149-2c12-44e0-9367-8facd488b36c",
         "name": "Embeddings Ollama",
@@ -373,8 +372,8 @@
         "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
         "typeVersion": 1.3,
         "position": [
-          384,
-          576
+          368,
+          544
         ],
         "id": "384a1fd8-fb63-4f8e-8fea-d4c005efb6e0",
         "name": "Qdrant Vector Store1",
@@ -390,8 +389,8 @@
         "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
         "typeVersion": 1.4,
         "position": [
-          432,
-          384
+          416,
+          352
         ],
         "id": "fe69af40-1c33-4634-97c8-e2a1afe5f11f",
         "name": "Postgres Chat Memory",
@@ -410,8 +409,8 @@
         "type": "@n8n/n8n-nodes-langchain.lmOllama",
         "typeVersion": 1,
         "position": [
-          688,
-          608
+          672,
+          576
         ],
         "id": "299553c9-a12b-4417-98c0-dd3a42fd8f48",
         "name": "Ollama Model",
@@ -424,14 +423,14 @@
       },
       {
         "parameters": {
-          "model": "qwen2.5:3b-4k",
+          "model": "llama3.2:3b-4k",
           "options": {}
         },
         "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
         "typeVersion": 1,
         "position": [
-          288,
-          384
+          272,
+          352
         ],
         "id": "1477ecc6-db01-4203-80e3-3eb41de7c2cd",
         "name": "Ollama Chat Model",
@@ -449,8 +448,8 @@
         "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
         "typeVersion": 1,
         "position": [
-          528,
-          720
+          512,
+          688
         ],
         "id": "d4ab4af3-e4c7-4560-81e9-38da1188211a",
         "name": "Embeddings Ollama1",
@@ -466,8 +465,8 @@
         "type": "n8n-nodes-base.timeSaved",
         "typeVersion": 1,
         "position": [
-          752,
-          176
+          736,
+          144
         ],
         "id": "eacea496-b3ad-44ac-ab61-9ab58c5d16ea",
         "name": "Time Saved"
@@ -704,7 +703,7 @@
     },
     "staticData": {
       "node:Google Drive Trigger": {
-        "lastTimeChecked": "2026-07-06T18:42:27Z"
+        "lastTimeChecked": "2026-07-06T20:09:48Z"
       }
     },
     "meta": {
@@ -712,12 +711,19 @@
     },
     "nodeGroups": [],
     "pinData": {},
-    "versionId": "d09bc2f8-2858-47a3-a8cd-b56555e1e8af",
-    "activeVersionId": "1a497d1a-26b5-420f-82cc-d888da4499c9",
-    "versionCounter": 58,
+    "versionId": "ede1cc2a-d0e1-414d-959b-08d34585cc33",
+    "activeVersionId": "ede1cc2a-d0e1-414d-959b-08d34585cc33",
+    "versionCounter": 76,
     "triggerCount": 2,
     "sourceWorkflowId": null,
-    "tags": [],
+    "tags": [
+      {
+        "updatedAt": "2026-07-05T20:54:10.312Z",
+        "createdAt": "2026-07-05T20:54:10.312Z",
+        "id": "YPOBiRLmef0fLiKM",
+        "name": "RAG"
+      }
+    ],
     "shared": [
       {
         "updatedAt": "2026-07-06T18:36:34.367Z",
@@ -739,8 +745,8 @@
       }
     ],
     "versionMetadata": {
-      "name": null,
-      "description": null
+      "name": "Version ede1cc2a",
+      "description": ""
     }
   }
 ]

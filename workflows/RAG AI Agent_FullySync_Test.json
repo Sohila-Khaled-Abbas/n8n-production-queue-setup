@@ -1,0 +1,909 @@
+[
+  {
+    "updatedAt": "2026-07-06T19:58:52.971Z",
+    "createdAt": "2026-07-06T19:51:47.485Z",
+    "id": "bV6ttBfJUM63amfw",
+    "name": "RAG AI Agent_FullySync_Test",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "dataType": "binary",
+          "textSplittingMode": "custom",
+          "options": {
+            "metadata": {
+              "metadataValues": [
+                {
+                  "name": "Apple_Report",
+                  "value": "={{ $json.name }}"
+                }
+              ]
+            }
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+        "typeVersion": 1.1,
+        "position": [
+          1808,
+          272
+        ],
+        "id": "99bfc9ad-fd11-47d3-840e-f38941c64fec",
+        "name": "Default Data Loader"
+      },
+      {
+        "parameters": {
+          "content": "# Preprocessing\n",
+          "height": 636,
+          "width": 1276,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "f39f2127-84ec-4f39-b545-5c7dbde17def",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "# RAG Chatbot\n",
+          "height": 604,
+          "width": 1272,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          0,
+          672
+        ],
+        "id": "b4283977-9d4d-45aa-a7bf-1ed433d861e9",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $('When chat message received').item.json.chatInput }}",
+          "options": {
+            "systemMessage": "=You are an AI assistant specialized in analyzing Apple\u2019s quarterly financial reports. Your main goal is to answer questions accurately and precisely using the vector database, which contains relevant Q1 reports.\n\nProvide only information that comes directly from these reports or verified data. If the requested information is missing or unclear, explicitly state that there is insufficient data.\n\nKeep responses concise and to the point. Include specific numbers and facts whenever possible, and clearly indicate whether the information is sourced from Q1 or Q2.\n\nDeliver quick, reliable insights into Apple\u2019s quarterly financials without adding unnecessary details."
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2,
+        "position": [
+          464,
+          784
+        ],
+        "id": "70333dd8-a5fe-475a-9083-0d361ddd9d25",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "description": "Returns documents related to Apple Q1 report, including financials, outlook, margins, and all key details from the earnings reports.",
+          "topK": "=10"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+        "typeVersion": 1.1,
+        "position": [
+          800,
+          880
+        ],
+        "id": "331a5489-8ebc-48c6-8f56-9a71aa3a89e2",
+        "name": "Answer questions with a vector store"
+      },
+      {
+        "parameters": {
+          "public": true,
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          64,
+          784
+        ],
+        "id": "1f78c3c6-f82d-42a6-b879-ca6e922b2667",
+        "name": "When chat message received",
+        "webhookId": "a106e7fe-0bb0-42e6-8539-df1789689bbf"
+      },
+      {
+        "parameters": {
+          "resource": "fileFolder",
+          "filter": {
+            "folderId": {
+              "__rl": true,
+              "value": "13aIW31qxgfPeoKJqyHAUi6nS3V5fJEZp",
+              "mode": "list",
+              "cachedResultName": "Apple",
+              "cachedResultUrl": "https://drive.google.com/drive/folders/13aIW31qxgfPeoKJqyHAUi6nS3V5fJEZp"
+            }
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          336,
+          96
+        ],
+        "id": "01514e90-0bac-4b58-8487-f251fd17b388",
+        "name": "Search files and folders",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "Q8F6AF4nNReCfLij",
+            "name": "Google Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "download",
+          "fileId": {
+            "__rl": true,
+            "value": "={{ $json.File_ID }}",
+            "mode": "id"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          1152,
+          192
+        ],
+        "id": "533e0e71-7a6c-41cc-af25-054b83d8b6a6",
+        "name": "Download file1",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "Q8F6AF4nNReCfLij",
+            "name": "Google Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          1424,
+          80
+        ],
+        "id": "7b8784dc-f9a3-426d-a22c-e4c464f101c0",
+        "name": "Loop Over Items"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+        "typeVersion": 1,
+        "position": [
+          1840,
+          448
+        ],
+        "id": "9713a530-0cce-48eb-a531-9907b840ebfc",
+        "name": "Recursive Character Text Splitter"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "dda116d7-f64b-48b8-9f22-fb35eb43c245",
+                "name": "File_Name",
+                "value": "={{ $json.Name }}",
+                "type": "string"
+              },
+              {
+                "id": "3562a21f-d55f-4191-8f7a-cebb23c1da3b",
+                "name": "File_ID",
+                "value": "={{ $json.ID }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          992,
+          256
+        ],
+        "id": "9d3133c1-dacc-4d44-8942-be75ce696719",
+        "name": "Edit Fields"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "c183a9f9-0bbd-40e4-ac35-b5111e3ec1ae",
+                "name": "File_Name",
+                "value": "={{$json[\"chatInput\"].match(/Q[1-4]/i) ? ($json[\"chatInput\"].match(/Q[1-4]/i)[0].toUpperCase() + \".pdf\").trim() : \"\"}}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          240,
+          784
+        ],
+        "id": "e24e4509-408b-406f-8ddc-8a9b5fac6380",
+        "name": "Edit Fields1"
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 1
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          64,
+          96
+        ],
+        "id": "e7d61dbc-4d7b-4974-86c1-58c685dabae9",
+        "name": "Schedule Trigger"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          64,
+          272
+        ],
+        "id": "934096d4-4636-42f2-82b3-e614b1f5d266",
+        "name": "When clicking \u2018Execute workflow\u2019"
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "1xfO1TqiG_eAFLcKMmhIOu6fwILZjYJi3FLylYpODTU8",
+            "mode": "list",
+            "cachedResultName": "AppleDatabase",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xfO1TqiG_eAFLcKMmhIOu6fwILZjYJi3FLylYpODTU8/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Sheet1",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xfO1TqiG_eAFLcKMmhIOu6fwILZjYJi3FLylYpODTU8/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Name": "={{ $json.fileName }}",
+              "ID": "={{ $json.fileId }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "Name",
+                "displayName": "Name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "ID",
+                "displayName": "ID",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.6,
+        "position": [
+          832,
+          256
+        ],
+        "id": "25027114-8720-4814-87bb-6c5e2fa47b96",
+        "name": "Append row in sheet",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "LKFLSWDFvv6fE63D",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// \u2705 Get ALL incoming data as one flat array\nconst allInputs = $input.all(); \n\n// Separate Drive files vs Sheet rows by their structure\nconst driveInput = [];\nconst sheetInput = [];\n\n// Loop through all incoming items and detect source\nfor (const item of allInputs) {\n  const data = item.json;\n  \n  // Drive files have `id` + `name`\n  if (data.id && data.name) {\n    driveInput.push(data);\n  }\n  \n  // Sheet rows have `ID` + `Name`\n  if (data.ID || data.Name) {\n    sheetInput.push(data);\n  }\n}\n\n// \u2705 Extract already processed IDs from sheet\nconst processedIds = sheetInput\n  .filter(row => row.ID && row.ID !== \"\")\n  .map(row => row.ID);\n\n// \u2705 Filter only NEW files not in sheet\nconst newFiles = driveInput.filter(f => !processedIds.includes(f.id));\n\n// \u2705 Debug info\nconsole.log(`Drive files found: ${driveInput.length}`);\nconsole.log(`Sheet rows found: ${sheetInput.length}`);\nconsole.log(`Already processed IDs: ${processedIds.length}`);\nconsole.log(`New files to download: ${newFiles.length}`);\n\n// \u2705 Output only the new ones\nreturn newFiles.map(f => ({\n  json: {\n    fileId: f.id,\n    fileName: f.name\n  }\n}));\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          256
+        ],
+        "id": "26cc68f6-fe36-4047-9c6a-0baf91efa866",
+        "name": "Code"
+      },
+      {
+        "parameters": {
+          "documentId": {
+            "__rl": true,
+            "value": "1xfO1TqiG_eAFLcKMmhIOu6fwILZjYJi3FLylYpODTU8",
+            "mode": "list",
+            "cachedResultName": "AppleDatabase",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xfO1TqiG_eAFLcKMmhIOu6fwILZjYJi3FLylYpODTU8/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Sheet1",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xfO1TqiG_eAFLcKMmhIOu6fwILZjYJi3FLylYpODTU8/edit#gid=0"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.6,
+        "position": [
+          320,
+          272
+        ],
+        "id": "4c317ac5-76b9-41e6-a68d-a51d3dbf85f1",
+        "name": "Get row(s) in sheet",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "LKFLSWDFvv6fE63D",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          512,
+          256
+        ],
+        "id": "84b405fc-3237-47c3-b6ec-fd80f4069ea6",
+        "name": "Merge"
+      },
+      {
+        "parameters": {
+          "content": "# Uploading to VD\n",
+          "height": 636,
+          "width": 956,
+          "color": 3
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1312,
+          0
+        ],
+        "id": "efef89d2-ae57-437f-8460-afe6580724ea",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "mode": "insert",
+          "qdrantCollection": {
+            "__rl": true,
+            "value": "n8n-rag",
+            "mode": "list",
+            "cachedResultName": "n8n-rag"
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+        "typeVersion": 1.3,
+        "position": [
+          1712,
+          48
+        ],
+        "id": "1c8ca28a-f1ce-4a27-9460-ca732813c763",
+        "name": "Qdrant Vector Store",
+        "credentials": {
+          "qdrantApi": {
+            "id": "bH2hk1EtEFghgicV",
+            "name": "Qdrant account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": "nomic-embed-text:latest"
+        },
+        "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+        "typeVersion": 1,
+        "position": [
+          1648,
+          288
+        ],
+        "id": "84a4ae1d-a3a1-45d2-80db-2aa726782ce6",
+        "name": "Embeddings Ollama",
+        "credentials": {
+          "ollamaApi": {
+            "id": "wDe9MCIO6q1M7Gau",
+            "name": "Ollama account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": "openrouter/auto",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          352,
+          976
+        ],
+        "id": "d9bace61-040a-48f1-96fb-09f2124ac090",
+        "name": "OpenRouter Chat Model",
+        "credentials": {
+          "openRouterApi": {
+            "id": "Wfnk5q7gswurynsI",
+            "name": "OpenRouter account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "qdrantCollection": {
+            "__rl": true,
+            "value": "n8n-rag",
+            "mode": "list",
+            "cachedResultName": "n8n-rag"
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+        "typeVersion": 1.3,
+        "position": [
+          672,
+          1024
+        ],
+        "id": "3170f836-370b-46e6-940c-3e7b8d76c739",
+        "name": "Qdrant Vector Store1",
+        "credentials": {
+          "qdrantApi": {
+            "id": "bH2hk1EtEFghgicV",
+            "name": "Qdrant account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": "openrouter/auto",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          976,
+          1056
+        ],
+        "id": "1f20e4bd-97ad-4ba4-ab58-6c3eecfac71c",
+        "name": "OpenRouter Chat Model1",
+        "credentials": {
+          "openRouterApi": {
+            "id": "Wfnk5q7gswurynsI",
+            "name": "OpenRouter account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": "nomic-embed-text:latest"
+        },
+        "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+        "typeVersion": 1,
+        "position": [
+          768,
+          1152
+        ],
+        "id": "0d97921a-21a2-43f7-a524-e1949b1d4f34",
+        "name": "Embeddings Ollama1",
+        "credentials": {
+          "ollamaApi": {
+            "id": "wDe9MCIO6q1M7Gau",
+            "name": "Ollama account"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+        "typeVersion": 1.4,
+        "position": [
+          528,
+          976
+        ],
+        "id": "83217e47-543c-406e-a53d-182a36480761",
+        "name": "Postgres Chat Memory",
+        "credentials": {
+          "postgres": {
+            "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+            "name": "PostgreSQL \u2014 n8n Stack"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.timeSaved",
+        "typeVersion": 1,
+        "position": [
+          1088,
+          784
+        ],
+        "id": "8f8953c9-f5b0-4ee5-bf75-360d20eb8d1d",
+        "name": "Time Saved"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.timeSaved",
+        "typeVersion": 1,
+        "position": [
+          2064,
+          48
+        ],
+        "id": "829a97ff-ef64-4c7b-9fab-9018b3d186f2",
+        "name": "Time Saved1"
+      }
+    ],
+    "connections": {
+      "Default Data Loader": {
+        "ai_document": [
+          [
+            {
+              "node": "Qdrant Vector Store",
+              "type": "ai_document",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Answer questions with a vector store": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Search files and folders": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download file1": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Over Items": {
+        "main": [
+          [
+            {
+              "node": "Qdrant Vector Store",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Recursive Character Text Splitter": {
+        "ai_textSplitter": [
+          [
+            {
+              "node": "Default Data Loader",
+              "type": "ai_textSplitter",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields": {
+        "main": [
+          [
+            {
+              "node": "Download file1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields1": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Search files and folders",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Get row(s) in sheet",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When clicking \u2018Execute workflow\u2019": {
+        "main": [
+          [
+            {
+              "node": "Search files and folders",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Get row(s) in sheet",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Append row in sheet": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code": {
+        "main": [
+          [
+            {
+              "node": "Append row in sheet",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get row(s) in sheet": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Merge": {
+        "main": [
+          [
+            {
+              "node": "Code",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Embeddings Ollama": {
+        "ai_embedding": [
+          [
+            {
+              "node": "Qdrant Vector Store",
+              "type": "ai_embedding",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Qdrant Vector Store1": {
+        "ai_vectorStore": [
+          [
+            {
+              "node": "Answer questions with a vector store",
+              "type": "ai_vectorStore",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Chat Model1": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Answer questions with a vector store",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Embeddings Ollama1": {
+        "ai_embedding": [
+          [
+            {
+              "node": "Qdrant Vector Store1",
+              "type": "ai_embedding",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Postgres Chat Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Time Saved",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Qdrant Vector Store": {
+        "main": [
+          [
+            {
+              "node": "Time Saved1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": true,
+      "timeSavedMode": "fixed",
+      "callerPolicy": "workflowsFromSameOwner"
+    },
+    "staticData": {
+      "node:Schedule Trigger": {
+        "recurrenceRules": []
+      }
+    },
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "028ff80e-affb-4053-84c3-6f27d57ed477",
+    "activeVersionId": "028ff80e-affb-4053-84c3-6f27d57ed477",
+    "versionCounter": 84,
+    "triggerCount": 2,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-05T20:54:10.312Z",
+        "createdAt": "2026-07-05T20:54:10.312Z",
+        "id": "YPOBiRLmef0fLiKM",
+        "name": "RAG"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-06T19:51:47.485Z",
+        "createdAt": "2026-07-06T19:51:47.485Z",
+        "role": "workflow:owner",
+        "workflowId": "bV6ttBfJUM63amfw",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version 028ff80e",
+      "description": ""
+    }
+  }
+]
