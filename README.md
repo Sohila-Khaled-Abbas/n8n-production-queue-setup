@@ -6,13 +6,13 @@
 
 **A production-grade, self-hosted n8n deployment with dynamic worker autoscaling, Puppeteer/Playwright browser automation, queue-mode execution, PostgreSQL persistence, and automated Redis queue monitoring.**
 
-[![n8n Version](https://img.shields.io/badge/n8n-2.0+-FF6D5A?logo=n8n&logoColor=white)](https://hub.docker.com/r/n8nio/n8n)
+[![n8n Version](https://img.shields.io/badge/n8n-2.28.6-FF6D5A?logo=n8n&logoColor=white)](https://hub.docker.com/r/n8nio/n8n)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://hub.docker.com/_/postgres)
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)](https://hub.docker.com/_/redis)
 [![Docker Compose](https://img.shields.io/badge/Docker_Compose-v2-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg)](LICENSE)
 
-[Quick Start](#-quick-start) · [Architecture](#-architecture) · [Configuration](#-configuration) · [Autoscaling](#-autoscaling) · [Puppeteer & Playwright](#-puppeteer--playwright) · [Troubleshooting](#-troubleshooting) · [Operations Guide](docs/production_guide.md) · [Scripts Reference](docs/scripts.md) · [Portfolio Showcase](PORTFOLIO.md)
+[Quick Start](#-quick-start) · [Architecture](#-architecture) · [Configuration](#-configuration) · [Autoscaling](#-autoscaling) · [Puppeteer & Playwright](#-puppeteer--playwright) · [Troubleshooting](#-troubleshooting) · [Operations Guide](docs/production_guide.md) · [Scripts Reference](docs/scripts.md) · [Portfolio Showcase](PORTFOLIO.md) · [Changelog](changelog.md) · [Contribution Guide](contribution.md)
 
 </div>
 
@@ -84,15 +84,14 @@
 
 | Container | Image | Role |
 |---|---|---|
-| `n8n` | Custom (`Dockerfile`) | Editor UI, REST API, task broker |
-| `n8n-webhook` | Custom (`Dockerfile`) | Dedicated webhook processor |
-| `n8n-worker` | Custom (`Dockerfile`) | Queue worker — **autoscaled** |
-| `n8n-worker-runner` | Custom (`Dockerfile.runner`) | Task runner sidecar — **autoscaled 1:1 with worker** |
+| `n8n` | Custom (`Dockerfile` based on `2.28.6`) | Editor UI, REST API, task broker |
+| `n8n-webhook` | Custom (`Dockerfile` based on `2.28.6`) | Dedicated webhook processor |
+| `n8n-worker` | Custom (`Dockerfile` based on `2.28.6`) | Queue worker — **autoscaled** |
+| `n8n-worker-runner` | Custom (`Dockerfile.runner` based on `2.28.6`) | Task runner sidecar — **autoscaled 1:1 with worker** |
 | `n8n-autoscaler` | Custom (`autoscaler/Dockerfile`) | Redis queue monitor + Docker Compose scaler |
 | `redis-monitor` | Custom (`monitor/monitor.Dockerfile`) | Queue depth logger |
-| `n8n-init` | `docker.n8n.io/n8nio/n8n:latest` | One-shot credential provisioner |
+| `n8n-init` | `docker.n8n.io/n8nio/n8n:2.28.6` | One-shot credential provisioner |
 | `n8n-postgres` | `postgres:16-alpine` | Persistent data store |
-| `n8n-redis` | `redis:7-alpine` | Queue broker |
 | `qdrant` | `qdrant/qdrant:latest` | Vector database |
 | `waha` | `devlikeapro/waha:latest` | WhatsApp HTTP API gateway |
 | `n8n-backup` | Custom (`backup/Dockerfile`) | Scheduled backups *(optional profile)* |
@@ -244,6 +243,13 @@ All variables live in `.env` (never committed to git).
 | `OLLAMA_FLASH_ATTENTION` | `1` | Enables Flash Attention for faster prompt processing (host level) |
 | `CUDA_VISIBLE_DEVICES` | `0` | Binds Ollama to the dedicated GPU (host level) |
 | `OLLAMA_IGPU_ENABLE` | `0` | Disables integrated GPU selection (host level) |
+
+#### Production-Grade RAG (Google Gemini Integration)
+
+For high-performance, production-level AI reasoning without local resource constraints:
+- **LLM Engine**: Integrate Google Gemini via the `@n8n/n8n-nodes-langchain.lmChatGoogleGemini` node pointing to `googlePalmApi` credentials.
+- **Stealth Optimization**: This bypasses reasoning timeout failures (e.g. `Failed to receive response`) that occur when running complex ReAct/Agent workflows on local constrained LLMs (like Qwen 1.5B).
+- **RAG Loading**: Always ensure that your `Load PDF` node is configured with `type: binary`, `loader: pdfLoader`, and `binaryDataKey: data`. This tells n8n to ingest actual binary PDF content instead of falling back to flat text metadata (like filenames and IDs).
 
 > [!IMPORTANT]
 > **VRAM / Memory Optimization for GPUs (e.g. GTX 1650 4GB):**

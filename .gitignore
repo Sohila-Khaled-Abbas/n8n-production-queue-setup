@@ -40,3 +40,8 @@ logs/
 *.tmp
 *.bak
 *.swp
+
+# ─── Temp Exports & Secrets ──────────────────────────────────
+workflows/all_creds.json
+workflows/all_workflows.json
+
