@@ -234,20 +234,21 @@
     },
     {
       "parameters": {
+        "model": "qwen2.5:3b-4k",
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1.1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
       "position": [
         -1264,
         -144
       ],
       "id": "cb338561-9c2a-421b-9e3f-417e9276b960",
-      "name": "Google Gemini Chat Model",
+      "name": "Ollama Chat Model",
       "credentials": {
-        "googlePalmApi": {
-          "id": "o1WM1pxDXe6yNltX",
-          "name": "Google Gemini(PaLM) Api account"
+        "ollamaApi": {
+          "id": "wDe9MCIO6q1M7Gau",
+          "name": "Ollama account"
         }
       }
     },
@@ -283,20 +284,21 @@
     },
     {
       "parameters": {
+        "model": "qwen2.5:3b-4k",
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1.1,
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
       "position": [
         -896,
         80
       ],
       "id": "11c99c60-b2ad-4ffe-9aa2-1c61d4981497",
-      "name": "Google Gemini Model for Tool",
+      "name": "Ollama Model",
       "credentials": {
-        "googlePalmApi": {
-          "id": "o1WM1pxDXe6yNltX",
-          "name": "Google Gemini(PaLM) Api account"
+        "ollamaApi": {
+          "id": "wDe9MCIO6q1M7Gau",
+          "name": "Ollama account"
         }
       }
     },
@@ -457,7 +459,7 @@
         ]
       ]
     },
-    "Google Gemini Chat Model": {
+    "Ollama Chat Model": {
       "ai_languageModel": [
         [
           {
@@ -490,7 +492,7 @@
         ]
       ]
     },
-    "Google Gemini Model for Tool": {
+    "Ollama Model": {
       "ai_languageModel": [
         [
           {
