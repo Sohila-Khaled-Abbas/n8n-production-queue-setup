@@ -121,3 +121,42 @@ If you are experiencing constant disconnects behind a proxy, you can also force 
 ```dotenv
 N8N_PUSH_BACKEND=sse
 ```
+
+---
+
+## 💻 Low-Resource PC & Host Optimization (Windows / WSL2 / Docker)
+
+When running the full production queue stack locally on a resource-constrained computer, performance issues are usually caused by **Docker/WSL2 RAM starvation** and **disk I/O bottlenecks** on Windows. Follow these steps to optimize your host PC:
+
+### 1. Cap WSL2 Resource Usage (.wslconfig)
+Docker Desktop on Windows runs inside a WSL2 virtual machine, which by default will consume up to 50% of your total PC RAM and lock CPU cores.
+1. Open Windows Explorer and type `%USERPROFILE%` in the address bar (this points to your Windows home folder, e.g. `C:\Users\YourName\`).
+2. Create a file named `.wslconfig` (make sure it doesn't end in `.txt`).
+3. Copy the template from [wslconfig.txt](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/docs/wslconfig.txt) into it.
+4. Open Windows PowerShell and shut down WSL2 to apply changes:
+   ```powershell
+   wsl --shutdown
+   ```
+5. Restart Docker Desktop.
+
+### 2. Node.js Heap Optimization (Aggressive GC)
+To prevent Node.js containers from exceeding their Docker RAM limits and crashing (or thrashing the host swap file), we have pre-configured `--max-old-space-size` memory heap limits in `docker-compose.yml`:
+- **Main Server / Workers**: Capped at 768MB heap (inside 1024MB container limits).
+- **Webhooks / Task Runners**: Capped at 384MB heap (inside 512MB/768MB container limits).
+This forces Node.js to garbage-collect aggressively, keeping memory footprints low.
+
+### 3. Disable Manual Execution DB Writes
+Every manual workflow test run from the editor writes logs and binary history to PostgreSQL. Over time, this leads to heavy disk write operations that slow down your computer.
+In `.env`, we set:
+```dotenv
+EXECUTIONS_DATA_SAVE_MANUAL_EXECUTIONS=false
+```
+This stops manual editor executions from being stored permanently in the database, greatly improving disk I/O and saving disk space.
+
+### 4. Ollama LLM Optimizations (Host-level)
+If you are running Ollama locally on Windows for AI nodes, Ollama swaps models in and out of memory, causing long delays.
+Set these Environment Variables in your Windows System Settings:
+- `OLLAMA_MAX_LOADED_MODELS=2`: Allows both the LLM and the embedding model to reside in VRAM/RAM simultaneously.
+- `OLLAMA_KEEP_ALIVE=1h`: Keeps models loaded in VRAM for 1 hour of inactivity, eliminating load times.
+- `OLLAMA_NUM_PARALLEL=2`: Processes parallel requests efficiently.
+
