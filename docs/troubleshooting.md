@@ -753,6 +753,37 @@ $$;
 
 ---
 
+## Host PC & Windows Performance Issues
+
+### 1. Windows feels extremely laggy or freezes after starting n8n
+- **Symptom:** Mouse stutters, applications take seconds to open, or Windows reports high physical memory usage (95%+).
+- **Cause:** Docker Desktop and WSL2 will consume all available host memory for page caching if left unconstrained.
+- **Fix:** Install the custom `.wslconfig` in your Windows profile folder to cap WSL2 RAM and CPU usage. Follow the instructions in the [Low-Resource PC & Host Optimization](production_guide.md#1-cap-wsl2-resource-usage-wslconfig) section of the Operations Guide.
+
+### 2. An n8n container exits abruptly or shows exit code `137`
+- **Symptom:** `docker compose ps` shows a service in `Exit 137` state, or docker logs show a container stopping suddenly.
+- **Cause:** Exit code `137` indicates the Docker container was terminated by the system Out-Of-Memory (OOM) killer because it exceeded its memory limit.
+- **Fix:** 
+  1. Increase the container's memory limit in `docker-compose.yml` under `deploy.resources.limits.memory` (e.g. from `1024M` to `1536M`).
+  2. Increase the maximum memory allocated to WSL2 in `C:\Users\HELAL\.wslconfig` (e.g. from `6GB` to `8GB`), then restart WSL with `wsl --shutdown` in PowerShell.
+
+### 3. High disk active time (100% Disk Usage in Task Manager)
+- **Symptom:** Disk active time is constantly at 100% on Windows, making the PC slow, especially if n8n is running on a slow HDD.
+- **Cause:** PostgreSQL is writing execution logs, and WSL2's virtual disk file (`ext4.vhdx`) dynamically expands, causing heavy Windows NTFS disk fragmentation.
+- **Fix:**
+  1. Ensure `EXECUTIONS_DATA_SAVE_MANUAL_EXECUTIONS=false` is set in `.env` to prevent writing manual workflow tests to the disk database.
+  2. Reclaim WSL2 disk space by compacting the virtual disk:
+     - Stop Docker Desktop.
+     - Open PowerShell as Administrator and run:
+       ```powershell
+       wsl --shutdown
+       optimize-vhd -Path C:\Users\HELAL\AppData\Local\Docker\wsl\data\ext4.vhdx -Mode Full
+       ```
+       *(Note: Replace the path with your actual Docker WSL data path if different).*
+  3. If possible, move the project folder and the Docker WSL disk image to a Solid State Drive (SSD) instead of a mechanical Hard Disk Drive (HDD).
+
+---
+
 ## Redis Queue Reference
 
 ```bash

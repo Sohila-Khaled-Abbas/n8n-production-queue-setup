@@ -1,0 +1,32 @@
+# ==============================================================================
+# WSL2 Configuration File (.wslconfig)
+# ==============================================================================
+# Copy the contents of this file to: C:\Users\HELAL\.wslconfig
+# (Create the file if it does not exist)
+#
+# After copying, restart WSL by running this command in Windows Command Prompt/PowerShell:
+# wsl --shutdown
+# ==============================================================================
+
+[wsl2]
+# Capping memory prevents WSL2 (and Docker) from consuming all Windows host RAM.
+# Recommendation: Set to 50% of your total physical PC memory (e.g., 4GB, 6GB, 8GB, etc.)
+# If you have 16GB RAM, set this to 8GB. If you have 8GB RAM, set this to 4GB.
+memory=6GB
+
+# Restrict WSL2 to use only 4 CPU cores, preventing 100% CPU lockups on your PC.
+processors=4
+
+# Automatically reclaim unused cached memory in WSL2 and return it to Windows.
+# This prevents RAM usage from growing indefinitely. (Requires WSL version 2.0.4+)
+autoMemoryReclaim=gradual
+
+# Enable page reporting to allow guest OS to report free pages to the host.
+pageReporting=true
+
+# Set the size of the swap space (used if WSL runs out of RAM, kept on disk).
+# Swap is slow but prevents OOM crashes.
+swap=4GB
+
+# Enable nested virtualization (optional, useful for some workloads)
+nestedVirtualization=true

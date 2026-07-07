@@ -45,3 +45,10 @@ logs/
 workflows/all_creds.json
 workflows/all_workflows.json
 
+# ─── Database Backups & Large SQL Dumps ──────────────────────
+# Backups must not be committed to Git. Store them on secure cloud/external storage.
+backups/
+*.sql
+*.dump
+
+

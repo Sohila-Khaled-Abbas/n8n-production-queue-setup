@@ -1,0 +1,62 @@
+name: CI Code Quality
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  python-lint:
+    name: Python Linting & Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Run Ruff Lint Check
+        run: ruff check .
+
+      - name: Run Ruff Format Check
+        run: ruff format --check .
+
+  docker-lint:
+    name: Dockerfile Linting (Hadolint)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Lint Main Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+          failure-threshold: error
+
+      - name: Lint Runner Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile.runner
+          failure-threshold: error
+
+      - name: Lint Autoscaler Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: autoscaler/Dockerfile
+          failure-threshold: error
+
+      - name: Lint Monitor Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: monitor/monitor.Dockerfile
+          failure-threshold: error

@@ -36,7 +36,7 @@ x-n8n: &service-n8n
     N8N_EDITOR_BASE_URL: ${N8N_EDITOR_BASE_URL}
     WEBHOOK_URL: ${WEBHOOK_URL}
     N8N_PROXY_HOPS: ${N8N_PROXY_HOPS:-1}
-    NODE_OPTIONS: --require /polyfills/dommatrix.js --dns-result-order=ipv4first
+    NODE_OPTIONS: --require /polyfills/dommatrix.js --dns-result-order=ipv4first --max-old-space-size=768
     # Security
     N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
     N8N_RUNNERS_AUTH_TOKEN: ${N8N_RUNNERS_AUTH_TOKEN}
@@ -75,6 +75,7 @@ x-n8n: &service-n8n
     EXECUTIONS_DATA_SAVE_ON_SUCCESS: ${EXECUTIONS_DATA_SAVE_ON_SUCCESS:-all}
     EXECUTIONS_DATA_SAVE_ON_ERROR: ${EXECUTIONS_DATA_SAVE_ON_ERROR:-all}
     EXECUTIONS_DATA_SAVE_ON_PROGRESS: ${EXECUTIONS_DATA_SAVE_ON_PROGRESS:-false}
+    EXECUTIONS_DATA_SAVE_MANUAL_EXECUTIONS: ${EXECUTIONS_DATA_SAVE_MANUAL_EXECUTIONS:-false}
     # Binary data
     N8N_DEFAULT_BINARY_DATA_MODE: ${N8N_DEFAULT_BINARY_DATA_MODE:-database}
     # Diagnostics
@@ -100,6 +101,10 @@ x-task-runner: &service-task-runner
   dns:
     - 8.8.8.8
     - 1.1.1.1
+  deploy:
+    resources:
+      limits:
+        memory: 768M
   environment:
     - N8N_RUNNERS_AUTH_TOKEN=${N8N_RUNNERS_AUTH_TOKEN}
     - N8N_RUNNERS_GRANT_TOKEN_TTL=${N8N_RUNNERS_GRANT_TOKEN_TTL:-600}
@@ -109,6 +114,7 @@ x-task-runner: &service-task-runner
     - PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
     - N8N_RUNNERS_ALLOW_PROTOTYPE_MUTATION=true
     - N8N_RUNNERS_INSECURE_MODE=true
+    - NODE_OPTIONS=--max-old-space-size=384
 
 services:
 
@@ -254,6 +260,9 @@ services:
     container_name: n8n-webhook
     stop_grace_period: 30s
     command: webhook
+    environment:
+      <<: *n8n-env
+      NODE_OPTIONS: --require /polyfills/dommatrix.js --dns-result-order=ipv4first --max-old-space-size=384
     deploy:
       resources:
         limits:
@@ -318,6 +327,7 @@ services:
       - PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
       - N8N_RUNNERS_ALLOW_PROTOTYPE_MUTATION=true
       - N8N_RUNNERS_INSECURE_MODE=true
+      - NODE_OPTIONS=--max-old-space-size=384
     depends_on:
       n8n-worker:
         condition: service_started
@@ -336,6 +346,10 @@ services:
       context: .
       dockerfile: autoscaler/Dockerfile
     container_name: n8n-autoscaler
+    deploy:
+      resources:
+        limits:
+          memory: 128M
     restart: unless-stopped
     logging: *default-logging
     environment:
@@ -374,6 +388,10 @@ services:
       context: .
       dockerfile: monitor/monitor.Dockerfile
     container_name: n8n-redis-monitor
+    deploy:
+      resources:
+        limits:
+          memory: 64M
     restart: unless-stopped
     logging: *default-logging
     networks:
@@ -467,6 +485,10 @@ services:
     container_name: qdrant
     restart: unless-stopped
     logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          memory: 384M
     networks:
       - n8n-net
     ports:
@@ -483,6 +505,10 @@ services:
     container_name: waha
     restart: unless-stopped
     logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          memory: 768M
     networks:
       - n8n-net
     ports:

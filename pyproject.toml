@@ -1,0 +1,34 @@
+[tool.ruff]
+# Target Python version (Python 3.12 is used in Dockerfiles)
+target-version = "py312"
+
+# Standard line length limit matching Black/Ruff defaults
+line-length = 88
+
+# Source folders containing Python files
+src = ["autoscaler", "monitor", "scripts"]
+
+[tool.ruff.lint]
+# Enable Pyflakes (F), pycodestyle (E, W), isort (I), Upgrade (UP), Ruff-specific (RUF) rules
+select = [
+    "F",   # Pyflakes
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "I",   # isort
+    "UP",  # pyupgrade
+    "RUF"  # Ruff-specific rules
+]
+ignore = []
+
+# Exclude build, cache, and data directories
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    "n8n-data",
+    "backups"
+]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true

@@ -12,7 +12,7 @@
 [![Docker Compose](https://img.shields.io/badge/Docker_Compose-v2-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg)](LICENSE)
 
-[Quick Start](#-quick-start) · [Architecture](#-architecture) · [Configuration](#-configuration) · [Autoscaling](#-autoscaling) · [Puppeteer & Playwright](#-puppeteer--playwright) · [Troubleshooting](#-troubleshooting) · [Operations Guide](docs/production_guide.md) · [Scripts Reference](docs/scripts.md) · [Portfolio Showcase](PORTFOLIO.md) · [Changelog](CHANGELOG.md) · [Contributing Guide](CONTRIBUTING.md)
+[Quick Start](#-quick-start) · [Architecture](#-architecture) · [Configuration](#-configuration) · [Autoscaling](#-autoscaling) · [Puppeteer & Playwright](#-puppeteer--playwright) · [Troubleshooting](#-troubleshooting) · [Operations Guide](docs/production_guide.md) · [SE Standards](docs/software_engineering_standards.md) · [Scripts Reference](docs/scripts.md) · [Portfolio Showcase](PORTFOLIO.md) · [Changelog](CHANGELOG.md) · [Contributing Guide](CONTRIBUTING.md)
 
 </div>
 
@@ -254,6 +254,36 @@ For high-performance, production-level AI reasoning without local resource const
 > [!IMPORTANT]
 > **VRAM / Memory Optimization for GPUs (e.g. GTX 1650 4GB):**
 > When running local LLMs, always restrict the model's context window size to **`2048`** in n8n (inside the Ollama Chat Model node under parameters, click **Add Option** ➡️ **Context Window** and enter `2048`). By default, models like Qwen 2.5 request a 32k context size which allocates a massive ~2 GB KV Cache buffer in GPU VRAM. This will exceed a 4GB graphics card's capacity and cause Ollama to crash with an Out-of-Memory (OOM) error. Constraining it to `2048` reduces the total footprint to 1.2 GB, ensuring 100% GPU-accelerated speeds.
+
+---
+
+## 💻 Low-Resource PC & Stack Optimization
+
+If you are running this production-grade stack on a local, resource-constrained Windows computer, follow these optimizations to keep both the n8n services and your PC running at maximum performance:
+
+### 1. Cap WSL2/Docker RAM & CPU Allocation
+Docker Desktop runs inside a WSL2 virtual machine, which can consume 100% of your PC's CPU and RAM if unconstrained.
+- Create a `.wslconfig` file in your Windows user profile folder (`C:\Users\HELAL\.wslconfig`).
+- Copy the optimized configurations from [wslconfig.txt](docs/wslconfig.txt) to cap memory and enable automatic RAM reclamation.
+- Restart WSL via PowerShell: `wsl --shutdown` and restart Docker Desktop.
+
+### 2. Node.js Memory Heap Tuning (Aggressive GC)
+To prevent Node.js containers from exceeding memory limits and swapping to disk, the stack has pre-configured memory heap limits via `NODE_OPTIONS`:
+- `n8n` & `n8n-worker` ➡️ capped at `768MB` heap.
+- `n8n-webhook`, `n8n-runner` & `n8n-worker-runner` ➡️ capped at `384MB` heap.
+This forces Node.js to garbage collect RAM aggressively, keeping the footprint tiny.
+
+### 3. Disable Manual Test Execution Saves
+In `.env`, we set:
+```dotenv
+EXECUTIONS_DATA_SAVE_MANUAL_EXECUTIONS=false
+```
+This stops manual executions triggered inside the editor from writing logs to the database, saving massive disk I/O operations and disk space.
+
+### 4. Ollama LLM Settings
+If running local LLMs, always cap the context size to `2048` in the Ollama Chat Model node options inside the n8n editor, and configure Ollama to retain models in memory via environment variables (`OLLAMA_MAX_LOADED_MODELS=2`, `OLLAMA_KEEP_ALIVE=1h`).
+
+For detailed operational guidance, see the [Operations Guide](docs/production_guide.md#wsl2-configuration-file-wslconfig) and [Troubleshooting Guide](docs/troubleshooting.md#host-pc--windows-performance-issues).
 
 ---
 
@@ -622,6 +652,7 @@ Run these queries inside the PostgreSQL database to troubleshoot workflow perfor
 ├── .gitignore                      # Excludes secrets and runtime data
 ├── docs/                           # Documentation folder
 │   ├── production_guide.md         # Production config & tuning guide
+│   ├── software_engineering_standards.md # Repository software engineering guidelines
 │   ├── scripts.md                  # Scripts directory index and run instructions
 │   ├── troubleshooting.md          # Exhaustive troubleshooting checklist
 │   ├── architecture.md             # Stack components architecture in-depth
@@ -662,12 +693,12 @@ Run these queries inside the PostgreSQL database to troubleshoot workflow perfor
 
 ## 🤝 Contributing
 
-Pull requests are welcome. For significant changes, please open an issue first.
+Pull requests are welcome. For significant changes, please open an issue first. 
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feat/my-improvement`
-3. Commit your changes: `git commit -m 'feat: add my improvement'`
-4. Push and open a PR
+Please review our comprehensive [Contributing Guidelines](CONTRIBUTING.md) before submitting code. All contributions must adhere to the [Software Engineering Standards](docs/software_engineering_standards.md), including:
+- Conventional Commit message formats.
+- Python quality checks via Ruff.
+- Verification workflows inside GitHub Actions.
 
 ---
 
