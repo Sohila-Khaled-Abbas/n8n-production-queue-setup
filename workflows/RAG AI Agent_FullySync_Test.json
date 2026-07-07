@@ -132,6 +132,7 @@
         ],
         "id": "01514e90-0bac-4b58-8487-f251fd17b388",
         "name": "Search files and folders",
+        "alwaysOutputData": true,
         "credentials": {
           "googleDriveOAuth2Api": {
             "id": "Q8F6AF4nNReCfLij",
@@ -376,6 +377,7 @@
         ],
         "id": "4c317ac5-76b9-41e6-a68d-a51d3dbf85f1",
         "name": "Get row(s) in sheet",
+        "alwaysOutputData": true,
         "credentials": {
           "googleSheetsOAuth2Api": {
             "id": "LKFLSWDFvv6fE63D",
@@ -639,14 +641,14 @@
         "main": [
           [
             {
-              "node": "Qdrant Vector Store",
+              "node": "Time Saved1",
               "type": "main",
               "index": 0
             }
           ],
           [
             {
-              "node": "Loop Over Items",
+              "node": "Qdrant Vector Store",
               "type": "main",
               "index": 0
             }
@@ -843,7 +845,7 @@
         "main": [
           [
             {
-              "node": "Time Saved1",
+              "node": "Loop Over Items",
               "type": "main",
               "index": 0
             }
