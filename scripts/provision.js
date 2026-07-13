@@ -48,6 +48,7 @@ const {
   MSSQL_USER,
   MSSQL_PASSWORD,
   MSSQL_DOMAIN,
+  HUGGINGFACE_API_TOKEN  = '',
 } = process.env;
 
 const CREDENTIALS = [
@@ -112,6 +113,16 @@ const CREDENTIALS = [
       domain:                MSSQL_DOMAIN || '',
       tls:                   false,
       allowUnauthorizedCerts: true,
+    },
+  },
+
+  // ── HuggingFace Inference API ────────────────────────────────────────────
+  {
+    name: 'HuggingFace API — n8n Stack',
+    type: 'httpHeaderAuth',
+    data: {
+      name:  'Authorization',
+      value: `Bearer ${HUGGINGFACE_API_TOKEN}`,
     },
   },
 ];
