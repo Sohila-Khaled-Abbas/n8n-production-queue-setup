@@ -326,7 +326,29 @@ docker compose logs redis
 |---|---|
 | `postgres` unhealthy | Check `DB_POSTGRESDB_PASSWORD` matches volume initialization. If wrong, destroy volume: `docker compose down -v` |
 | `redis` unhealthy | Check disk space: `df -h` |
+| `redis` crash-looping / AOF error | Append-only file manifest corruption. Fix with `redis-check-aof --fix /data/appendonlydir/appendonly.aof.manifest` |
 | Port conflict | Another service using port 5432 or 6379 on the host |
+
+---
+
+### Redis AOF Corruption / "Bad file format reading the append only file"
+
+**Symptoms:**
+- The `redis` container keeps restarting (`Restarting (1) 4 seconds ago` in `docker compose ps`).
+- Log output shows:
+  ```
+  n8n-redis  | 1:M 06 Jul 2026 15:03:22.552 # Bad file format reading the append only file appendonly.aof.1.incr.aof: make a backup of your AOF file, then use ./redis-check-aof --fix <filename.manifest>
+  ```
+
+**Cause:**
+Redis experienced an abrupt shutdown or crash of the host PC while writing to disk, leaving the Append Only File (AOF) in an invalid/corrupt format.
+
+**Fix:**
+Run the `redis-check-aof` utility inside a temporary Redis container to repair the AOF manifest:
+```bash
+docker compose run --rm redis redis-check-aof --fix /data/appendonlydir/appendonly.aof.manifest
+```
+Confirm the truncation when prompted (`y`). The utility will remove the corrupt tail block and let Redis start normally.
 
 ---
 

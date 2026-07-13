@@ -554,6 +554,22 @@ docker compose logs redis
 
 ---
 
+### Redis container crash-loop (AOF Corruption)
+
+**Symptom:** The `redis` container keeps restarting (`Restarting (1) 4 seconds ago`), and logs show:
+```
+Bad file format reading the append only file appendonly.aof.1.incr.aof
+```
+
+**Solution:**
+Use the Redis check tool inside a temporary container to truncate the corrupt tail block:
+```bash
+docker compose run --rm redis redis-check-aof --fix /data/appendonlydir/appendonly.aof.manifest
+```
+Confirm with `y` when prompted to apply the fix. Redis will then start normally.
+
+---
+
 ### MCP registry timeout on startup
 
 ```

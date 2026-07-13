@@ -26,6 +26,9 @@ def compile_docs_data():
                         with open(file_path, 'r', encoding='utf-16') as f:
                             data = json.load(f)
                     
+                    if isinstance(data, list):
+                        data = data[0] if len(data) > 0 else {}
+                        
                     nodes = data.get('nodes', [])
                     node_count = len(nodes)
                     
