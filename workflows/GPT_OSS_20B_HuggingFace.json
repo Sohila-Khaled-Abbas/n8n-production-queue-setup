@@ -1,217 +1,216 @@
-[
-  {
-    "name": "GPT-OSS-20B HuggingFace",
-    "nodes": [
-      {
-        "parameters": {
-          "options": {}
-        },
-        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
-        "typeVersion": 1.4,
-        "position": [0, 0],
-        "id": "a1b2c3d4-chat-trig-0001-abcdef000001",
-        "name": "When chat message received",
-        "webhookId": "gpt-oss-20b-chat-webhook-001"
+{
+  "id": "gptoss20bhf00001",
+  "name": "GPT-OSS-20B HuggingFace",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
       },
-      {
-        "parameters": {
-          "method": "POST",
-          "url": "https://api-inference.huggingface.co/models/openai/gpt-oss-20b",
-          "authentication": "predefinedCredentialType",
-          "nodeCredentialType": "httpHeaderAuth",
-          "sendBody": true,
-          "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({ inputs: $json.chatInput, parameters: { max_new_tokens: 512, temperature: 0.7, return_full_text: false } }) }}",
-          "options": {
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [0, 0],
+      "id": "a1b2c3d4-chat-trig-0001-abcdef000001",
+      "name": "When chat message received",
+      "webhookId": "gpt-oss-20b-chat-webhook-001"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api-inference.huggingface.co/models/openai/gpt-oss-20b",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ inputs: $json.chatInput, parameters: { max_new_tokens: 512, temperature: 0.7, return_full_text: false } }) }}",
+        "options": {
+          "response": {
             "response": {
-              "response": {
-                "neverError": true
-              }
-            },
-            "timeout": 120000
-          }
-        },
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.3,
-        "position": [280, 0],
-        "id": "a1b2c3d4-http-req-0002-abcdef000002",
-        "name": "Call HuggingFace Inference API",
-        "credentials": {
-          "httpHeaderAuth": {
-            "id": "",
-            "name": "HuggingFace API — n8n Stack"
-          }
+              "neverError": true
+            }
+          },
+          "timeout": 120000
         }
       },
-      {
-        "parameters": {
-          "conditions": {
-            "options": {
-              "version": 2,
-              "caseSensitive": true
-            },
-            "combinator": "or",
-            "conditions": [
-              {
-                "id": "condition-503-check",
-                "operator": {
-                  "type": "number",
-                  "operation": "equals"
-                },
-                "leftValue": "={{ $json.statusCode }}",
-                "rightValue": 503
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [280, 0],
+      "id": "a1b2c3d4-http-req-0002-abcdef000002",
+      "name": "Call HuggingFace Inference API",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "HuggingFace API — n8n Stack"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "caseSensitive": true
+          },
+          "combinator": "or",
+          "conditions": [
+            {
+              "id": "condition-503-check",
+              "operator": {
+                "type": "number",
+                "operation": "equals"
               },
-              {
-                "id": "condition-error-check",
-                "operator": {
-                  "type": "string",
-                  "operation": "contains"
-                },
-                "leftValue": "={{ JSON.stringify($json) }}",
-                "rightValue": "is currently loading"
-              }
-            ]
-          }
-        },
-        "type": "n8n-nodes-base.if",
-        "typeVersion": 2.2,
-        "position": [540, 0],
-        "id": "a1b2c3d4-if-node-0003-abcdef000003",
-        "name": "Model Loading?"
-      },
-      {
-        "parameters": {
-          "amount": 30,
-          "unit": "seconds"
-        },
-        "type": "n8n-nodes-base.wait",
-        "typeVersion": 1.1,
-        "position": [800, -100],
-        "id": "a1b2c3d4-wait-nod-0004-abcdef000004",
-        "name": "Wait 30s for Model"
-      },
-      {
-        "parameters": {
-          "method": "POST",
-          "url": "https://api-inference.huggingface.co/models/openai/gpt-oss-20b",
-          "authentication": "predefinedCredentialType",
-          "nodeCredentialType": "httpHeaderAuth",
-          "sendBody": true,
-          "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({ inputs: $('When chat message received').first().json.chatInput, parameters: { max_new_tokens: 512, temperature: 0.7, return_full_text: false } }) }}",
-          "options": {
-            "response": {
-              "response": {
-                "neverError": true
-              }
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 503
             },
-            "timeout": 120000
-          }
-        },
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.3,
-        "position": [1060, -100],
-        "id": "a1b2c3d4-http-rt-0005-abcdef000005",
-        "name": "Retry HuggingFace API",
-        "credentials": {
-          "httpHeaderAuth": {
-            "id": "",
-            "name": "HuggingFace API — n8n Stack"
-          }
+            {
+              "id": "condition-error-check",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "leftValue": "={{ JSON.stringify($json) }}",
+              "rightValue": "is currently loading"
+            }
+          ]
         }
       },
-      {
-        "parameters": {
-          "jsCode": "// Parse the HuggingFace Inference API response\nconst data = $input.all();\nconst results = [];\n\nfor (const item of data) {\n  const json = item.json;\n\n  // Handle error responses\n  if (json.error) {\n    results.push({\n      json: {\n        output: `⚠️ HuggingFace API Error: ${json.error}`,\n        model: 'openai/gpt-oss-20b',\n        status: 'error'\n      }\n    });\n    continue;\n  }\n\n  // The Inference API returns an array with generated_text\n  let generatedText = '';\n  if (Array.isArray(json)) {\n    generatedText = json[0]?.generated_text || '';\n  } else if (json.generated_text) {\n    generatedText = json.generated_text;\n  } else if (Array.isArray(json.body)) {\n    generatedText = json.body[0]?.generated_text || '';\n  } else if (typeof json === 'string') {\n    generatedText = json;\n  } else {\n    // Fallback: stringify the whole response\n    generatedText = JSON.stringify(json, null, 2);\n  }\n\n  results.push({\n    json: {\n      output: generatedText.trim(),\n      model: 'openai/gpt-oss-20b',\n      status: 'success'\n    }\n  });\n}\n\nreturn results;"
-        },
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [800, 100],
-        "id": "a1b2c3d4-code-nd-0006-abcdef000006",
-        "name": "Parse Response"
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [540, 0],
+      "id": "a1b2c3d4-if-node-0003-abcdef000003",
+      "name": "Model Loading?"
+    },
+    {
+      "parameters": {
+        "amount": 30,
+        "unit": "seconds"
       },
-      {
-        "parameters": {
-          "jsCode": "// Parse the retry response (same logic)\nconst data = $input.all();\nconst results = [];\n\nfor (const item of data) {\n  const json = item.json;\n\n  if (json.error) {\n    results.push({\n      json: {\n        output: `⚠️ Model still unavailable after retry: ${json.error}\\n\\nThe openai/gpt-oss-20b model may be too large for the free HuggingFace Inference API. Consider:\\n1. Using a HuggingFace Pro subscription\\n2. Running the model locally with vLLM\\n3. Using an Inference Endpoint`,\n        model: 'openai/gpt-oss-20b',\n        status: 'error'\n      }\n    });\n    continue;\n  }\n\n  let generatedText = '';\n  if (Array.isArray(json)) {\n    generatedText = json[0]?.generated_text || '';\n  } else if (json.generated_text) {\n    generatedText = json.generated_text;\n  } else if (Array.isArray(json.body)) {\n    generatedText = json.body[0]?.generated_text || '';\n  } else if (typeof json === 'string') {\n    generatedText = json;\n  } else {\n    generatedText = JSON.stringify(json, null, 2);\n  }\n\n  results.push({\n    json: {\n      output: generatedText.trim(),\n      model: 'openai/gpt-oss-20b',\n      status: 'success_after_retry'\n    }\n  });\n}\n\nreturn results;"
-        },
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [1320, -100],
-        "id": "a1b2c3d4-code-rt-0007-abcdef000007",
-        "name": "Parse Retry Response"
-      }
-    ],
-    "connections": {
-      "When chat message received": {
-        "main": [
-          [
-            {
-              "node": "Call HuggingFace Inference API",
-              "type": "main",
-              "index": 0
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [800, -100],
+      "id": "a1b2c3d4-wait-nod-0004-abcdef000004",
+      "name": "Wait 30s for Model"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api-inference.huggingface.co/models/openai/gpt-oss-20b",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ inputs: $('When chat message received').first().json.chatInput, parameters: { max_new_tokens: 512, temperature: 0.7, return_full_text: false } }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
             }
-          ]
-        ]
+          },
+          "timeout": 120000
+        }
       },
-      "Call HuggingFace Inference API": {
-        "main": [
-          [
-            {
-              "node": "Model Loading?",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Model Loading?": {
-        "main": [
-          [
-            {
-              "node": "Wait 30s for Model",
-              "type": "main",
-              "index": 0
-            }
-          ],
-          [
-            {
-              "node": "Parse Response",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Wait 30s for Model": {
-        "main": [
-          [
-            {
-              "node": "Retry HuggingFace API",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Retry HuggingFace API": {
-        "main": [
-          [
-            {
-              "node": "Parse Retry Response",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [1060, -100],
+      "id": "a1b2c3d4-http-rt-0005-abcdef000005",
+      "name": "Retry HuggingFace API",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "HuggingFace API — n8n Stack"
+        }
       }
     },
-    "settings": {
-      "executionOrder": "v1"
+    {
+      "parameters": {
+        "jsCode": "// Parse the HuggingFace Inference API response\nconst data = $input.all();\nconst results = [];\n\nfor (const item of data) {\n  const json = item.json;\n\n  // Handle error responses\n  if (json.error) {\n    results.push({\n      json: {\n        output: `⚠️ HuggingFace API Error: ${json.error}`,\n        model: 'openai/gpt-oss-20b',\n        status: 'error'\n      }\n    });\n    continue;\n  }\n\n  // The Inference API returns an array with generated_text\n  let generatedText = '';\n  if (Array.isArray(json)) {\n    generatedText = json[0]?.generated_text || '';\n  } else if (json.generated_text) {\n    generatedText = json.generated_text;\n  } else if (Array.isArray(json.body)) {\n    generatedText = json.body[0]?.generated_text || '';\n  } else if (typeof json === 'string') {\n    generatedText = json;\n  } else {\n    // Fallback: stringify the whole response\n    generatedText = JSON.stringify(json, null, 2);\n  }\n\n  results.push({\n    json: {\n      output: generatedText.trim(),\n      model: 'openai/gpt-oss-20b',\n      status: 'success'\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [800, 100],
+      "id": "a1b2c3d4-code-nd-0006-abcdef000006",
+      "name": "Parse Response"
     },
-    "meta": {
-      "templateCredsSetupCompleted": true
+    {
+      "parameters": {
+        "jsCode": "// Parse the retry response (same logic)\nconst data = $input.all();\nconst results = [];\n\nfor (const item of data) {\n  const json = item.json;\n\n  if (json.error) {\n    results.push({\n      json: {\n        output: `⚠️ Model still unavailable after retry: ${json.error}\\n\\nThe openai/gpt-oss-20b model may be too large for the free HuggingFace Inference API. Consider:\\n1. Using a HuggingFace Pro subscription\\n2. Running the model locally with vLLM\\n3. Using an Inference Endpoint`,\n        model: 'openai/gpt-oss-20b',\n        status: 'error'\n      }\n    });\n    continue;\n  }\n\n  let generatedText = '';\n  if (Array.isArray(json)) {\n    generatedText = json[0]?.generated_text || '';\n  } else if (json.generated_text) {\n    generatedText = json.generated_text;\n  } else if (Array.isArray(json.body)) {\n    generatedText = json.body[0]?.generated_text || '';\n  } else if (typeof json === 'string') {\n    generatedText = json;\n  } else {\n    generatedText = JSON.stringify(json, null, 2);\n  }\n\n  results.push({\n    json: {\n      output: generatedText.trim(),\n      model: 'openai/gpt-oss-20b',\n      status: 'success_after_retry'\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1320, -100],
+      "id": "a1b2c3d4-code-rt-0007-abcdef000007",
+      "name": "Parse Retry Response"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Call HuggingFace Inference API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
-    "pinData": {},
-    "tags": []
-  }
-]
+    "Call HuggingFace Inference API": {
+      "main": [
+        [
+          {
+            "node": "Model Loading?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model Loading?": {
+      "main": [
+        [
+          {
+            "node": "Wait 30s for Model",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Parse Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 30s for Model": {
+      "main": [
+        [
+          {
+            "node": "Retry HuggingFace API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retry HuggingFace API": {
+      "main": [
+        [
+          {
+            "node": "Parse Retry Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "tags": []
+}
