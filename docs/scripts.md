@@ -37,8 +37,9 @@ This document lists, describes, and provides usage instructions for the automati
 
 ### 2. `provision.js`
 - **Purpose**: Runs automatically inside the `n8n-init` container during stack startup.
-  - Idempotently checks if essential system credentials (PostgreSQL, Redis, WAHA API, local Ollama instance, MSSQL) exist.
+  - Idempotently checks if essential system credentials (PostgreSQL, Redis, WAHA API, local Ollama instance, MSSQL, HuggingFace API) exist.
   - If missing, seeds them with values configured in `.env`.
+  - The HuggingFace credential is provisioned as an `httpHeaderAuth` type with `Authorization: Bearer <HUGGINGFACE_API_TOKEN>`, ready for use with the HuggingFace Inference API.
   - Installs the community WAHA node (`@devlikeapro/n8n-nodes-waha`) if it is not already installed.
 - **Execution**: Automatically triggered during `docker compose up`. If needed, you can force trigger it:
   ```bash

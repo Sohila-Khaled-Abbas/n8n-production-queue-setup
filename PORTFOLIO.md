@@ -1,6 +1,6 @@
 # 💼 Production n8n Workflow Portfolio
 
-This portfolio contains **31 production-grade automation workflows** exported directly from our running n8n container. These workflows solve real-world problems by integrating LLMs, vector databases (Qdrant, Supabase PgVector), relational databases (MSSQL, PostgreSQL), CRM platforms, and interactive interfaces (Telegram, Gmail, Google Sheets).
+This portfolio contains **32 production-grade automation workflows** exported directly from our running n8n container. These workflows solve real-world problems by integrating LLMs, vector databases (Qdrant, Supabase PgVector), relational databases (MSSQL, PostgreSQL), CRM platforms, and interactive interfaces (Telegram, Gmail, Google Sheets).
 
 ---
 
@@ -41,6 +41,12 @@ This portfolio contains **31 production-grade automation workflows** exported di
 * **Workflow File:** [Hotel Reservation.json](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/workflows/Hotel%20Reservation.json)
 * **Business Case:** Processes room booking inquiries, queries availability databases, coordinates with CRM data, and handles booking confirmations.
 * **Business Value:** Provides a 24/7 automated booking assistant that captures reservations instantly, avoiding missed revenue during off-hours.
+
+### 🤗 GPT-OSS-20B HuggingFace Inference
+* **Workflow File:** [GPT_OSS_20B_HuggingFace.json](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/workflows/GPT_OSS_20B_HuggingFace.json)
+* **Business Case:** Calls the `openai/gpt-oss-20b` model via the HuggingFace Inference API for cloud-based text generation. Includes automatic retry logic for 503 "model loading" responses and robust response parsing.
+* **Tech Stack:** Chat Trigger, HTTP Request (httpHeaderAuth credential), IF Node (503 detection), Wait Node (30s retry delay), Code Node (response parser).
+* **Business Value:** Provides serverless access to a powerful 20B parameter open-source LLM with no local GPU required. The auto-provisioned credential and built-in error handling make it production-ready out of the box.
 
 ---
 

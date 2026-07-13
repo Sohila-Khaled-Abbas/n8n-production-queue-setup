@@ -34,6 +34,7 @@
 | **PostgreSQL Backend** | Durable workflow, credential, and execution history storage |
 | **Scheduled Backups** | Optional backup service: pg_dump + Redis + n8n volume → cloud via rclone |
 | **WhatsApp HTTP API** | Local WAHA gateway integrated + `@devlikeapro/n8n-nodes-waha` node auto-installed |
+| **HuggingFace Inference API** | Auto-provisioned `httpHeaderAuth` credential for calling HF models (e.g. `openai/gpt-oss-20b`) with built-in 503/model-loading retry workflow |
 | **Data-Engineering Ready** | `pandas`, `numpy`, `pillow`, `requests` pre-installed in Python runner |
 | **Qdrant Vector DB** | Included for high-performance RAG and embeddings |
 | **Production-Tuned PostgreSQL** | `shared_buffers`, `wal_buffers`, `checkpoint_completion_target` pre-configured |
@@ -243,6 +244,12 @@ All variables live in `.env` (never committed to git).
 | `OLLAMA_FLASH_ATTENTION` | `1` | Enables Flash Attention for faster prompt processing (host level) |
 | `CUDA_VISIBLE_DEVICES` | `0` | Binds Ollama to the dedicated GPU (host level) |
 | `OLLAMA_IGPU_ENABLE` | `0` | Disables integrated GPU selection (host level) |
+
+#### HuggingFace Inference API
+
+| Variable | Default | Description |
+|---|---|---|
+| `HUGGINGFACE_API_TOKEN` | *(none)* | HuggingFace API token ("Read" scope). Create at [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens). Auto-provisioned as an `httpHeaderAuth` credential by `n8n-init`. |
 
 #### Production-Grade RAG (Google Gemini Integration)
 
@@ -701,6 +708,9 @@ Run these queries inside the PostgreSQL database to troubleshoot workflow perfor
 │   ├── search_errors.sql           # Diagnostic to search error messages in execution logs
 │   ├── parse_nodes.py              # Scans workflow nodes for Ollama chat nodes
 │   └── modify_workflow.py          # Batch configures Ollama nodes (model & context)
+├── workflows/
+│   ├── GPT_OSS_20B_HuggingFace.json  # HuggingFace Inference API workflow (openai/gpt-oss-20b)
+│   └── ...                         # 35+ production workflow JSON files
 ├── n8n-data/                       # n8n user data (git-ignored)
 ├── backups/                        # Local backup output (git-ignored)
 ```

@@ -4,6 +4,16 @@ All notable changes to the **n8n Production Autoscaling Stack** will be document
 
 ---
 
+## [1.3.0] - 2026-07-13
+
+### ✨ Added
+- **HuggingFace Inference API Integration**: Added auto-provisioned `httpHeaderAuth` credential (`HuggingFace API — n8n Stack`) for calling HuggingFace-hosted models (e.g. `openai/gpt-oss-20b`) from n8n workflows.
+  - New `.env` variable: `HUGGINGFACE_API_TOKEN` — set your HF token once and the credential is seeded automatically by `n8n-init`.
+  - New workflow: `GPT_OSS_20B_HuggingFace.json` — a complete workflow with Chat Trigger → HTTP Request → 503/model-loading retry logic → Response Parser.
+- **Updated `provision.js`**: Extended the one-shot credential provisioner to create the HuggingFace `httpHeaderAuth` credential alongside existing PostgreSQL, Redis, WAHA, Ollama, and MSSQL credentials.
+
+---
+
 ## [1.2.0] - 2026-07-06
 
 ### ✨ Added
