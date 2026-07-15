@@ -1,0 +1,296 @@
+[
+  {
+    "updatedAt": "2026-07-15T13:21:03.061Z",
+    "createdAt": "2026-07-13T19:17:42.330Z",
+    "id": "gptoss20bhf00001",
+    "name": "GPT-OSS-20B OpenRouter",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          -800,
+          112
+        ],
+        "id": "1ae1e9cb-e9fd-4520-9758-9f436040c032",
+        "name": "When chat message received",
+        "webhookId": "gpt-oss-20b-chat-webhook-001"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://openrouter.ai/api/v1/chat/completions",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer YOUR_OPENROUTER_API_KEY"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ model: 'openai/gpt-oss-20b:free', messages: [{ role: 'user', content: $json.chatInput }] }) }}",
+          "options": {
+            "response": {
+              "response": {
+                "neverError": true
+              }
+            },
+            "timeout": 120000
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -528,
+          112
+        ],
+        "id": "cad7388f-a887-42d4-ad04-95f185d1783e",
+        "name": "Call OpenRouter API"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "combinator": "or",
+            "conditions": [
+              {
+                "id": "condition-503-check",
+                "operator": {
+                  "type": "number",
+                  "operation": "equals"
+                },
+                "leftValue": "={{ $json.statusCode }}",
+                "rightValue": 503
+              },
+              {
+                "id": "condition-error-check",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                },
+                "leftValue": "={{ JSON.stringify($json) }}",
+                "rightValue": "is currently loading"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          -256,
+          112
+        ],
+        "id": "aa7f5355-b40f-4ab6-b12e-0c17e727352a",
+        "name": "Model Loading?"
+      },
+      {
+        "parameters": {
+          "amount": 30
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "f052f4ad-3a8a-4132-89e9-4acbf6b7d7b3",
+        "name": "Wait 30s for Model",
+        "webhookId": "cd1334e2-e71c-48ae-9b9a-a2a4da5cc86c"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://openrouter.ai/api/v1/chat/completions",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer YOUR_OPENROUTER_API_KEY"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ model: 'openai/gpt-oss-20b:free', messages: [{ role: 'user', content: $('When chat message received').first().json.chatInput }] }) }}",
+          "options": {
+            "response": {
+              "response": {
+                "neverError": true
+              }
+            },
+            "timeout": 120000
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          272,
+          0
+        ],
+        "id": "3c718dae-e81c-4d40-834a-027114f165be",
+        "name": "Retry OpenRouter API"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Parse the OpenRouter API response\nconst data = $input.all();\nconst results = [];\n\nfor (const item of data) {\n  const json = item.json;\n\n  if (json.error) {\n    results.push({\n      json: {\n        output: `\u26a0\ufe0f OpenRouter API Error: ${json.error.message || JSON.stringify(json.error)}`,\n        model: 'openai/gpt-oss-20b:free',\n        status: 'error'\n      }\n    });\n    continue;\n  }\n\n  let generatedText = '';\n  if (json.choices && json.choices.length > 0) {\n    generatedText = json.choices[0].message.content;\n  } else {\n    generatedText = JSON.stringify(json, null, 2);\n  }\n\n  results.push({\n    json: {\n      output: generatedText.trim(),\n      model: 'openai/gpt-oss-20b:free',\n      status: 'success'\n    }\n  });\n}\n\nreturn results;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          0,
+          208
+        ],
+        "id": "68b572c7-268f-405c-9bdd-8010ae7de7d2",
+        "name": "Parse Response"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Parse the retry response (OpenRouter)\nconst data = $input.all();\nconst results = [];\n\nfor (const item of data) {\n  const json = item.json;\n\n  if (json.error) {\n    results.push({\n      json: {\n        output: `\u26a0\ufe0f Model still unavailable after retry: ${json.error.message || JSON.stringify(json.error)}`,\n        model: 'openai/gpt-oss-20b:free',\n        status: 'error'\n      }\n    });\n    continue;\n  }\n\n  let generatedText = '';\n  if (json.choices && json.choices.length > 0) {\n    generatedText = json.choices[0].message.content;\n  } else {\n    generatedText = JSON.stringify(json, null, 2);\n  }\n\n  results.push({\n    json: {\n      output: generatedText.trim(),\n      model: 'openai/gpt-oss-20b:free',\n      status: 'success_after_retry'\n    }\n  });\n}\n\nreturn results;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          528,
+          0
+        ],
+        "id": "65d95a67-5b7b-4534-904c-c11cbf711836",
+        "name": "Parse Retry Response"
+      }
+    ],
+    "connections": {
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "node": "Call OpenRouter API",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Call OpenRouter API": {
+        "main": [
+          [
+            {
+              "node": "Model Loading?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Model Loading?": {
+        "main": [
+          [
+            {
+              "node": "Wait 30s for Model",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Parse Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait 30s for Model": {
+        "main": [
+          [
+            {
+              "node": "Retry OpenRouter API",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Retry OpenRouter API": {
+        "main": [
+          [
+            {
+              "node": "Parse Retry Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate"
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "01fc4443-097d-41c6-8feb-443957ca381a",
+    "activeVersionId": null,
+    "versionCounter": 8,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-15T13:20:47.917Z",
+        "createdAt": "2026-07-15T13:20:47.917Z",
+        "id": "zinCZAocah3K8cDU",
+        "name": "GPT-OSS-20B"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-13T19:17:42.330Z",
+        "createdAt": "2026-07-13T19:17:42.330Z",
+        "role": "workflow:owner",
+        "workflowId": "gptoss20bhf00001",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

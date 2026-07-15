@@ -847,6 +847,17 @@ docker compose exec redis redis-cli KEYS "bull:*"
 
 **Fix:** Enforce output language via a strict **System Prompt**. In your `messages` array (or System Message parameter in n8n Advanced AI nodes), add: `"You are a helpful AI assistant. Always respond in English, regardless of the language of the prompt."`
 
+### 'Bad request - please check your parameters' / 'Invalid input'
+
+**Symptoms:** When attaching Tools (e.g., Wikipedia, Calculator) to an AI Agent using an open-source model, the workflow fails with an invalid input or bad request error.
+
+**Cause:** By default, n8n uses the "Tools Agent" type, which attempts to send the tools via OpenAI's native Function Calling API (`tools` array). Many open-source models do not support this parameter. Additionally, the model string might have been exported with an invalid JavaScript expression prefix (`=`).
+
+**Fix:** 
+1. Open the **AI Agent** node.
+2. Change the **Agent Type** parameter from *Tools Agent* to **Conversational Agent**. This uses the ReAct framework, which injects tool descriptions into the system prompt as plain text, making it compatible with any open-source model.
+3. In the OpenAI node, ensure the model name is set as a raw string (e.g. `openai/gpt-oss-20b:groq`), not an expression starting with `=`.
+
 ---
 
 ## Getting Help

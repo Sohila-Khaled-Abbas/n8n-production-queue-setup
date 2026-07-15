@@ -12,6 +12,7 @@ All notable changes to the **n8n Production Autoscaling Stack** will be document
   - `GPT_OSS_20B_HuggingFace.json`: Uses Hugging Face's OpenAI-compatible v1 router (`router.huggingface.co/v1`) with Groq backend.
 
 ### 🐛 Fixed
+- **AI Agent "Invalid input" Errors**: Fixed an issue in `GPT-OSS-20B_AI_Agent_Advanced.json` where the OpenAI Chat Model node failed with "Bad request" when tools were attached. Removed invalid expression prefixes from the model string and explicitly switched the Agent Type to **Conversational Agent** (ReAct) to bypass native function-calling requirements on open-source models.
 - **Hugging Face Inference Support**: Replaced legacy Serverless Inference API endpoints with the new OpenAI-compatible v1 router to fix `Model not supported by provider hf-inference` errors on large models.
 - **Model Language Drift**: Injected an English-enforcing system prompt (`"Always respond in English..."`) into AI workflows to prevent models from mirroring foreign languages from user prompts.
 

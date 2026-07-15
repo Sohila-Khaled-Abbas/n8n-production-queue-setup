@@ -1,0 +1,1253 @@
+[
+  {
+    "updatedAt": "2026-07-08T15:48:49.458Z",
+    "createdAt": "2026-07-07T21:54:29.213Z",
+    "id": "rVutc20jMrDscvvZ",
+    "name": "Daily Viral Content Radar (AnyAPI)",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "triggerAtHour": 8
+              }
+            ]
+          }
+        },
+        "id": "6c9094b7-9770-4a1c-aba5-91175e6d49b8",
+        "name": "Every Morning 8AM",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          528,
+          384
+        ]
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "n1",
+                "name": "niche",
+                "value": "AI Automation & Data Analysis",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "7d14889c-6b3f-4fc2-979f-fab6129247ca",
+        "name": "Set Niche",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          752,
+          384
+        ]
+      },
+      {
+        "parameters": {
+          "sku": "tiktok.search_top",
+          "inputMode": "json",
+          "input": "={ \"query\": \"{{ $json.niche }}\" }",
+          "options": {}
+        },
+        "id": "78b83205-8f4d-44f9-bad2-e14b69ff33f9",
+        "name": "AnyAPI: TikTok Top",
+        "type": "n8n-nodes-anyapi.anyApi",
+        "typeVersion": 1,
+        "position": [
+          976,
+          288
+        ],
+        "credentials": {
+          "anyApiApi": {
+            "id": "LroAOIlGMwU8J2Ki",
+            "name": "AnyAPI account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sku": "instagram.reels_search",
+          "inputMode": "json",
+          "input": "={ \"query\": \"{{ $json.niche }}\", \"datePosted\": \"last-week\" }",
+          "options": {}
+        },
+        "id": "54ce387b-2be2-449f-be92-532fd6f3386b",
+        "name": "AnyAPI: Instagram Reels",
+        "type": "n8n-nodes-anyapi.anyApi",
+        "typeVersion": 1,
+        "position": [
+          976,
+          480
+        ],
+        "credentials": {
+          "anyApiApi": {
+            "id": "LroAOIlGMwU8J2Ki",
+            "name": "AnyAPI account"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "id": "994411e9-bfa5-4bba-922a-37973efe9c19",
+        "name": "Combine Sources",
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          1200,
+          384
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const tk = ($('AnyAPI: TikTok Top').first().json.output) || {};\nconst ig = ($('AnyAPI: Instagram Reels').first().json.output) || {};\nconst tkItems = (tk.data && tk.data.items) || tk.items || [];\nconst igItems = (ig.data && ig.data.reels) || ig.reels || [];\nconst rows = [];\nfor (const v of tkItems) { rows.push({ platform: 'TikTok', author: v.author || '', caption: v.caption || '', url: v.url || '', views: Number(v.views) || 0, likes: Number(v.likes) || 0, comments: Number(v.comments) || 0 }); }\nfor (const v of igItems) { rows.push({ platform: 'Instagram Reels', author: v.username || '', caption: v.caption || '', url: v.url || '', views: Number(v.views) || Number(v.plays) || 0, likes: Number(v.likes) || 0, comments: Number(v.comments) || 0 }); }\nrows.sort(function (a, b) { return b.views - a.views; });\nconst top = rows.slice(0, 8);\nconst lines = [];\nfor (let i = 0; i < top.length; i++) { const v = top[i]; lines.push((i + 1) + '. [' + v.platform + '] @' + v.author + ' - ' + (v.views || 0).toLocaleString() + ' views, ' + (v.likes || 0).toLocaleString() + ' likes\\n   Caption: ' + String(v.caption || '').slice(0, 180) + '\\n   URL: ' + v.url); }\nconst niche = $('Set Niche').first().json.niche;\nconst videosText = lines.join('\\n\\n');\nreturn [{ json: { niche: niche, generatedAt: $now.toISO(), count: top.length, videos: top, videosText: videosText } }];"
+        },
+        "id": "a4b1d4a9-3056-4bef-85e1-644b63e38a8d",
+        "name": "Rank Top Viral",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1424,
+          384
+        ]
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Niche: {{ $json.niche }}\n\nToday's top performing TikToks and Reels in this niche:\n\n{{ $json.videosText }}",
+          "needsFallback": true,
+          "options": {
+            "systemMessage": "You are an expert LinkedIn post copywriter and B2B growth strategist. For each LinkedIn post or carousel provided, explain in 1-2 sentences why it likely went viral by identifying its core driver (pattern-interrupt hook, visual formatting and white space, relatable vulnerability, or data-backed contrarian take). Next, provide an actionable 3-step plan to adapt and replicate its structural framework for the user's own brand without sounding like generic marketing. Output clean Markdown with a heading per post, and finish with one overarching \"Pattern of the day\" takeaway across all analyzed posts."
+          }
+        },
+        "id": "457744c7-8703-42d3-a4f0-a1e454aa96a1",
+        "name": "Write Replication Brief",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          1712,
+          128
+        ]
+      },
+      {
+        "parameters": {
+          "sendTo": "sohila.k.data@gmail.com",
+          "subject": "=Daily viral {{ $('Set Niche').item.json.niche }} brief - {{ $now.toFormat('LLL d') }}",
+          "emailType": "text",
+          "message": "={{ $json.output }}",
+          "options": {
+            "appendAttribution": false
+          }
+        },
+        "id": "d1ce10a7-61ef-47da-b997-9007d92ffb5f",
+        "name": "Email the Brief",
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          2112,
+          240
+        ],
+        "webhookId": "149057cc-8984-439b-b3c0-1bdae856ed6f",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "lnIdGq9BGx5bYyLm",
+            "name": "Gmail account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "fieldToSplitOut": "videos",
+          "options": {}
+        },
+        "id": "98660d93-21ce-4c35-9183-d66982084872",
+        "name": "Split Out Videos",
+        "type": "n8n-nodes-base.splitOut",
+        "typeVersion": 1,
+        "position": [
+          1776,
+          528
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "1VacMuy8bKUJLSUjcqLG6nEeQ2PYK3ho6v_OAuCNvR3k",
+            "mode": "list",
+            "cachedResultName": "Viral Finds",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VacMuy8bKUJLSUjcqLG6nEeQ2PYK3ho6v_OAuCNvR3k/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "mode": "name",
+            "value": "Sheet1"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Date": "={{ $now.toISODate() }}",
+              "Platform": "={{ $json.platform }}",
+              "Author": "={{ $json.author }}",
+              "Views": "={{ $json.views }}",
+              "Likes": "={{ $json.likes }}",
+              "URL": "={{ $json.url }}",
+              "Caption": "={{ $json.caption }}"
+            },
+            "schema": [
+              {
+                "id": "Date",
+                "displayName": "Date",
+                "type": "string",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Platform",
+                "displayName": "Platform",
+                "type": "string",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Author",
+                "displayName": "Author",
+                "type": "string",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Views",
+                "displayName": "Views",
+                "type": "string",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Likes",
+                "displayName": "Likes",
+                "type": "string",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "URL",
+                "displayName": "URL",
+                "type": "string",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Caption",
+                "displayName": "Caption",
+                "type": "string",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "5870a5a1-850b-4f13-8efe-8c8d43fca6d0",
+        "name": "Log Viral Finds",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          2112,
+          528
+        ],
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "LKFLSWDFvv6fE63D",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $workflow.id }}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+        "typeVersion": 1.4,
+        "position": [
+          1952,
+          352
+        ],
+        "id": "403f822a-8da7-4050-9f49-5374808682ae",
+        "name": "Postgres Chat Memory",
+        "credentials": {
+          "postgres": {
+            "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+            "name": "PostgreSQL \u2014 n8n Stack"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": "openrouter/auto",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          1808,
+          352
+        ],
+        "id": "c5b0f47d-8b70-4928-8c68-ab96f6ee6dc6",
+        "name": "OpenRouter Chat Model",
+        "credentials": {
+          "openRouterApi": {
+            "id": "Wfnk5q7gswurynsI",
+            "name": "OpenRouter account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "modelName": "models/gemini-2.5-flash",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1.1,
+        "position": [
+          1648,
+          352
+        ],
+        "id": "01c1f5a2-9eda-491f-8842-25f5e37f7a27",
+        "name": "Google Gemini Chat Model",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "Np8FFvlJdHp1peaA",
+            "name": "Google Gemini(PaLM) Api account 2"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Every Morning 8AM": {
+        "main": [
+          [
+            {
+              "node": "Set Niche",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Niche": {
+        "main": [
+          [
+            {
+              "node": "AnyAPI: TikTok Top",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "AnyAPI: Instagram Reels",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AnyAPI: TikTok Top": {
+        "main": [
+          [
+            {
+              "node": "Combine Sources",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AnyAPI: Instagram Reels": {
+        "main": [
+          [
+            {
+              "node": "Combine Sources",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Combine Sources": {
+        "main": [
+          [
+            {
+              "node": "Rank Top Viral",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Rank Top Viral": {
+        "main": [
+          [
+            {
+              "node": "Write Replication Brief",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Split Out Videos",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Write Replication Brief": {
+        "main": [
+          [
+            {
+              "node": "Email the Brief",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Split Out Videos": {
+        "main": [
+          [
+            {
+              "node": "Log Viral Finds",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Postgres Chat Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "Write Replication Brief",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Write Replication Brief",
+              "type": "ai_languageModel",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Write Replication Brief",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": {
+      "node:Every Morning 8AM": {
+        "recurrenceRules": []
+      }
+    },
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {
+      "AnyAPI: TikTok Top": [
+        {
+          "json": {
+            "output": {
+              "data": {
+                "items": [
+                  {
+                    "author": "husnainsaghir9",
+                    "caption": "Stop doing data work manually \u274c These AI agents can clean data, create charts, and give insights in minutes \u26a1 If you're learning data analysis, tools like ChatGPT, Julius AI, and PandasAI can 10x your productivity \ud83d\udcca Learn smart. Work less. Earn more \ud83d\udcbb\ud83d\udd25 #AI #DataAnalyst #AItools #ChatGPT #learnai ",
+                    "comments": 6,
+                    "contentType": "multi_photo",
+                    "id": "7635257646613925141",
+                    "likes": 121,
+                    "shares": 14,
+                    "url": "https://www.tiktok.com/@husnainsaghir9/photo/7635257646613925141",
+                    "views": 6068
+                  },
+                  {
+                    "author": "taki.gpt",
+                    "caption": "\ud83d\udea8 60 Claude skills on GitHub allows you to build Al employees that can handle marketing, data analysis, product management, programming and even C level advisors inside of Claude.  If you want access to this GitHub repository, comment \u201cClaude\u201d and l\u2019l send you the link.  #claudeai #aiautomation #productivityhacks #aiagents #claudeskills ",
+                    "comments": 1788,
+                    "contentType": "video",
+                    "id": "7611210505222360321",
+                    "likes": 20848,
+                    "shares": 5244,
+                    "url": "https://www.tiktok.com/@taki.gpt/video/7611210505222360321",
+                    "views": 393650
+                  },
+                  {
+                    "author": "miss.excel",
+                    "caption": "20 second data analysis using AI? Yes please \ud83e\udd1d I\u2019m hosting a free live AI automation training TODAY & there\u2019s still time to register! Click the link in my bio to register \ud83d\udc4f #aitips #aitools #aiproductivity ",
+                    "comments": 23,
+                    "contentType": "video",
+                    "id": "7636786845128330509",
+                    "likes": 8213,
+                    "shares": 2369,
+                    "url": "https://www.tiktok.com/@miss.excel/video/7636786845128330509",
+                    "views": 233818
+                  },
+                  {
+                    "author": "zhiprompts",
+                    "caption": "Claude Can Read Charts Like A Data Analyst Claude can analyze charts and graphs, extract insights, answer questions, and turn visual data into tables or summaries. It is useful when you need quick data interpretation. #ClaudeAI #DataAnalysis #AITools #Productivity #Charts [Claude data analyst, analyze charts with AI, chart interpretation, AI data extraction, visual data analysis, Claude artifacts charts, turn chart into table, report summary AI, data insights, AI analytics]",
+                    "comments": 1,
+                    "contentType": "video",
+                    "id": "7659299310319717662",
+                    "likes": 11,
+                    "shares": 0,
+                    "url": "https://www.tiktok.com/@zhiprompts/video/7659299310319717662",
+                    "views": 5971
+                  },
+                  {
+                    "author": "bmlearncom",
+                    "caption": "\u201cBetter analysis starts with better tools.\u201d #fyp #dataanalysis  #data #dataanalyst #ai ",
+                    "comments": 0,
+                    "contentType": "multi_photo",
+                    "id": "7628077975417802005",
+                    "likes": 40,
+                    "shares": 0,
+                    "url": "https://www.tiktok.com/@bmlearncom/photo/7628077975417802005",
+                    "views": 1604
+                  },
+                  {
+                    "author": "therealteachexcel",
+                    "caption": "how to use ai in excel? this excel tutorial shows you how to use copilot ai Plan Mode in excel to create a dashboard from imported sales data from a csv file. The dashboard is linked to the sales data and will auto update when new data is added. at the end you will learn how to make a custom ai prompt for copilot that gets you a data analysis dashboard in seconds, and that fully works. I hope you enjoy this tutorial, cheers!  #ai #copilot #data #finance #excel ",
+                    "comments": 1,
+                    "contentType": "video",
+                    "id": "7659888065531432223",
+                    "likes": 22,
+                    "shares": 5,
+                    "url": "https://www.tiktok.com/@therealteachexcel/video/7659888065531432223",
+                    "views": 453
+                  },
+                  {
+                    "author": "sasha.the.analyst",
+                    "caption": "3 ways I use Al to automate my Data Analytics workflow (and save 5+ hours a week). Swipe and save to become an Al-Powered Analyst #SQL #AI #DataAnalytics #CareerGrowth #Productivity",
+                    "comments": 0,
+                    "contentType": "multi_photo",
+                    "id": "7621692704149343506",
+                    "likes": 28,
+                    "shares": 4,
+                    "url": "https://www.tiktok.com/@sasha.the.analyst/photo/7621692704149343506",
+                    "views": 928
+                  },
+                  {
+                    "author": "productivityari_",
+                    "caption": "Comment \u201cDashboard\u201d if you want the website link  Turns out making these reports and dashboards was a big waste of time  Now I just use Julius to automate this part of my work. Now my workflow has shrunk by so much thanks to this tool so I can spend my time on less tedious tasks  Try it out if you work with large datasets, or if your job involves any type of data analysis and thank me later lol  #datascience #dataanalyst #excelspreadsheet #productivityhacks #corporatehacks  Corporate hacks, corporate girlie, how to learn data analysis, data science for beginners, ai tools for data analysis, excel hacks, database, sql",
+                    "comments": 28,
+                    "contentType": "video",
+                    "id": "7652221563613220114",
+                    "likes": 282,
+                    "shares": 30,
+                    "url": "https://www.tiktok.com/@productivityari_/video/7652221563613220114",
+                    "views": 7043
+                  },
+                  {
+                    "author": "vanny.oj",
+                    "caption": "\u200bData analysis just got a massive upgrade. If you aren't using these 5 AI tools yet, you're working twice as hard for half the results. From writing SQL queries in seconds to building smart dashboards, these are the ultimate cheat codes for your career. \ud83d\udcc8 \u200bHere is exactly how these 5 tools level up your workflow: \u200b\ud83e\udd16 ChatGPT: Your coding and cleanup partner. It handles writing SQL queries, cleans up messy datasets, and generates quick summaries. \u2728 Google Gemini: Your forecasting assistant. It excels at exploring data, spotting deep trends, and predicting future outcomes. \ud83d\udcca Julius AI: Your rapid-fire analyst. It's built to analyse raw data files and create stunning visuals in just a few seconds. \ud83d\udcbb Microsoft Copilot: Your automation engine. It integrates seamlessly to automate repetitive reports and pull quick insights. \ud83c\udfa8 Tableau with AI: Your visual powerhouse. It helps you build smart dashboards and discover hidden insights much faster. \u200bSave this post for later and start levelling up your workflow today! \ud83d\udc47 \u200b#dataanalytics  #aitools  #dataanalyst #careergrowth  #techskills ",
+                    "comments": 1,
+                    "contentType": "multi_photo",
+                    "id": "7650442314367700232",
+                    "likes": 30,
+                    "shares": 2,
+                    "url": "https://www.tiktok.com/@vanny.oj/photo/7650442314367700232",
+                    "views": 2261
+                  },
+                  {
+                    "author": "ai.honeycove",
+                    "caption": "Weyerhaeuser is using AI to create a digital twin of its massive timberland, revolutionizing forestry management with smart tree mapping and remote-controlled logging technology. Discover how AI-driven automation and data analysis are shaping the future of sustainable timber harvesting. #weyerhaeuser #forestrytech #aiforestry #digitaltwin #sustainablelogging",
+                    "comments": 13,
+                    "contentType": "video",
+                    "id": "7649878084547562766",
+                    "likes": 781,
+                    "shares": 97,
+                    "url": "https://www.tiktok.com/@ai.honeycove/video/7649878084547562766",
+                    "views": 40197
+                  },
+                  {
+                    "author": "sandboxmedia",
+                    "caption": "Stop wasting hours on weekly reports! AI can automate data compilation & summarize trends, freeing up your team for strategy. Ask 'What to do?' not 'What happened?' #AI #Automation #BusinessTips #Productivity #Marketing #Sales",
+                    "comments": 1,
+                    "contentType": "",
+                    "id": "7659813698684390664",
+                    "likes": 11,
+                    "shares": 0,
+                    "url": "https://www.tiktok.com/@sandboxmedia/video/7659813698684390664",
+                    "views": 332
+                  },
+                  {
+                    "author": "aiauditroast",
+                    "caption": "Take your spreadsheet game to the next level with AI-powered data analysis and automation. Learn how to set up ChatGPT Advanced Data Analysis and measure the time saved. Save this for later and share with your team to start streamlining your workflow today!  What's holding you back from automating your data analysis? #aiauditroast #aiworkflow #productivityhacks #datadriven #efficiencymatters  ",
+                    "comments": 1,
+                    "contentType": "multi_photo",
+                    "id": "7630729686707997972",
+                    "likes": 20,
+                    "shares": 1,
+                    "url": "https://www.tiktok.com/@aiauditroast/photo/7630729686707997972",
+                    "views": 513
+                  },
+                  {
+                    "author": "marytheanalyst",
+                    "caption": "Would you use this app? You can build your own Emergent app using the link in my bio!  #dataanalyst #dataanalysis #dataanalytics #ai #artificialintelligence ",
+                    "comments": 2,
+                    "contentType": "video",
+                    "id": "7658000953504828702",
+                    "likes": 119,
+                    "shares": 9,
+                    "url": "https://www.tiktok.com/@marytheanalyst/video/7658000953504828702",
+                    "views": 2218
+                  },
+                  {
+                    "author": "kingmaegon",
+                    "caption": "What if they're terraforming the planet for machines? #datacenters #aiautomation",
+                    "comments": 141,
+                    "contentType": "video",
+                    "id": "7658768408556621069",
+                    "likes": 748,
+                    "shares": 66,
+                    "url": "https://www.tiktok.com/@kingmaegon/video/7658768408556621069",
+                    "views": 10769
+                  },
+                  {
+                    "author": "abal.ai",
+                    "caption": "Unlock customer insights by utilizing AI for smarter data analysis! \ud83d\udcca\u2728 Optimize decision-making. #ai #automation #businessautomation #aibusiness #ailab #autonomousagents #workflowautomation #aisystems #digitaltransformation #agenticautomation #aibusinessautomationlab #futureofwork #aiworkflow",
+                    "comments": 0,
+                    "contentType": "",
+                    "id": "7645329119038786823",
+                    "likes": 2,
+                    "shares": 0,
+                    "url": "https://www.tiktok.com/@abal.ai/photo/7645329119038786823",
+                    "views": 210
+                  },
+                  {
+                    "author": "olivia.parker995",
+                    "caption": "The 5 AI skills that will save your career in 2026 #ClaudeAI #AISkills #AIJobs #CareerGrowth #FutureOfWork ",
+                    "comments": 0,
+                    "contentType": "video",
+                    "id": "7660001015017639181",
+                    "likes": 12,
+                    "shares": 0,
+                    "url": "https://www.tiktok.com/@olivia.parker995/video/7660001015017639181",
+                    "views": 301
+                  },
+                  {
+                    "author": "productivityari_",
+                    "caption": "Work smarter not harder\ud83d\ude0e  The tool is called Julius AI for anyone who wants to try it out Don\u2019t let my boss know \ud83e\udd2b this has been the best hack I\u2019ve found at work #productivityhacks #aitools #9to5 #exceltips #dataanalytics  How to analyze data with ai, ai plugins for excel, how to automate workflows with Ai, best ai tools in 2026 to optimize workflows, how to analyze data using ai, data analysis tips, data analysis hacks, except tips, how to get good at excel, corporate office hacks, how to get a promotion at work",
+                    "comments": 3,
+                    "contentType": "video",
+                    "id": "7628037840831581447",
+                    "likes": 221,
+                    "shares": 23,
+                    "url": "https://www.tiktok.com/@productivityari_/video/7628037840831581447",
+                    "views": 8631
+                  },
+                  {
+                    "author": "oliver.merrick",
+                    "caption": "1. Pattern analysis on my life 500+ days of Whoop data, bank statements, screen time. AI shows me how I work, sleep, spend best. 2. Automated sales call research When someone books a call, AI scrapes their site, fills Notion, gives me ideas to pitch. 3. AI advisory board I feed in books, podcasts, and founder content. Then I can ask AI for their advice or have it debate ideas. 4. Super prompting Messy brain dump in. AI turns it into perfect prompts. XML and JSON level clean. 5. Duplicating my brain Meetings, voice notes, journal, chats all dumped into Supabase. AI uses the context so I can get content, emails, and ideas like it\u2019s me. 6. Consistent character images I uploaded 25 pics of me. Now I can generate myself in any setting for ads, content, or fun. 7. Enhanced GPT voice mode I brain dump a problem, switch to voice chat, and talk with AI like it\u2019s an expert for 30 minutes. Transcript goes into my system. #ai #chatgpt #higgsfield #aiautomations #n8n ",
+                    "comments": 21,
+                    "contentType": "multi_photo",
+                    "id": "7539523889995517202",
+                    "likes": 2229,
+                    "shares": 194,
+                    "url": "https://www.tiktok.com/@oliver.merrick/photo/7539523889995517202",
+                    "views": 32186
+                  },
+                  {
+                    "author": "learnanalyticseng",
+                    "caption": "This is about to save me hours of boring analysis work! #datanalayst #claude #aiskills #dataanalytics ",
+                    "comments": 3,
+                    "contentType": "video",
+                    "id": "7626861759030234398",
+                    "likes": 202,
+                    "shares": 8,
+                    "url": "https://www.tiktok.com/@learnanalyticseng/video/7626861759030234398",
+                    "views": 4457
+                  },
+                  {
+                    "author": "deolaajayianalytics",
+                    "caption": "AI in data analysis is often misunderstood. Many people think it\u2019s about replacing human thinking. It\u2019s not. AI\u2019s real job is to remove the noise \u2014 the clutter, repetition, and complexity that hide what truly matters in data.  It helps analysts move faster, spot patterns earlier, and focus on insights instead of manual work. But insight still needs judgment. Context still matters. Business decisions still require human understanding. When AI is used well, it doesn\u2019t make decisions for you.  It supports better ones. It highlights trends you might miss, flags anomalies before they become problems, and turns overwhelming datasets into clear stories leaders can act on. The organizations winning with data today aren\u2019t those with the most tools. They\u2019re the ones that know how to combine AI with critical thinking. AI organizes. Humans interpret. Results happen when both work together. That\u2019s the future of data-driven decision-making. What\u2019s your experience been using AI in data analysis?",
+                    "comments": 1,
+                    "contentType": "multi_photo",
+                    "id": "7654446933414546719",
+                    "likes": 7,
+                    "shares": 0,
+                    "url": "https://www.tiktok.com/@deolaajayianalytics/photo/7654446933414546719",
+                    "views": 580
+                  },
+                  {
+                    "author": "nico_airanking",
+                    "caption": "Connecting Claude to GA4, Search Console, Meta Ads and YouTube used to be clunky. Windsor AI makes it one connection. Try Windsor AI here: https://windsor.ai/?fpr=ai_ranking Comment DATA and I will send you the link. #AISEO #ClaudeAI #DataAnalysis #MarketingAnalytics #WindsorAI #Automation",
+                    "comments": 3,
+                    "contentType": "",
+                    "id": "7649526562714373396",
+                    "likes": 18,
+                    "shares": 1,
+                    "url": "https://www.tiktok.com/@nico_airanking/video/7649526562714373396",
+                    "views": 476
+                  },
+                  {
+                    "author": "landiep303",
+                    "caption": "Discover how AI for Excel shows a 1000x speed increase in data analysis! \ud83e\ude84\u2728 Business analysts need to catch up. Are you ready to embrace this game-changing tech? Let\u2019s discuss how AI is transforming spreadsheets! \ud83d\udca1 #AIforExcel #businessanalysis #datatools #LearnOnTikTok #excel #fyp\u30b7 #innovation",
+                    "comments": 3,
+                    "contentType": "video",
+                    "id": "7654588893123104030",
+                    "likes": 47,
+                    "shares": 3,
+                    "url": "https://www.tiktok.com/@landiep303/video/7654588893123104030",
+                    "views": 2143
+                  },
+                  {
+                    "author": "the.wealth.lab",
+                    "caption": "\u201cLearning data analytics is hard\u2026 unless you have AI on your side \ud83d\ude0e Swipe/Follow to see 7 AI tools that make you a pro faster! \ud83d\udcbb\ud83d\ude80 #DataAnalytics #AIForLearning #LearnSmarter #TechTools #DigitalSkills    ",
+                    "comments": 0,
+                    "contentType": "multi_photo",
+                    "id": "7625216124963179784",
+                    "likes": 23,
+                    "shares": 13,
+                    "url": "https://www.tiktok.com/@the.wealth.lab/photo/7625216124963179784",
+                    "views": 655
+                  },
+                  {
+                    "author": "excelaibygeorge",
+                    "caption": "Excel\u2019s hidden AI Analyze Data button is a total game-changer. \ud83d\ude80 One click = instant insights \ud83d\udd25 This underrated AI feature will save your spreadsheets HOURS. \u26a1\ufe0f #exceltips #excelhacks #excelai #dataanalysis #corporatelife ",
+                    "comments": 29,
+                    "contentType": "video",
+                    "id": "7581142201149803779",
+                    "likes": 3505,
+                    "shares": 976,
+                    "url": "https://www.tiktok.com/@excelaibygeorge/video/7581142201149803779",
+                    "views": 162767
+                  },
+                  {
+                    "author": "sophia8473783",
+                    "caption": "By combining data analysis and automation, AI tools help traders understand market movements in a more organised way. #ai #xauusd ",
+                    "comments": 0,
+                    "contentType": "video",
+                    "id": "7660055522703330568",
+                    "likes": 0,
+                    "shares": 0,
+                    "url": "https://www.tiktok.com/@sophia8473783/video/7660055522703330568",
+                    "views": 88
+                  },
+                  {
+                    "author": "abal.ai",
+                    "caption": "AI transforms data analysis, revealing hidden customer insights for better decision-making. \ud83d\udcca\ud83e\udd16 Explore innovative techniques to gain a competitive edge! #ai #automation #businessautomation #aibusiness #ailab #autonomousagents #workflowautomation #aisystems #digitaltransformation #agenticautomation #aibusinessautomationlab #futureofwork #aiworkflow",
+                    "comments": 0,
+                    "contentType": "",
+                    "id": "7633828578165067025",
+                    "likes": 1,
+                    "shares": 0,
+                    "url": "https://www.tiktok.com/@abal.ai/photo/7633828578165067025",
+                    "views": 171
+                  },
+                  {
+                    "author": "codingfortherestofus",
+                    "caption": "Some companies are not going to hire you if you say you don't use AI. Here are three ways to answer this in your data analyst interview. \ud83e\udd13 1\ufe0f\u20e3 Excel macros. Use Claude or ChatGPT to automate copying and pasting so you can skip the repetitive stuff and actually focus on the analysis. 2\ufe0f\u20e3 Code commenting. AI will clean up and document your SQL or Python code so it's readable and shareable with your team. This used to be a nice-to-have. Now it's mandatory.  3\ufe0f\u20e3 Claude Code. This one is a complete game-changer. It lets you automate workflows from end to end without any engineering knowledge. You can build mock-ups or reporting processes on your very first day . For more info  grab the free Data Analyst Interview Cheat Sheet in my bio. \ud83d\udc47 #sql #careeradvice #dataanalyst #aitools #interviewtips ",
+                    "comments": 4,
+                    "contentType": "video",
+                    "id": "7646927917125192973",
+                    "likes": 145,
+                    "shares": 4,
+                    "url": "https://www.tiktok.com/@codingfortherestofus/video/7646927917125192973",
+                    "views": 4724
+                  },
+                  {
+                    "author": "productivityari_",
+                    "caption": "Comment \u201cDATA\u201d and I\u2019ll send you this website!  This helps so much with making workflows faster. Try it out to cut down your data analysis time by more than half. #productivityhacks #aitools #9to5 #exceltips #dataanalytics  How to use ai in data analysis, best ai tools in 2026, how to use ai tools to automate workflows, using ai to make work faster, how to make a graph from excel, excel tips and tricks, how to use excel to visualize data, ai plugins for excel, productivity hacks and tricks, ai tools for automation ",
+                    "comments": 5,
+                    "contentType": "video",
+                    "id": "7627678654377594130",
+                    "likes": 48,
+                    "shares": 9,
+                    "url": "https://www.tiktok.com/@productivityari_/video/7627678654377594130",
+                    "views": 1151
+                  },
+                  {
+                    "author": "abitec_concept",
+                    "caption": "It analyzes charts, tracks technical indicators, and even checks real-time news sentiment to generate insights. It can create simple Buy/Sell/Hold reports without any manual effort. Basically, it handles the research part\u2026 even when you\u2019re not actively watching the market No manual analysis. No switching between multiple tools. Just smart automation built using AI + n8n. #N8n #workflowautomation #AI #automation #business ",
+                    "comments": 0,
+                    "contentType": "multi_photo",
+                    "id": "7624535688041565458",
+                    "likes": 15,
+                    "shares": 0,
+                    "url": "https://www.tiktok.com/@abitec_concept/photo/7624535688041565458",
+                    "views": 547
+                  },
+                  {
+                    "author": "maverickgpt",
+                    "caption": "Comment \"Stack\" and I'll send you my updated AI stack for 2026 \ud83d\udc47 Rating every AI tool I use. Top Tier: Claude \u2192 My favorite for automating any business task Codex \u2192 A straight up cheat code for building Higgsfield \u2192 My entire creative workflow runs through it Cytd \u2192 The tool you need to get customers with AI Helpful: ChatGPT \u2192 Better as a personal tool than a business one Whisperflow \u2192 I use it to write every single prompt now Decent: Copilot \u2192 Good if you're in the M365 ecosystem Cursor \u2192 Great for developers but not for beginners Waste of time: Grok \u2192 Gemini gives you the same real-time info Canva \u2192 Good tool but the AI features are overrated Do you agree with my picks? Let me know in the comments. #ai #aitools #chatgpt #claude #productivity",
+                    "comments": 63,
+                    "contentType": "video",
+                    "id": "7659512236536302878",
+                    "likes": 754,
+                    "shares": 87,
+                    "url": "https://www.tiktok.com/@maverickgpt/video/7659512236536302878",
+                    "views": 15210
+                  },
+                  {
+                    "author": "coding180.com",
+                    "caption": "Comment list to get full list.  \u2014- AI tools for productivity, automation, health, data analysis, image generation etc #ai #aitools ",
+                    "comments": 2,
+                    "contentType": "video",
+                    "id": "7655664710611651862",
+                    "likes": 35,
+                    "shares": 2,
+                    "url": "https://www.tiktok.com/@coding180.com/video/7655664710611651862",
+                    "views": 642
+                  },
+                  {
+                    "author": "boscokat",
+                    "caption": "Formula creation, data analysis, VBA macros, troubleshooting, cleaning, visualization\u2014your AI co-pilot for Excel. #NamibiaAI #ExcelHacks #ChatGPT #Productivity #DataAnalysis ",
+                    "comments": 1,
+                    "contentType": "multi_photo",
+                    "id": "7611292009181105429",
+                    "likes": 11,
+                    "shares": 3,
+                    "url": "https://www.tiktok.com/@boscokat/photo/7611292009181105429",
+                    "views": 1397
+                  },
+                  {
+                    "author": "machinelearningthucchien",
+                    "caption": "Bi\u1ebfn File Excel Th\u00f4 Th\u00e0nh Dashboard T\u01b0\u01a1ng T\u00e1c Ch\u1ec9 Trong V\u00e0i Ph\u00fat V\u1edbi Codex Hashtag: #Excel #Dashboard #Codex #DataAnalysis #AIAutomation",
+                    "comments": 26,
+                    "contentType": "video",
+                    "id": "7649179139022294288",
+                    "likes": 954,
+                    "shares": 102,
+                    "url": "https://www.tiktok.com/@machinelearningthucchien/video/7649179139022294288",
+                    "views": 28986
+                  },
+                  {
+                    "author": "actioncoachcentraltx",
+                    "caption": "AI automates data & reports, freeing up your time for fun! Watch this tool transform your workflow. #AI #Automation #DataAnalysis #Productivity #Tech #WorkLifeBalance",
+                    "comments": 0,
+                    "contentType": "",
+                    "id": "7653926022450023694",
+                    "likes": 4,
+                    "shares": 0,
+                    "url": "https://www.tiktok.com/@actioncoachcentraltx/video/7653926022450023694",
+                    "views": 97
+                  },
+                  {
+                    "author": "precious_analyst",
+                    "caption": "Hours Saved By AI Now as Data Analyst. Which one are you using?Drop it in the comment section. Follow for more.  #dataanalysis #aitools #analystlife #techhacks #productivity ",
+                    "comments": 15,
+                    "contentType": "multi_photo",
+                    "id": "7643385582361627926",
+                    "likes": 731,
+                    "shares": 173,
+                    "url": "https://www.tiktok.com/@precious_analyst/photo/7643385582361627926",
+                    "views": 13524
+                  },
+                  {
+                    "author": "this_is_ayb",
+                    "caption": "",
+                    "comments": 86,
+                    "contentType": "video",
+                    "id": "7656851946883812615",
+                    "likes": 4697,
+                    "shares": 1537,
+                    "url": "https://www.tiktok.com/@this_is_ayb/video/7656851946883812615",
+                    "views": 209063
+                  },
+                  {
+                    "author": "amy66688812",
+                    "caption": "Have you ever wondered how AI works with forex and gold markets? An AI-powered system can analyse market data, track price movements, and identify patterns through algorithms. It helps traders look at the market in a more structured way, reducing emotional decisions and focusing more on data. Technology is changing how people explore forex and gold market analysis. #ai #xauusd ",
+                    "comments": 0,
+                    "contentType": "video",
+                    "id": "7659620789192248583",
+                    "likes": 0,
+                    "shares": 0,
+                    "url": "https://www.tiktok.com/@amy66688812/video/7659620789192248583",
+                    "views": 115
+                  },
+                  {
+                    "author": "becky_analyst",
+                    "caption": "A lot of people are scared to start data analytics because of AI\u2026 And honestly, it makes sense. AI can already: clean data write SQL build dashboards generate reports So the question is\u2026 are data analysts still needed? Yes. Because AI doesn\u2019t understand your business. It doesn\u2019t ask the right questions. It doesn\u2019t explain why something is happening. That\u2019s your job. Data analysts don\u2019t just work with data\u2026 they turn data into decisions. So if you\u2019re scared to start\u2026 Don\u2019t stop learning. Adapt. Learn data analytics. Learn how to use AI. That combination? That\u2019s powerful. The future isn\u2019t AI vs Data Analysts. It\u2019s AI + Data Analysts. Follow for more simple data tips",
+                    "comments": 2,
+                    "contentType": "multi_photo",
+                    "id": "7620391564338040085",
+                    "likes": 14,
+                    "shares": 1,
+                    "url": "https://www.tiktok.com/@becky_analyst/photo/7620391564338040085",
+                    "views": 852
+                  },
+                  {
+                    "author": "analyticsbymary",
+                    "caption": "Data cleaning takes up 80% of your time as a data analyst.\u00a0 Use AI to work smarter, not to skip learning how to think through data cleaning yourself. Which of these tools are you adding to your workflow??? #dataanalytics #data #fyp #analyticsbymary #dataanalyst ",
+                    "comments": 12,
+                    "contentType": "multi_photo",
+                    "id": "7626843992314875156",
+                    "likes": 100,
+                    "shares": 10,
+                    "url": "https://www.tiktok.com/@analyticsbymary/photo/7626843992314875156",
+                    "views": 3136
+                  },
+                  {
+                    "author": "atandaoluwaseun91",
+                    "caption": "Learn how to automate and analyze using AI #dataanalysis  #ai  #automation  #analysis  #aitrend ",
+                    "comments": 0,
+                    "contentType": "multi_photo",
+                    "id": "7606261864720387346",
+                    "likes": 7,
+                    "shares": 0,
+                    "url": "https://www.tiktok.com/@atandaoluwaseun91/photo/7606261864720387346",
+                    "views": 279
+                  },
+                  {
+                    "author": "presentatia",
+                    "caption": "AI helps translate it into insights. From tracking trends to predicting decisions, these 4 AI platforms make data analysis faster, smarter, and more impactful for modern businesses. Follow @presentatia for more insights on AI, digital learning, and creative multimedia solutions.",
+                    "comments": 0,
+                    "contentType": "multi_photo",
+                    "id": "7610736966899862804",
+                    "likes": 15,
+                    "shares": 2,
+                    "url": "https://www.tiktok.com/@presentatia/photo/7610736966899862804",
+                    "views": 914
+                  },
+                  {
+                    "author": "tech.logic.ai",
+                    "caption": "AI helps analysts clean, process, and visualize data 30% faster. It\u2019s not about replacing people, it\u2019s about making them more powerful. Where could your team benefit from AI-driven insights? Book a free consult with us today! \ud83d\udd17 https://rb.gy/gyx5av #TechLogicAI #AIAnalytics #DataEfficiency #SmartSolutions #BusinessGrowth #AutomationAdvantage",
+                    "comments": 0,
+                    "contentType": "multi_photo",
+                    "id": "7522029953307692306",
+                    "likes": 4,
+                    "shares": 0,
+                    "url": "https://www.tiktok.com/@tech.logic.ai/photo/7522029953307692306",
+                    "views": 199
+                  },
+                  {
+                    "author": "societysector",
+                    "caption": "The phrase \"AI tools hackers\" highlights the emerging relationship between artificial intelligence and cybersecurity culture. AI has notably changed how security experts and malicious actors engage with technology, leading to a digital landscape where automation, data analysis, and quick decision-making are crucial. On one hand, AI tools empower ethical hackers and cybersecurity professionals to bolster defenses. Machine learning systems are adept at analyzing vast amounts of network traffic, spotting unusual behavior, and identifying vulnerabilities much faster than traditional methods. Cybersecurity teams utilize AI for simulating attacks, testing systems, and anticipating potential risks before they manifest. Here, AI acts as a protective force \u2013 aiding in understanding complex digital environments and fortifying defenses. Conversely, discussions about hackers and AI often raise concerns regarding misuse. The capacity of AI to generate code, discern patterns, and automate repetitive tasks means it can also be used irresponsibly, igniting debates about ethics, accountability, and regulation. Instead of fundamentally altering hacking, AI accelerates existing capabilities, underscoring the importance of investing in education, monitoring, and digital awareness for organizations. Symbolically, AI tools within hacker culture signify a shift from individual technical prowess to intelligence bolstered by machinery. The stereotype of a solitary hacker typing away has transitioned into a scenario where algorithms assist in research, analysis, and strategy. This evolution mirrors a broader theme surrounding the modern internet: technology is not inherently good or bad \u2014 its effects hinge on human intention. Ultimately, the dynamic between AI tools and hackers illustrates how innovation can redefine power in the digital realm. It emphasizes the necessity for ethical considerations, robust cybersecurity practices, and a clear realization that knowledge should be harnessed for protection and responsible advancement, rather than harm. #fy #fsociety #cybersecurity #aitools ",
+                    "comments": 349,
+                    "contentType": "multi_photo",
+                    "id": "7603163657551219986",
+                    "likes": 30298,
+                    "shares": 1681,
+                    "url": "https://www.tiktok.com/@societysector/photo/7603163657551219986",
+                    "views": 507776
+                  },
+                  {
+                    "author": "atilefavour",
+                    "caption": "Most students don\u2019t fail because they\u2019re not smart. They fail because data analysis is confusing to them, technical, and time consuming. it gets overwhelming fast. But the truth is: You don\u2019t need to struggle anymore. With the right AI tools, you can: \u2022 Analyse your data in minutes \u2022 Understand your results clearly \u2022 Write your discussion like a pro This is Scholar Mode If you\u2019re serious about improving your grades and saving time, these tools will change everything. Follow for more content like this  #DataAnalysis #AIForStudents #ResearchTools #FinalYearProject #AcademicSuccess  \u2022\tdata analysis for students \t\u2022\tAI for research \t\u2022\tdissertation data analysis \t\u2022\tfinal year project tools \t\u2022\tSPSS alternative \t\u2022\tresearch tools for students \t\u2022\tAI tools for academics \t\u2022\tdata analysis without coding \t\u2022\tstatistics made easy \t\u2022\tacademic writing AI",
+                    "comments": 3,
+                    "contentType": "multi_photo",
+                    "id": "7620540584217873686",
+                    "likes": 45,
+                    "shares": 3,
+                    "url": "https://www.tiktok.com/@atilefavour/photo/7620540584217873686",
+                    "views": 2183
+                  },
+                  {
+                    "author": "learnthetechnologywithbk",
+                    "caption": "What I cover: \u2022 Exploring & querying data with @ChatGPT \ud83d\udd0d \u2022 Iterating on visualizations and answering questions \ud83d\udcc8 \u2022 Vibe-coding Python and deploying a @Streamlit dashboard \ud83d\ude80 This series shows how to use ChatGPT as a hands-on data analysis partner -- from EDA and visualization to refining code and deploying a real, interactive web app \ud83c\udf10 You don\u2019t need to write everything from scratch. I use prompt-based workflows, download the generated code, and show how to clean it up and extend it for real use cases, including hosting with @GitHub and Streamlit \ud83d\udee0\ufe0f \ud83d\udc49 Get started here: https://ai-analytics.wharton.upenn.edu/news/exploring-data-with-chatgpt-a-step-by-step-guide/ #ChatGPT #DataAnalysis #Python #Streamlit #AItools ",
+                    "comments": 0,
+                    "contentType": "multi_photo",
+                    "id": "7595720172619533598",
+                    "likes": 11,
+                    "shares": 0,
+                    "url": "https://www.tiktok.com/@learnthetechnologywithbk/photo/7595720172619533598",
+                    "views": 960
+                  },
+                  {
+                    "author": "sasha.the.analyst",
+                    "caption": "Instead of repeating the same reports every week, strong analysts build systems that: \u2022 refresh data automatically \u2022 reduce errors \u2022 keep decisions based on real-time numbers This step turns analysis into a scalable workflow - not manual work. If you\u2019re learning data analytics in 2026, save this. Automation is what separates busy analysts from effective ones. #dataanalytics #dataanalyst #analyticsworkflow #businessanalytics #dataskills",
+                    "comments": 4,
+                    "contentType": "multi_photo",
+                    "id": "7594583462191861048",
+                    "likes": 239,
+                    "shares": 16,
+                    "url": "https://www.tiktok.com/@sasha.the.analyst/photo/7594583462191861048",
+                    "views": 5847
+                  }
+                ],
+                "nextCursor": "_Ly5Sjby8TYydq5Dc3xECLs_-qoxABDEMRhPyAbAPHzzdBWttItu1lCxD6y4n2ngee0cPzmQakWlDNGN6MSbQ-WudZ-kY_FQELNs614IuGslSMi2dYDGYrsj-_FG9ci9TbCvYKc_FOOac7x5oFqCXg"
+              },
+              "found": true
+            },
+            "provider": "AnyAPI",
+            "costUsd": 0.002,
+            "items": 46,
+            "hint": "large_result: this response is ~28 KB. To keep future runs from flooding your context, re-run with `fields` (keep only the keys you need), `max_items` (cap rows), or `summary=true` (outline only) \u2014 these trim the response only, never the charge."
+          },
+          "pairedItem": {
+            "item": 0
+          }
+        }
+      ],
+      "AnyAPI: Instagram Reels": [
+        {
+          "json": {
+            "output": {
+              "found": true,
+              "data": {
+                "reels": [
+                  {
+                    "caption": "Most people think AI starts with prompts.\n\nIt doesn't.\n\nIt starts with data.\n\nEvery recommendation, chatbot response, fraud detection system, or AI assistant depends on clean, reliable, and accessible data. That foundation is built by Data Engineers.\n\nA Data Engineer's job isn't just moving data from one place to another. They build the pipelines that collect data, transform it into a usable format, validate its quality, and make it available for AI and analytics.\n\nThink about what happens before an AI model is trained:\n\n\u2022 Data is collected from multiple sources. \u2022 Missing and incorrect values are cleaned. \u2022 Duplicate records are removed. \u2022 Data is standardized into a consistent format. \u2022 Features are prepared for machine learning. \u2022 Fresh data is continuously delivered to keep models up to date.\n\nWithout these steps, even the most advanced AI model produces poor results.\n\nGarbage in, garbage out isn't just a saying. It's one of the biggest reasons AI projects fail.\n\nAs AI adoption grows, the importance of Data Engineering grows with it. Building better AI isn't only about choosing a better model. It's about building better data systems.\n\nThe future of AI will be powered by large language models, but it will be enabled by great Data Engineers.\n\n#DataEngineering #ArtificialIntelligence #MachineLearning #DataPipelines #BigData DataQuality ETL ELT ApacheSpark Databricks Python SQL CloudComputing",
+                    "comments": 49,
+                    "createdUtc": 1783185025,
+                    "durationSeconds": 17.733,
+                    "followers": 159886,
+                    "likes": 4041,
+                    "paidPartnership": false,
+                    "plays": 156313,
+                    "shortcode": "DaYPrMcynja",
+                    "thumbnail": "https://scontent-det1-1.cdninstagram.com/v/t51.71878-15/731652942_761184670416377_4973370498515612609_n.jpg?stp=c0.248.640.640a_dst-jpg_e15_tt6&_nc_ht=scontent-det1-1.cdninstagram.com&_nc_cat=105&_nc_oc=Q6cZ2gEqM230rmCcjNPPssAH4EaCHLy3WimBLhkI6P_x87HJQzWtcLbxSAOyeCWZiklVTv0&_nc_ohc=9I9Bq3ZsUuMQ7kNvwGF7qax&_nc_gid=ONmXaAwKe2HPq_RlN6Rttg&edm=ADp7STQBAAAA&ccb=7-5&oh=00_AQDBQqImJEyNtMmrC1G4ABJVOm-AOzrSPSL1tn8WOQ8Pjg&oe=6A54446E&_nc_sid=c6f216",
+                    "url": "https://www.instagram.com/reel/DaYPrMcynja/",
+                    "username": "dataengineeringtamil",
+                    "verified": false,
+                    "views": 57078
+                  },
+                  {
+                    "caption": "AI can crunch numbers in seconds, but it can\u2019t make the decisions. \ud83e\udde0\n\nAI can generate charts, predict trends, and automate reports faster than any human, but companies don\u2019t need people to just copy-paste that data anymore. They need people who can look at the data and make smart, strategic moves. That\u2019s where Data Analysts comes in.\n\nThe future isn\u2019t about competing with AI, it\u2019s about steering it. \n\nWhen you add high-level data analytics to your skillset, you aren\u2019t just learning tools like Power BI or SQL. You\u2019re learning how to look at a mess of information, extract a story, and make the strategic decisions that actually move the needle.\n\nWhether you\u2019re in sales, marketing, finance, or starting completely from scratch, data is the ultimate leverage to shift into high-paying, strategic roles. If you are ready for that shift, \n\nJoin our Advanced Data Analytisc with AI program\n6 Months | Online & Offline\n\nContact us at +91 7012234033 or visit www.haca.co",
+                    "comments": 0,
+                    "createdUtc": 1783426478,
+                    "durationSeconds": 113.666,
+                    "followers": 7075,
+                    "likes": 6,
+                    "paidPartnership": false,
+                    "plays": 604,
+                    "shortcode": "DafcL4xuF_T",
+                    "thumbnail": "https://scontent-lga3-1.cdninstagram.com/v/t51.82787-15/735378553_17980383096028461_3672658601914506235_n.jpg?stp=c0.280.720.720a_dst-jpg_e15_s640x640_tt6&_nc_ht=scontent-lga3-1.cdninstagram.com&_nc_cat=109&_nc_oc=Q6cZ2gHvvhYmTEOO8jSG4r9lvQz2ak_b7IKwV2gkStlNL4lDKuPliwGruF8RX9JZWMBtO8w&_nc_ohc=cAZaOhc2KNwQ7kNvwHRTJQ3&_nc_gid=byfU9-kGxCULFpJOJjcdBQ&edm=ADp7STQBAAAA&ccb=7-5&oh=00_AQB-QSX-7a_PomLDZj88wmTRuOQubqhZc-2zcz7wxOF0Yw&oe=6A544916&_nc_sid=c6f216",
+                    "url": "https://www.instagram.com/reel/DafcL4xuF_T/",
+                    "username": "haca.techschool",
+                    "verified": false,
+                    "views": 93
+                  },
+                  {
+                    "caption": "\ud83e\udd16 Will AI replace Data Scientists?\n\n\u274c No.\n\nThe truth is simple:\n\nAI doesn't replace **AI-skilled Data Scientists**.\nIt makes them faster, smarter, and more powerful.\n\n\ud83d\ude80 Learn how to use AI for:\n\u2705 Data Analysis\n\u2705 Machine Learning\n\u2705 Automation\n\u2705 Predictive Analytics\n\u2705 Real-world Projects\n\nThe future belongs to professionals who know how to work **with AI, not against it.**\n\n\ud83d\udd25 Join our FREE Career Guidance Session\n\ud83d\udccd Data Science with AI\n\ud83c\udfaf Discover skills, career paths, salary opportunities, and industry trends.\n\n\ud83d\udce9 DM \"AI\" or click the link in our bio to register.\n\n#DataScience #ArtificialIntelligence #DataScienceWithAI #MachineLearning #AIJobs #CareerGrowth #DataAnalytics #FutureSkills #TechCareers #LearnAI #DataScientist #AITools #CareerGuidance #Upskill #Technology",
+                    "comments": 0,
+                    "createdUtc": 1782973229,
+                    "durationSeconds": 30.023,
+                    "followers": 21,
+                    "likes": 5,
+                    "paidPartnership": false,
+                    "plays": 52,
+                    "shortcode": "DaR7voigCvf",
+                    "thumbnail": "https://scontent-iad3-1.cdninstagram.com/v/t51.82787-15/731173297_17883730659603637_7743848183320831473_n.jpg?stp=c0.420.1080.1080a_dst-jpg_e35_s640x640_sh2.08_tt6&_nc_ht=scontent-iad3-1.cdninstagram.com&_nc_cat=101&_nc_oc=Q6cZ2gGXj41sfcE5bPD50fnaAcWWPFHfYfjn2UKf9svv1hb3Sw0rnTaly8n666BorQcpfbA&_nc_ohc=WiPcx2BYdVgQ7kNvwFfFCjd&_nc_gid=iTY3R_GVeLy6h40GEb9ApQ&edm=ADp7STQBAAAA&ccb=7-5&oh=00_AQAeZW68H1Vmjc3W1ONqqtRjWvtMItMEHrHCLFXU_TJhOg&oe=6A543DA4&_nc_sid=c6f216",
+                    "url": "https://www.instagram.com/reel/DaR7voigCvf/",
+                    "username": "tgs_trainings",
+                    "verified": false,
+                    "views": 10
+                  },
+                  {
+                    "caption": "Your AI assistant becomes far more powerful when it\u2019s connected to the right tools. From databases and cloud storage to BI platforms and workflow automation, Claude can bring your entire data ecosystem together.\n\nThis video highlights 20 essential connectors that help data professionals analyze data, automate repetitive tasks, generate insights, and make better business decisions. Whether you\u2019re a Data Analyst, BI Developer, Data Engineer, or AI enthusiast, these integrations can significantly improve your workflow.\n\nSave this reel for future reference and share it with your team.\n\n[Claude AI, Claude connectors, AI tools, data analytics, data science, business intelligence, Power BI, Tableau, Looker, Databricks, Apache Spark, Google Drive, BigQuery, Snowflake, Amazon S3, PostgreSQL, MySQL, SQL Server, Google Sheets, Excel, CSV files, REST API, Python, R programming, Zapier, Airflow, n8n, workflow automation, cloud computing, cloud storage, data warehouse, ETL, ELT, data engineering, SQL, analytics tools, AI automation, enterprise data, dashboards, reporting, machine learning, data integration, productivity tools, data pipelines, modern analytics, cloud platforms, data visualization, generative AI, AI for business, data professionals]\n\n#DataAnalytics #ArtificialIntelligence #DataScience #BusinessIntelligence #ClaudeAI",
+                    "comments": 0,
+                    "createdUtc": 1783179010,
+                    "durationSeconds": 11.237,
+                    "followers": 81586,
+                    "likes": -1,
+                    "paidPartnership": false,
+                    "plays": 11962,
+                    "shortcode": "DaYEUNGzw--",
+                    "thumbnail": "https://scontent-dfw5-1.cdninstagram.com/v/t51.82787-15/731580339_17933515419313439_965070180535760105_n.jpg?stp=c0.340.871.871a_dst-jpg_e15_s640x640_tt6&_nc_ht=scontent-dfw5-1.cdninstagram.com&_nc_cat=111&_nc_oc=Q6cZ2gFHaP0sZ8cpJstKz7HN3YNwzTHXRrC_yo35_hCXMa0LKgv9i9aKQ9CFUYYthBP_3d0&_nc_ohc=Tlg7oHO-YXgQ7kNvwHtxZR6&_nc_gid=QaJ8w6cGoAhTyxIKrXtLrg&edm=ADp7STQBAAAA&ccb=7-5&oh=00_AQDOUGPL6VkKcKT3U8f_pllxxhnKtGfO2TcQ1AjRT-cNwQ&oe=6A542ABA&_nc_sid=c6f216",
+                    "url": "https://www.instagram.com/reel/DaYEUNGzw--/",
+                    "username": "she_explores_data",
+                    "verified": false,
+                    "views": 1831
+                  },
+                  {
+                    "caption": "AI founder ranks the best AI tools to use in 2026",
+                    "comments": 178,
+                    "createdUtc": 1782918144,
+                    "durationSeconds": 19.575,
+                    "followers": 2828413,
+                    "likes": 4405,
+                    "paidPartnership": false,
+                    "plays": 360528,
+                    "shortcode": "DaQSqgFiodP",
+                    "thumbnail": "https://instagram.fagc1-2.fna.fbcdn.net/v/t51.82787-15/731131597_18598236031029052_550068795724936669_n.jpg?stp=c0.420.1080.1080a_dst-jpg_e35_s640x640_sh2.08_tt6&_nc_ht=instagram.fagc1-2.fna.fbcdn.net&_nc_cat=104&_nc_oc=Q6cZ2gEVkfO3IIFZnlF5bK1Dfq_i2qsYy6m5GUmPougjzkvp2Lvn3OIbwZZt6qOi3e7TncM&_nc_ohc=IGwpTqbDLQsQ7kNvwGotWTT&_nc_gid=_KcIXsrQeb1dkHeDBtJmjg&edm=ADp7STQBAAAA&ccb=7-5&oh=00_AQDTLZ55QqzEoWZ19dkFaCW2rKY0rs5OFtVTeVXIlX_j-Q&oe=6A542104&_nc_sid=c6f216",
+                    "url": "https://www.instagram.com/reel/DaQSqgFiodP/",
+                    "username": "danmartell",
+                    "verified": true,
+                    "views": 106120
+                  },
+                  {
+                    "caption": "\ud83e\udd16 Imagine building an AI model that detects fraud, a chatbot that solves customer queries, or a prediction system that helps businesses make smarter decisions.\n\nThese aren\u2019t just futuristic ideas\u2014they\u2019re real-world applications that top companies use every day. And the best part? You can learn to build them too.\n\nThe future belongs to professionals who understand Artificial Intelligence, Machine Learning, and Data Science. If you want to stay ahead in the tech industry, now is the time to build the skills that companies are actively hiring for.\n\nAt Red & White Skill Education, our AI & Data Science Program focuses on practical learning, industry-ready projects, and real-world experience.\n\n\ud83d\ude80 What You\u2019ll Learn:\n\u2705 Machine Learning & Deep Learning\n\u2705 Data Analysis & Big Data\n\u2705 AI-Powered Solutions\n\u2705 Real-World Projects & Case Studies\n\u2705 Industry-Focused Practical Training\n\nDon\u2019t just use AI\u2014learn how to build it.\n\n\u2728 Sapno Se Safalta Tak.\n\n#redandwhiteskilleducation #artificialintelligence #ai #datascience #machinelearning deeplearning",
+                    "comments": 1,
+                    "createdUtc": 1783006908,
+                    "durationSeconds": 20.56,
+                    "followers": 35831,
+                    "likes": 31,
+                    "paidPartnership": false,
+                    "plays": 1637,
+                    "shortcode": "DaS75PThLli",
+                    "thumbnail": "https://scontent-mia5-1.cdninstagram.com/v/t51.82787-15/732478359_18467444680108993_1546210681237717678_n.jpg?stp=c0.280.720.720a_dst-jpg_e15_s640x640_tt6&_nc_ht=scontent-mia5-1.cdninstagram.com&_nc_cat=101&_nc_oc=Q6cZ2gGSKTR9er_CExvT5JkBBktrZPDgtq0KcrcLFYW8wcENrLu9n7BrR2d2JZ5xDdcS_2g&_nc_ohc=tKZxQsHIqdQQ7kNvwE525g3&_nc_gid=lP8gmkyFCTDJ1CuzN-5ZOw&edm=ADp7STQBAAAA&ccb=7-5&oh=00_AQDwqgHwAm3tuVikpF9x33yM8kqFMcgykh-HNpKGWgjtcg&oe=6A544B49&_nc_sid=c6f216",
+                    "url": "https://www.instagram.com/reel/DaS75PThLli/",
+                    "username": "rwskilleducation_official",
+                    "verified": true,
+                    "views": 290
+                  },
+                  {
+                    "caption": "My Automation Learning Calendar \ud83d\udcc5",
+                    "comments": 329,
+                    "createdUtc": 1783016759,
+                    "durationSeconds": 11.166,
+                    "followers": 184257,
+                    "likes": 256,
+                    "paidPartnership": false,
+                    "plays": 23424,
+                    "shortcode": "DaTOoLCS8Dg",
+                    "thumbnail": "https://scontent-iad6-1.cdninstagram.com/v/t51.82787-15/734456682_17920502922393585_7523921443674468232_n.jpg?stp=c0.280.720.720a_dst-jpg_e15_s640x640_tt6&_nc_ht=scontent-iad6-1.cdninstagram.com&_nc_cat=109&_nc_oc=Q6cZ2gHNON_6WmWikzHFGQQHXTG_5JKR44edhSHBNsvSPfNuFvfiqLiH6MzTLyolxxAJZ1A&_nc_ohc=ENGoIC4ukmwQ7kNvwGH8NNU&_nc_gid=P-v7hYib85UWaCBkRS97Jg&edm=ADp7STQBAAAA&ccb=7-5&oh=00_AQBO9TugS_tbUHSKzp6FdpqHXLaGqxG_KnQ0D2KhKAIhbA&oe=6A5425FF&_nc_sid=c6f216",
+                    "url": "https://www.instagram.com/reel/DaTOoLCS8Dg/",
+                    "username": "sreenidhirajakrishnan",
+                    "verified": true,
+                    "views": 5671
+                  },
+                  {
+                    "caption": "AI automation in Data Analytics isn\u2019t about replacing analysts \u2014 it\u2019s about removing repetitive work so we can focus on insights, strategy, and better decisions. \ud83e\udd16\ud83d\udcca\n#AI #Automation #DataAnalytics #DataScience #Analytics",
+                    "comments": 0,
+                    "createdUtc": 1782991811,
+                    "durationSeconds": 29.568,
+                    "followers": 117,
+                    "likes": 22,
+                    "paidPartnership": false,
+                    "plays": 292,
+                    "shortcode": "DaSfQrnplEy",
+                    "thumbnail": "https://scontent-lga3-2.cdninstagram.com/v/t51.71878-15/732036080_1731862818002357_7932719806171136812_n.jpg?stp=c0.248.640.640a_dst-jpg_e15_tt6&_nc_ht=scontent-lga3-2.cdninstagram.com&_nc_cat=105&_nc_oc=Q6cZ2gHr36OzNcWGQAiqn2HilILHWZIE5f985QSIm3URyY9y6RTvuGlt0s97AY5792xSXnU&_nc_ohc=jfUai8HkVgwQ7kNvwGrLB5d&_nc_gid=qREKrKBwi_UtUQUA4UkB0g&edm=ADp7STQBAAAA&ccb=7-5&oh=00_AQC-OqIc8Bn_vLaK2nFdp12FJeUG1Bml8tGHLKols4g-Sw&oe=6A544137&_nc_sid=c6f216",
+                    "url": "https://www.instagram.com/reel/DaSfQrnplEy/",
+                    "username": "analytics_by_manya",
+                    "verified": false,
+                    "views": 86
+                  },
+                  {
+                    "caption": "\ud83e\udd16 We\u2019re not just talking about AI; we\u2019re using it every day. Hear from our teams on how they\u2019re putting AI to work\u2014improving quality, speeding up analysis, and freeing up time for the judgement and collaboration our clients value most.\u00a0\n\u00a0\nWhat\u2019s one way AI is changing your work right now?\n\u00a0\n#AI #FutureOfWork #PwCAI #DigitalTransformation",
+                    "comments": 1,
+                    "createdUtc": 1782984312,
+                    "durationSeconds": 144.733,
+                    "followers": 7283,
+                    "likes": 71,
+                    "paidPartnership": false,
+                    "plays": 5210,
+                    "shortcode": "DaSQ8Q5zVRl",
+                    "thumbnail": "https://scontent-iad6-1.cdninstagram.com/v/t51.82787-15/731823744_18467201254105044_162368777622135114_n.jpg?stp=c157.0.405.405a_dst-jpg_e15_tt6&_nc_ht=scontent-iad6-1.cdninstagram.com&_nc_cat=100&_nc_oc=Q6cZ2gFCav2e0NcoXghLxNYxSX6pxk6bTe0g8p2o8_kzGE3PBXRODPUk40eudfXbudoEEgU&_nc_ohc=Tm8vAteF4IAQ7kNvwFo_W_H&_nc_gid=vsPkBJJtDkAIOjIykKXYbw&edm=ADp7STQBAAAA&ccb=7-5&oh=00_AQDq_IPaTQaEKSxRYR6J7INLtL0M7ctUs_SNEskSKp_JKw&oe=6A543A86&_nc_sid=c6f216",
+                    "url": "https://www.instagram.com/reel/DaSQ8Q5zVRl/",
+                    "username": "pwc_singapore",
+                    "verified": false,
+                    "views": 1575
+                  },
+                  {
+                    "caption": "Agar aap AI, Machine Learning, Data Science, ya Automation mein career banana chahte hain, to Python seekhna bahut important hai. Lekin har AI kaam ke liye Python zaroori ho, aisa bhi nahi hai.\n\nPython kyun important hai?\n\n* \ud83d\udc0d Iski syntax simple hoti hai, isliye beginners ke liye seekhna aasaan hai.\n* \ud83e\udd16 AI aur Machine Learning ki bahut si popular libraries (jaise TensorFlow, PyTorch, scikit-learn) Python mein milti hain.\n* \ud83d\udcca Data analysis, automation, web development aur scripting mein bhi iska bahut use hota hai.\n* \ud83d\udcbc Bahut si companies AI aur software development roles ke liye Python ko prefer karti hain.\n\nAI mein Python ka role\n\n* AI models ko train aur test karne ke liye.\n* Data ko clean aur analyze karne ke liye.\n* AI applications aur automation banane ke liye.\n* APIs aur AI tools ko integrate karne ke liye.\n\nKya AI bina Python ke use ho sakta hai?\nHaan. Aaj kal ChatGPT aur doosre no-code AI tools se bina coding ke bhi bahut kaam ho jata hai. Lekin agar aap khud AI apps banana, models customize karna, ya AI engineer banna chahte hain, to Python seekhna bahut faydemand rahega.\n\nAgar aap abhi school mein hain, to roz 30\u201360 minute Python seekhna ek achhi shuruaat hogi. Pehle basics (variables, loops, functions) samajhiye, phir dheere-dheere AI aur Machine Learning ki taraf badhiye.#python #fullstack #careergrowth #digitalmarketing stack",
+                    "comments": 0,
+                    "createdUtc": 1783393828,
+                    "durationSeconds": 55.936,
+                    "followers": 3014,
+                    "likes": 29,
+                    "paidPartnership": false,
+                    "plays": 901,
+                    "shortcode": "Daed6zeMa6p",
+                    "thumbnail": "https://scontent-sea5-1.cdninstagram.com/v/t51.71878-15/733529226_1038517978656111_6815850959768905636_n.jpg?stp=c0.248.640.640a_dst-jpg_e15_tt6&_nc_ht=scontent-sea5-1.cdninstagram.com&_nc_cat=103&_nc_oc=Q6cZ2gFMM9R7u1qqm6cNt2Sg8ywxHAo2UdnKAxiIw85frHG-CeRZxY8W0iOdNf1wrBHIJYg&_nc_ohc=RyXS-DbNkNkQ7kNvwFjXW3x&_nc_gid=4IgyrVcoPO2XB7DYX7Xp2Q&edm=ADp7STQBAAAA&ccb=7-5&oh=00_AQDmXicVPcX3YUbYUOgR9wRPk3PHusiD3agN5AegFZ63HA&oe=6A541C3C&_nc_sid=c6f216",
+                    "url": "https://www.instagram.com/reel/Daed6zeMa6p/",
+                    "username": "zintinstitute",
+                    "verified": false,
+                    "views": 303
+                  }
+                ]
+              }
+            },
+            "provider": "AnyAPI",
+            "costUsd": 0.002,
+            "items": 10,
+            "hint": "large_result: this response is ~15 KB. To keep future runs from flooding your context, re-run with `fields` (keep only the keys you need), `max_items` (cap rows), or `summary=true` (outline only) \u2014 these trim the response only, never the charge."
+          },
+          "pairedItem": {
+            "item": 0
+          }
+        }
+      ],
+      "Write Replication Brief": [
+        {
+          "json": {
+            "output": "Here's an analysis of each viral post and a plan to adapt its framework for your LinkedIn presence in AI Automation & Data Analysis:\n\n---\n\n### **1. @societysector**\n\n*   **Core Driver:** Pattern-interrupt hook. The phrase \"AI tools hackers\" immediately grabs attention by creating a sense of intrigue and potential controversy, making viewers curious about the unexpected link between AI and cybersecurity culture.\n*   **Replication Plan for LinkedIn:**\n    1.  **Provocative \"Unseen Side\" Hook:** Start with a bold statement that reveals an unexpected or slightly unsettling angle of AI automation, challenging common perceptions. (e.g., \"AI isn't just about efficiency; it's also fueling the next generation of [unexpected challenge/opportunity] that few are talking about.\")\n    2.  **Elaborate & Pivot to Solution:** Briefly explain the unexpected connection, then swiftly pivot to how proactive AI automation and data analysis strategies can address, mitigate, or even leverage this new dynamic.\n    3.  **Strategic Discussion Prompt:** End with a question that encourages a thoughtful, professional discussion about the ethical, security, or strategic implications of AI's evolving role.\n\n### **2. @taki.gpt**\n\n*   **Core Driver:** Pattern-interrupt hook (through extreme, quantifiable benefit). The specific number \"60 Claude skills on GitHub\" combined with the aspirational \"build AI employees\" immediately establishes a massive, almost unbelievable value proposition that compels engagement.\n*   **Replication Plan for LinkedIn:**\n    1.  **Quantified, Aspirational Hook:** Begin with a precise number or metric (even if an estimate) linked to a transformative outcome in AI automation or data analysis that sounds almost too good to be true. (e.g., \"Imagine 100+ bespoke automation recipes that transform your entire operations team into an AI-powered growth engine.\")\n    2.  **Break Down Key Capabilities:** Briefly list 2-3 high-impact applications or areas where these advanced AI capabilities can make a tangible difference for businesses (e.g., \"From automating customer support workflows to generating hyper-targeted market analyses, the potential is vast.\").\n    3.  **Future-Oriented Call to Action:** Ask your audience how they envision AI \"employees\" or advanced automation reshaping their specific industry or role in the coming years, inviting strategic foresight.\n\n### **3. @miss.excel**\n\n*   **Core Driver:** Pattern-interrupt hook (hyperbolic speed/simplicity). The \"20 second data analysis using AI?\" claim acts as a powerful hook by promising an incredibly fast solution to a common, time-consuming business task.\n*   **Replication Plan for LinkedIn:**\n    1.  **Hyperbolic Time-Saving Hook:** Start with an almost unbelievable claim about how quickly a traditionally complex or time-intensive data analysis or automation task can be completed with AI. (e.g., \"Stop spending hours on manual reports. This AI workflow delivers actionable insights in under 60 seconds.\")\n    2.  **Problem-Solution Micro-Story:** Briefly outline the common pain point (e.g., \"Stuck sifting through spreadsheets?\") and then demonstrate how your AI automation or data analysis approach provides a dramatic, rapid solution.\n    3.  **Value-Driven Direct CTA:** Offer a tangible next step for those interested in replicating this speed, such as a link to a concise guide, a template, or an invitation to a short demo.\n\n### **4. @this_is_ayb**\n\n*   **Core Driver:** Visual formatting and white space (the rapid generation of code/text is the primary content). The visual demonstration of AI's speed and capability acts as a powerful \"show, don't tell\" pattern interrupt, immediately conveying value.\n*   **Replication Plan for LinkedIn:**\n    1.  **Visual-First Engagement Hook:** Create a captivating visual (a short GIF, a 15-second screen recording, or a multi-slide carousel) that immediately showcases an AI automation or data analysis process in action.\n    2.  **Concise \"What You're Seeing\" Caption:** Use minimal, impactful text to describe the transformation happening in the visual (e.g., \"Witness AI turning raw, unstructured data into a comprehensive market analysis in mere seconds.\").\n    3.  **Experience-Sharing Prompt:** Encourage engagement by asking followers to share the most impressive AI-driven transformation they've personally witnessed or implemented in their own work.\n\n### **5. @excelaibygeorge**\n\n*   **Core Driver:** Pattern-interrupt hook (hidden gem/secret weapon). The idea of a \"hidden AI Analyze Data button\" that's a \"total game-changer\" creates curiosity and a sense of discovering an exclusive, highly valuable shortcut.\n*   **Replication Plan for LinkedIn:**\n    1.  **\"Unlocking Hidden Potential\" Hook:** Begin by identifying an underutilized, overlooked, or \"secret\" feature/strategy within AI automation or data analysis tools that offers immense, untapped value. (e.g., \"Most businesses overlook this single AI data analysis feature, costing them hours of productivity and missed insights.\")\n    2.  **Tease the Benefit & \"Why\":** Briefly explain *what* this hidden gem does and the specific, dramatic benefit it provides (e.g., \"It's not just a button; it's a shortcut to automated trend detection and anomaly flagging that saves thousands in manual review.\").\n    3.  **\"Learn How\" Curiosity CTA:** Invite your audience to comment, react, or DM you to receive a quick guide, a step-by-step tip, or a resource that explains how to leverage this \"hidden\" capability.\n\n### **6. @danmartell**\n\n*   **Core Driver:** Pattern-interrupt hook (future-gazing with authority). The authoritative title (\"AI founder\") combined with a forward-looking prediction (\"best AI tools to use in 2026\") immediately positions the content as expert-driven and exclusive.\n*   **Replication Plan for LinkedIn:**\n    1.  **Authoritative Future-Gazing Hook:** Start with a bold, expert-backed prediction about the future of AI automation or data analysis, leveraging your unique perspective or industry insights. (e.g., \"As an AI Automation Strategist, here are my top 3 predictions for how AI will redefine data analysis by 2027.\")\n    2.  **Curated Insights & Justification:** Briefly list 2-3 specific tools, trends, or methodologies that support your prediction, providing concise reasoning for their projected dominance or impact.\n    3.  **Expert Discussion & Challenge:** Pose a question that invites your network to agree, disagree, or share their own informed predictions, fostering a high-level, thoughtful debate.\n\n### **7. @dataengineeringtamil**\n\n*   **Core Driver:** Data-backed contrarian take. It directly challenges a prevalent misconception about AI (\"Most people think AI starts with prompts. It doesn't.\"), immediately establishing authority by providing a foundational, often overlooked truth.\n*   **Replication Plan for LinkedIn:**\n    1.  **Direct Contrarian Hook:** Start by challenging a commonly held belief or practice in AI automation or data analysis with a simple, declarative, and slightly provocative statement. (e.g., \"The biggest mistake companies make with AI automation isn't in their prompts; it's here: [single word/phrase].\")\n    2.  **Unpack the \"Real Truth\":** Elaborate on why the common belief is flawed and immediately present the accurate, underlying principle or crucial first step, explaining its critical importance with a brief, relatable consequence.\n    3.  **Reflective Call to Action:** Encourage followers to reflect on their own current strategies and invite them to share their biggest challenges in implementing this \"real truth\" within their organizations.\n\n### **8. @ai.honeycove**\n\n*   **Core Driver:** Pattern-interrupt hook (unexpected use case/industry). Showcasing AI's transformative application in a niche, traditionally non-tech industry like \"timberland\" immediately piques curiosity about the vast and surprising breadth of AI's capabilities.\n*   **Replication Plan for LinkedIn:**\n    1.  **Surprising Industry/Use Case Hook:** Begin by highlighting an unexpected or non-obvious industry or application where AI automation or data analysis is creating profound, game-changing impact. (e.g., \"From deep-sea exploration to sustainable agriculture: AI's next frontier for automation isn't just in SaaS; it's revolutionizing industries you'd never expect.\")\n    2.  **Specific Impact & Value Proposition:** Briefly describe *what* AI is specifically doing in this unique context and the measurable value, efficiency gains, or groundbreaking results it's achieving.\n    3.  **Brainstorming & Opportunity Prompt:** Ask your audience to identify other overlooked or traditionally manual industries ripe for AI automation or data analysis disruption, sparking creative and strategic thinking.\n\n---\n\n### **Pattern of the day:**\n\nThe most successful posts across these platforms break through the noise by **promising high-value insight or an extreme advantage through novelty**. Whether it's revealing a \"hidden\" shortcut, presenting a contrarian perspective, showcasing an unexpected application, or predicting the future with authority, the core driver is to offer something fresh, tangible, and deeply relevant to the audience's professional aspirations or challenges."
+          },
+          "pairedItem": {
+            "item": 0
+          }
+        }
+      ]
+    },
+    "versionId": "ed366055-23c0-40ff-8a48-cec574978d23",
+    "activeVersionId": "ed366055-23c0-40ff-8a48-cec574978d23",
+    "versionCounter": 62,
+    "triggerCount": 1,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-07T22:04:11.368Z",
+        "createdAt": "2026-07-07T22:04:11.368Z",
+        "id": "7oGNlQUzjXpkaBkv",
+        "name": "API"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-07T21:54:29.213Z",
+        "createdAt": "2026-07-07T21:54:29.213Z",
+        "role": "workflow:owner",
+        "workflowId": "rVutc20jMrDscvvZ",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version ed366055",
+      "description": ""
+    }
+  }
+]

@@ -1,0 +1,60 @@
+[
+  {
+    "updatedAt": "2026-07-13T19:16:32.232Z",
+    "createdAt": "2026-07-13T19:16:32.232Z",
+    "id": "testworkflow1234",
+    "name": "Test Workflow Antigravity",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "manual-trigger-id",
+        "name": "When clicking 'Test workflow'"
+      }
+    ],
+    "connections": {},
+    "settings": null,
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": null,
+    "versionId": "2fff6c47-d4e9-4bdf-b5d0-1eca28b35e33",
+    "activeVersionId": null,
+    "versionCounter": 1,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-07-13T19:16:32.232Z",
+        "createdAt": "2026-07-13T19:16:32.232Z",
+        "role": "workflow:owner",
+        "workflowId": "testworkflow1234",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

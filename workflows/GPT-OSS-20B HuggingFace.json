@@ -1,0 +1,285 @@
+[
+  {
+    "updatedAt": "2026-07-15T13:20:51.058Z",
+    "createdAt": "2026-07-15T13:15:58.034Z",
+    "id": "juSeTD7eNDQnmMLd",
+    "name": "GPT-OSS-20B HuggingFace",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          -800,
+          96
+        ],
+        "id": "81e5bb1b-de3c-479c-91dc-370c23c365cf",
+        "name": "When chat message received",
+        "webhookId": "gpt-oss-20b-chat-webhook-001"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://router.huggingface.co/v1/chat/completions",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ model: 'openai/gpt-oss-20b:groq', messages: [{ role: 'system', content: 'You are a helpful AI assistant. Always respond in English, regardless of the language of the prompt.' }, { role: 'user', content: $json.chatInput }] }) }}",
+          "options": {
+            "response": {
+              "response": {
+                "neverError": true
+              }
+            },
+            "timeout": 120000
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -576,
+          96
+        ],
+        "id": "bc6401a4-e344-4f66-bde4-47927c633512",
+        "name": "Call HuggingFace Inference API",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "b6cebc23-dab9-436f-82f2-edd1d679608a",
+            "name": "HuggingFace API \u2014 n8n Stack"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "combinator": "or",
+            "conditions": [
+              {
+                "id": "condition-503-check",
+                "operator": {
+                  "type": "number",
+                  "operation": "equals"
+                },
+                "leftValue": "={{ $json.statusCode }}",
+                "rightValue": 503
+              },
+              {
+                "id": "condition-error-check",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                },
+                "leftValue": "={{ JSON.stringify($json) }}",
+                "rightValue": "is currently loading"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          -352,
+          96
+        ],
+        "id": "49e4cd46-089e-4d2a-a203-735eb3de9719",
+        "name": "Model Loading?"
+      },
+      {
+        "parameters": {
+          "amount": 30
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          -128,
+          0
+        ],
+        "id": "85780fff-fbe2-4996-9f50-8b6dfb0b1556",
+        "name": "Wait 30s for Model",
+        "webhookId": "5c4e4586-6b92-489d-bde6-3379cd1b1420"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://router.huggingface.co/v1/chat/completions",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ model: 'openai/gpt-oss-20b:groq', messages: [{ role: 'system', content: 'You are a helpful AI assistant. Always respond in English, regardless of the language of the prompt.' }, { role: 'user', content: $('When chat message received').first().json.chatInput }] }) }}",
+          "options": {
+            "response": {
+              "response": {
+                "neverError": true
+              }
+            },
+            "timeout": 120000
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          96,
+          0
+        ],
+        "id": "71795574-de57-4953-9b6b-4da6d06a53a7",
+        "name": "Retry HuggingFace API",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "b6cebc23-dab9-436f-82f2-edd1d679608a",
+            "name": "HuggingFace API \u2014 n8n Stack"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Parse the HuggingFace OpenAI-compatible API response\nconst data = $input.all();\nconst results = [];\n\nfor (const item of data) {\n  const json = item.json;\n\n  // Handle error responses\n  if (json.error) {\n    results.push({\n      json: {\n        output: `\u26a0\ufe0f HuggingFace API Error: ${json.error.message || JSON.stringify(json.error)}`,\n        model: 'openai/gpt-oss-20b:groq',\n        status: 'error'\n      }\n    });\n    continue;\n  }\n\n  let generatedText = '';\n  if (json.choices && json.choices.length > 0) {\n    generatedText = json.choices[0].message.content;\n  } else {\n    generatedText = JSON.stringify(json, null, 2);\n  }\n\n  results.push({\n    json: {\n      output: generatedText.trim(),\n      model: 'openai/gpt-oss-20b:groq',\n      status: 'success'\n    }\n  });\n}\n\nreturn results;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -128,
+          192
+        ],
+        "id": "cf6c0291-784c-4362-aee8-1d02c6704547",
+        "name": "Parse Response"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Parse the retry response (same logic)\nconst data = $input.all();\nconst results = [];\n\nfor (const item of data) {\n  const json = item.json;\n\n  if (json.error) {\n    results.push({\n      json: {\n        output: `\u26a0\ufe0f Model still unavailable after retry: ${json.error.message || JSON.stringify(json.error)}`,\n        model: 'openai/gpt-oss-20b:groq',\n        status: 'error'\n      }\n    });\n    continue;\n  }\n\n  let generatedText = '';\n  if (json.choices && json.choices.length > 0) {\n    generatedText = json.choices[0].message.content;\n  } else {\n    generatedText = JSON.stringify(json, null, 2);\n  }\n\n  results.push({\n    json: {\n      output: generatedText.trim(),\n      model: 'openai/gpt-oss-20b:groq',\n      status: 'success_after_retry'\n    }\n  });\n}\n\nreturn results;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          320,
+          0
+        ],
+        "id": "7a6dff2d-b69f-4809-9fab-507f2d110371",
+        "name": "Parse Retry Response"
+      }
+    ],
+    "connections": {
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "node": "Call HuggingFace Inference API",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Call HuggingFace Inference API": {
+        "main": [
+          [
+            {
+              "node": "Model Loading?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Model Loading?": {
+        "main": [
+          [
+            {
+              "node": "Wait 30s for Model",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Parse Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait 30s for Model": {
+        "main": [
+          [
+            {
+              "node": "Retry HuggingFace API",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Retry HuggingFace API": {
+        "main": [
+          [
+            {
+              "node": "Parse Retry Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "f5dab92b-f1f4-4e45-8397-db063ed2fe03",
+    "activeVersionId": null,
+    "versionCounter": 4,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-15T13:20:47.917Z",
+        "createdAt": "2026-07-15T13:20:47.917Z",
+        "id": "zinCZAocah3K8cDU",
+        "name": "GPT-OSS-20B"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-15T13:15:58.034Z",
+        "createdAt": "2026-07-15T13:15:58.034Z",
+        "role": "workflow:owner",
+        "workflowId": "juSeTD7eNDQnmMLd",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

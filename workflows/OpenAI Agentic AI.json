@@ -1,0 +1,94 @@
+[
+  {
+    "updatedAt": "2026-07-13T19:08:51.992Z",
+    "createdAt": "2026-07-13T16:43:56.655Z",
+    "id": "o3CCEwCaguPuplD8",
+    "name": "OpenAI Agentic AI",
+    "description": null,
+    "active": false,
+    "isArchived": true,
+    "nodes": [
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          0
+        ],
+        "id": "1fcca43f-1c18-4a22-a7ef-c7b2900754f1",
+        "name": "When chat message received",
+        "webhookId": "f0bbf2c1-8344-456e-ae4a-f97062352327"
+      },
+      {
+        "parameters": {
+          "batching": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chainLlm",
+        "typeVersion": 1.9,
+        "position": [
+          224,
+          0
+        ],
+        "id": "29424d87-6525-4e7e-b72c-580f2525580a",
+        "name": "Basic LLM Chain"
+      }
+    ],
+    "connections": {
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "node": "Basic LLM Chain",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "0d60daab-66d5-4aba-9cad-40e87ab5ba65",
+    "activeVersionId": null,
+    "versionCounter": 14,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-07-13T16:43:56.655Z",
+        "createdAt": "2026-07-13T16:43:56.655Z",
+        "role": "workflow:owner",
+        "workflowId": "o3CCEwCaguPuplD8",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]
