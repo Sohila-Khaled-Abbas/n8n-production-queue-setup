@@ -1,0 +1,6 @@
+mcp
+fastmcp
+uvicorn
+starlette
+openai
+python-dotenv

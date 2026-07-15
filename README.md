@@ -40,6 +40,7 @@
 | **Production-Tuned PostgreSQL** | `shared_buffers`, `wal_buffers`, `checkpoint_completion_target` pre-configured |
 | **Health Checks** | All dependencies are health-checked before n8n starts |
 | **Centralized Log Rotation** | Configurable via `.env` — `LOG_DRIVER`, `LOG_MAX_SIZE`, `LOG_MAX_FILE` |
+| **MCP Workflow Generator** | A standalone FastMCP AI tool hosted via SSE that autonomously generates n8n JSON workflows from text prompts using HuggingFace/Ollama/OpenRouter APIs |
 
 ---
 
