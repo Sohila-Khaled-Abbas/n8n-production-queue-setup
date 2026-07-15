@@ -34,7 +34,7 @@
 | **PostgreSQL Backend** | Durable workflow, credential, and execution history storage |
 | **Scheduled Backups** | Optional backup service: pg_dump + Redis + n8n volume → cloud via rclone |
 | **WhatsApp HTTP API** | Local WAHA gateway integrated + `@devlikeapro/n8n-nodes-waha` node auto-installed |
-| **HuggingFace Inference API** | Auto-provisioned `httpHeaderAuth` credential for calling HF models (e.g. `openai/gpt-oss-20b`) with built-in 503/model-loading retry workflow |
+| **HuggingFace & OpenRouter APIs** | Auto-provisioned auth for calling HF/OpenRouter models (e.g. `openai/gpt-oss-20b`) via standard and OpenAI-compatible v1 router endpoints, with built-in retry logic. |
 | **Data-Engineering Ready** | `pandas`, `numpy`, `pillow`, `requests` pre-installed in Python runner |
 | **Qdrant Vector DB** | Included for high-performance RAG and embeddings |
 | **Production-Tuned PostgreSQL** | `shared_buffers`, `wal_buffers`, `checkpoint_completion_target` pre-configured |

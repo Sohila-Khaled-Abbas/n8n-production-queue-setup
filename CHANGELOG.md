@@ -4,6 +4,19 @@ All notable changes to the **n8n Production Autoscaling Stack** will be document
 
 ---
 
+## [Unreleased]
+
+### ✨ Added
+- **GPT-OSS-20B Workflows**: Added two new workflows for 20B+ parameter inference:
+  - `GPT_OSS_20B_OpenRouter.json`: Uses OpenRouter's API (`openai/gpt-oss-20b:free`) to bypass local hardware limits.
+  - `GPT_OSS_20B_HuggingFace.json`: Uses Hugging Face's OpenAI-compatible v1 router (`router.huggingface.co/v1`) with Groq backend.
+
+### 🐛 Fixed
+- **Hugging Face Inference Support**: Replaced legacy Serverless Inference API endpoints with the new OpenAI-compatible v1 router to fix `Model not supported by provider hf-inference` errors on large models.
+- **Model Language Drift**: Injected an English-enforcing system prompt (`"Always respond in English..."`) into AI workflows to prevent models from mirroring foreign languages from user prompts.
+
+---
+
 ## [1.3.0] - 2026-07-13
 
 ### ✨ Added
