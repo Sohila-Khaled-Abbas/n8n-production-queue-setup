@@ -825,6 +825,30 @@ docker compose exec redis redis-cli KEYS "bull:*"
 
 ---
 
+## AI & Language Model Issues
+
+### Hugging Face "Model not supported by provider hf-inference"
+
+**Symptoms:** When using the Hugging Face node or HTTP requests to `https://router.huggingface.co/hf-inference/...`, you receive an error stating the model is not supported, especially on large models (e.g. >20B parameters).
+
+**Cause:** The legacy Serverless Inference API does not support extremely large models for free/serverless tier users in the traditional `inputs` payload format.
+
+**Fix:** Use Hugging Face's new OpenAI-compatible v1 router. 
+1. Use an **OpenAI Chat Model** node (or raw HTTP Request formatted for OpenAI).
+2. Set the Base URL to `https://router.huggingface.co/v1`.
+3. Provide your Hugging Face token as the API key.
+4. Call the model using its exact name or the specific inference provider tag (e.g. `openai/gpt-oss-20b:groq`).
+
+### AI responds in the wrong language
+
+**Symptoms:** The language model responds in a foreign language (e.g., German, Chinese) despite the prompt or your expectations.
+
+**Cause:** If an open-source model is heavily fine-tuned on multi-lingual datasets, it may drift into the language of the prompt or hallucinate a language shift.
+
+**Fix:** Enforce output language via a strict **System Prompt**. In your `messages` array (or System Message parameter in n8n Advanced AI nodes), add: `"You are a helpful AI assistant. Always respond in English, regardless of the language of the prompt."`
+
+---
+
 ## Getting Help
 
 1. **Check logs first:** `docker compose logs -f`
