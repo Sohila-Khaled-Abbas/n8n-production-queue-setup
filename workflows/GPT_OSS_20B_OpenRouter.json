@@ -1,6 +1,6 @@
 {
   "id": "gptoss20bhf00001",
-  "name": "GPT-OSS-20B HuggingFace",
+  "name": "GPT-OSS-20B OpenRouter",
   "nodes": [
     {
       "parameters": {
@@ -16,12 +16,23 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://router.huggingface.co/v1/chat/completions",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "httpHeaderAuth",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'openai/gpt-oss-20b:groq', messages: [{ role: 'system', content: 'You are a helpful AI assistant. Always respond in English, regardless of the language of the prompt.' }, { role: 'user', content: $json.chatInput }] }) }}",
+        "jsonBody": "={{ JSON.stringify({ model: 'openai/gpt-oss-20b:free', messages: [{ role: 'system', content: 'You are a helpful AI assistant. Always respond in English, regardless of the language of the prompt.' }, { role: 'user', content: $json.chatInput }] }) }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_OPENROUTER_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
         "options": {
           "response": {
             "response": {
@@ -35,13 +46,7 @@
       "typeVersion": 4.3,
       "position": [280, 0],
       "id": "a1b2c3d4-http-req-0002-abcdef000002",
-      "name": "Call HuggingFace Inference API",
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "",
-          "name": "HuggingFace API — n8n Stack"
-        }
-      }
+      "name": "Call OpenRouter API"
     },
     {
       "parameters": {
@@ -93,12 +98,23 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://router.huggingface.co/v1/chat/completions",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "httpHeaderAuth",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'openai/gpt-oss-20b:groq', messages: [{ role: 'system', content: 'You are a helpful AI assistant. Always respond in English, regardless of the language of the prompt.' }, { role: 'user', content: $('When chat message received').first().json.chatInput }] }) }}",
+        "jsonBody": "={{ JSON.stringify({ model: 'openai/gpt-oss-20b:free', messages: [{ role: 'system', content: 'You are a helpful AI assistant. Always respond in English, regardless of the language of the prompt.' }, { role: 'user', content: $('When chat message received').first().json.chatInput }] }) }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_OPENROUTER_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
         "options": {
           "response": {
             "response": {
@@ -112,17 +128,11 @@
       "typeVersion": 4.3,
       "position": [1060, -100],
       "id": "a1b2c3d4-http-rt-0005-abcdef000005",
-      "name": "Retry HuggingFace API",
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "",
-          "name": "HuggingFace API — n8n Stack"
-        }
-      }
+      "name": "Retry OpenRouter API"
     },
     {
       "parameters": {
-        "jsCode": "// Parse the HuggingFace OpenAI-compatible API response\nconst data = $input.all();\nconst results = [];\n\nfor (const item of data) {\n  const json = item.json;\n\n  // Handle error responses\n  if (json.error) {\n    results.push({\n      json: {\n        output: `⚠️ HuggingFace API Error: ${json.error.message || JSON.stringify(json.error)}`,\n        model: 'openai/gpt-oss-20b:groq',\n        status: 'error'\n      }\n    });\n    continue;\n  }\n\n  let generatedText = '';\n  if (json.choices && json.choices.length > 0) {\n    generatedText = json.choices[0].message.content;\n  } else {\n    generatedText = JSON.stringify(json, null, 2);\n  }\n\n  results.push({\n    json: {\n      output: generatedText.trim(),\n      model: 'openai/gpt-oss-20b:groq',\n      status: 'success'\n    }\n  });\n}\n\nreturn results;"
+        "jsCode": "// Parse the OpenRouter API response\nconst data = $input.all();\nconst results = [];\n\nfor (const item of data) {\n  const json = item.json;\n\n  if (json.error) {\n    results.push({\n      json: {\n        output: `⚠️ OpenRouter API Error: ${json.error.message || JSON.stringify(json.error)}`,\n        model: 'openai/gpt-oss-20b:free',\n        status: 'error'\n      }\n    });\n    continue;\n  }\n\n  let generatedText = '';\n  if (json.choices && json.choices.length > 0) {\n    generatedText = json.choices[0].message.content;\n  } else {\n    generatedText = JSON.stringify(json, null, 2);\n  }\n\n  results.push({\n    json: {\n      output: generatedText.trim(),\n      model: 'openai/gpt-oss-20b:free',\n      status: 'success'\n    }\n  });\n}\n\nreturn results;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -132,7 +142,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Parse the retry response (same logic)\nconst data = $input.all();\nconst results = [];\n\nfor (const item of data) {\n  const json = item.json;\n\n  if (json.error) {\n    results.push({\n      json: {\n        output: `⚠️ Model still unavailable after retry: ${json.error.message || JSON.stringify(json.error)}`,\n        model: 'openai/gpt-oss-20b:groq',\n        status: 'error'\n      }\n    });\n    continue;\n  }\n\n  let generatedText = '';\n  if (json.choices && json.choices.length > 0) {\n    generatedText = json.choices[0].message.content;\n  } else {\n    generatedText = JSON.stringify(json, null, 2);\n  }\n\n  results.push({\n    json: {\n      output: generatedText.trim(),\n      model: 'openai/gpt-oss-20b:groq',\n      status: 'success_after_retry'\n    }\n  });\n}\n\nreturn results;"
+        "jsCode": "// Parse the retry response (OpenRouter)\nconst data = $input.all();\nconst results = [];\n\nfor (const item of data) {\n  const json = item.json;\n\n  if (json.error) {\n    results.push({\n      json: {\n        output: `⚠️ Model still unavailable after retry: ${json.error.message || JSON.stringify(json.error)}`,\n        model: 'openai/gpt-oss-20b:free',\n        status: 'error'\n      }\n    });\n    continue;\n  }\n\n  let generatedText = '';\n  if (json.choices && json.choices.length > 0) {\n    generatedText = json.choices[0].message.content;\n  } else {\n    generatedText = JSON.stringify(json, null, 2);\n  }\n\n  results.push({\n    json: {\n      output: generatedText.trim(),\n      model: 'openai/gpt-oss-20b:free',\n      status: 'success_after_retry'\n    }\n  });\n}\n\nreturn results;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -146,14 +156,14 @@
       "main": [
         [
           {
-            "node": "Call HuggingFace Inference API",
+            "node": "Call OpenRouter API",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Call HuggingFace Inference API": {
+    "Call OpenRouter API": {
       "main": [
         [
           {
@@ -186,14 +196,14 @@
       "main": [
         [
           {
-            "node": "Retry HuggingFace API",
+            "node": "Retry OpenRouter API",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Retry HuggingFace API": {
+    "Retry OpenRouter API": {
       "main": [
         [
           {
