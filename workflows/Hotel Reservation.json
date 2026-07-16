@@ -2,14 +2,14 @@
   "updatedAt": "2026-06-17T23:20:07.100Z",
   "createdAt": "2026-06-17T17:45:50.182Z",
   "id": "vsUT3G8zRWz530xO",
-  "name": "Hotel Reservation‏",
+  "name": "Hotel Reservation\u200f",
   "description": null,
   "active": true,
   "isArchived": false,
   "nodes": [
     {
       "parameters": {
-        "formTitle": "Reservation‏",
+        "formTitle": "Reservation\u200f",
         "formDescription": "Please, Choose your Room.",
         "formFields": {
           "values": [
@@ -160,7 +160,20 @@
   "versionCounter": 61,
   "triggerCount": 1,
   "sourceWorkflowId": null,
-  "tags": [],
+  "tags": [
+    {
+      "createdAt": "2026-07-16T15:40:43.340900+00:00",
+      "updatedAt": "2026-07-16T15:40:43.340919+00:00",
+      "id": "tag_production_automation",
+      "name": "Production Automation"
+    },
+    {
+      "createdAt": "2026-07-16T15:40:43.340929+00:00",
+      "updatedAt": "2026-07-16T15:40:43.340933+00:00",
+      "id": "tag_event-driven_architecture",
+      "name": "Event-Driven Architecture"
+    }
+  ],
   "shared": [
     {
       "updatedAt": "2026-06-17T17:45:50.182Z",

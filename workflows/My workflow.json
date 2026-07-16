@@ -25,7 +25,14 @@
     "versionCounter": 17,
     "triggerCount": 0,
     "sourceWorkflowId": null,
-    "tags": [],
+    "tags": [
+      {
+        "createdAt": "2026-07-16T15:40:44.103315+00:00",
+        "updatedAt": "2026-07-16T15:40:44.103333+00:00",
+        "id": "tag_production_automation",
+        "name": "Production Automation"
+      }
+    ],
     "shared": [
       {
         "updatedAt": "2026-06-28T14:59:59.560Z",

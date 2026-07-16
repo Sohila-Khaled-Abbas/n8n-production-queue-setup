@@ -8,7 +8,10 @@
       },
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.4,
-      "position": [0, 0],
+      "position": [
+        0,
+        0
+      ],
       "id": "a1b2c3d4-chat-trig-0001-abcdef000001",
       "name": "When chat message received",
       "webhookId": "gpt-oss-20b-chat-webhook-001"
@@ -33,13 +36,16 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
-      "position": [280, 0],
+      "position": [
+        280,
+        0
+      ],
       "id": "a1b2c3d4-http-req-0002-abcdef000002",
       "name": "Call HuggingFace Inference API",
       "credentials": {
         "httpHeaderAuth": {
           "id": "",
-          "name": "HuggingFace API — n8n Stack"
+          "name": "HuggingFace API \u2014 n8n Stack"
         }
       }
     },
@@ -75,7 +81,10 @@
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [540, 0],
+      "position": [
+        540,
+        0
+      ],
       "id": "a1b2c3d4-if-node-0003-abcdef000003",
       "name": "Model Loading?"
     },
@@ -86,7 +95,10 @@
       },
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
-      "position": [800, -100],
+      "position": [
+        800,
+        -100
+      ],
       "id": "a1b2c3d4-wait-nod-0004-abcdef000004",
       "name": "Wait 30s for Model"
     },
@@ -110,33 +122,42 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
-      "position": [1060, -100],
+      "position": [
+        1060,
+        -100
+      ],
       "id": "a1b2c3d4-http-rt-0005-abcdef000005",
       "name": "Retry HuggingFace API",
       "credentials": {
         "httpHeaderAuth": {
           "id": "",
-          "name": "HuggingFace API — n8n Stack"
+          "name": "HuggingFace API \u2014 n8n Stack"
         }
       }
     },
     {
       "parameters": {
-        "jsCode": "// Parse the HuggingFace OpenAI-compatible API response\nconst data = $input.all();\nconst results = [];\n\nfor (const item of data) {\n  const json = item.json;\n\n  // Handle error responses\n  if (json.error) {\n    results.push({\n      json: {\n        output: `⚠️ HuggingFace API Error: ${json.error.message || JSON.stringify(json.error)}`,\n        model: 'openai/gpt-oss-20b:groq',\n        status: 'error'\n      }\n    });\n    continue;\n  }\n\n  let generatedText = '';\n  if (json.choices && json.choices.length > 0) {\n    generatedText = json.choices[0].message.content;\n  } else {\n    generatedText = JSON.stringify(json, null, 2);\n  }\n\n  results.push({\n    json: {\n      output: generatedText.trim(),\n      model: 'openai/gpt-oss-20b:groq',\n      status: 'success'\n    }\n  });\n}\n\nreturn results;"
+        "jsCode": "// Parse the HuggingFace OpenAI-compatible API response\nconst data = $input.all();\nconst results = [];\n\nfor (const item of data) {\n  const json = item.json;\n\n  // Handle error responses\n  if (json.error) {\n    results.push({\n      json: {\n        output: `\u26a0\ufe0f HuggingFace API Error: ${json.error.message || JSON.stringify(json.error)}`,\n        model: 'openai/gpt-oss-20b:groq',\n        status: 'error'\n      }\n    });\n    continue;\n  }\n\n  let generatedText = '';\n  if (json.choices && json.choices.length > 0) {\n    generatedText = json.choices[0].message.content;\n  } else {\n    generatedText = JSON.stringify(json, null, 2);\n  }\n\n  results.push({\n    json: {\n      output: generatedText.trim(),\n      model: 'openai/gpt-oss-20b:groq',\n      status: 'success'\n    }\n  });\n}\n\nreturn results;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [800, 100],
+      "position": [
+        800,
+        100
+      ],
       "id": "a1b2c3d4-code-nd-0006-abcdef000006",
       "name": "Parse Response"
     },
     {
       "parameters": {
-        "jsCode": "// Parse the retry response (same logic)\nconst data = $input.all();\nconst results = [];\n\nfor (const item of data) {\n  const json = item.json;\n\n  if (json.error) {\n    results.push({\n      json: {\n        output: `⚠️ Model still unavailable after retry: ${json.error.message || JSON.stringify(json.error)}`,\n        model: 'openai/gpt-oss-20b:groq',\n        status: 'error'\n      }\n    });\n    continue;\n  }\n\n  let generatedText = '';\n  if (json.choices && json.choices.length > 0) {\n    generatedText = json.choices[0].message.content;\n  } else {\n    generatedText = JSON.stringify(json, null, 2);\n  }\n\n  results.push({\n    json: {\n      output: generatedText.trim(),\n      model: 'openai/gpt-oss-20b:groq',\n      status: 'success_after_retry'\n    }\n  });\n}\n\nreturn results;"
+        "jsCode": "// Parse the retry response (same logic)\nconst data = $input.all();\nconst results = [];\n\nfor (const item of data) {\n  const json = item.json;\n\n  if (json.error) {\n    results.push({\n      json: {\n        output: `\u26a0\ufe0f Model still unavailable after retry: ${json.error.message || JSON.stringify(json.error)}`,\n        model: 'openai/gpt-oss-20b:groq',\n        status: 'error'\n      }\n    });\n    continue;\n  }\n\n  let generatedText = '';\n  if (json.choices && json.choices.length > 0) {\n    generatedText = json.choices[0].message.content;\n  } else {\n    generatedText = JSON.stringify(json, null, 2);\n  }\n\n  results.push({\n    json: {\n      output: generatedText.trim(),\n      model: 'openai/gpt-oss-20b:groq',\n      status: 'success_after_retry'\n    }\n  });\n}\n\nreturn results;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1320, -100],
+      "position": [
+        1320,
+        -100
+      ],
       "id": "a1b2c3d4-code-rt-0007-abcdef000007",
       "name": "Parse Retry Response"
     }
@@ -212,5 +233,36 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "tags": []
+  "tags": [
+    {
+      "createdAt": "2026-07-16T15:40:41.987327+00:00",
+      "updatedAt": "2026-07-16T15:40:41.987340+00:00",
+      "id": "tag_production_automation",
+      "name": "Production Automation"
+    },
+    {
+      "createdAt": "2026-07-16T15:40:41.987347+00:00",
+      "updatedAt": "2026-07-16T15:40:41.987350+00:00",
+      "id": "tag_data_pipeline",
+      "name": "Data Pipeline"
+    },
+    {
+      "createdAt": "2026-07-16T15:40:41.987354+00:00",
+      "updatedAt": "2026-07-16T15:40:41.987356+00:00",
+      "id": "tag_event-driven_architecture",
+      "name": "Event-Driven Architecture"
+    },
+    {
+      "createdAt": "2026-07-16T15:40:41.987360+00:00",
+      "updatedAt": "2026-07-16T15:40:41.987362+00:00",
+      "id": "tag_agentic_ai",
+      "name": "Agentic AI"
+    },
+    {
+      "createdAt": "2026-07-16T15:40:41.987365+00:00",
+      "updatedAt": "2026-07-16T15:40:41.987368+00:00",
+      "id": "tag_data_transformation",
+      "name": "Data Transformation"
+    }
+  ]
 }

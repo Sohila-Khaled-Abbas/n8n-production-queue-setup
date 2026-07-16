@@ -1424,6 +1424,48 @@
         "createdAt": "2026-07-03T17:52:02.296Z",
         "id": "Wxdli3aDYMrnIU4o",
         "name": "Gourmet Bistro"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:40.554638+00:00",
+        "updatedAt": "2026-07-16T15:40:40.554660+00:00",
+        "id": "tag_vector_storage",
+        "name": "Vector Storage"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:40.554670+00:00",
+        "updatedAt": "2026-07-16T15:40:40.554675+00:00",
+        "id": "tag_rag",
+        "name": "RAG"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:40.554681+00:00",
+        "updatedAt": "2026-07-16T15:40:40.554686+00:00",
+        "id": "tag_production_automation",
+        "name": "Production Automation"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:40.554692+00:00",
+        "updatedAt": "2026-07-16T15:40:40.554696+00:00",
+        "id": "tag_data_pipeline",
+        "name": "Data Pipeline"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:40.554702+00:00",
+        "updatedAt": "2026-07-16T15:40:40.554707+00:00",
+        "id": "tag_event-driven_architecture",
+        "name": "Event-Driven Architecture"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:40.554713+00:00",
+        "updatedAt": "2026-07-16T15:40:40.554717+00:00",
+        "id": "tag_agentic_ai",
+        "name": "Agentic AI"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:40.554723+00:00",
+        "updatedAt": "2026-07-16T15:40:40.554727+00:00",
+        "id": "tag_data_transformation",
+        "name": "Data Transformation"
       }
     ],
     "shared": [

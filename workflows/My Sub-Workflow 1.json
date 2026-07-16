@@ -59,7 +59,20 @@
     "versionCounter": 2,
     "triggerCount": 0,
     "sourceWorkflowId": null,
-    "tags": [],
+    "tags": [
+      {
+        "createdAt": "2026-07-16T15:40:43.780163+00:00",
+        "updatedAt": "2026-07-16T15:40:43.780184+00:00",
+        "id": "tag_production_automation",
+        "name": "Production Automation"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:43.780193+00:00",
+        "updatedAt": "2026-07-16T15:40:43.780198+00:00",
+        "id": "tag_event-driven_architecture",
+        "name": "Event-Driven Architecture"
+      }
+    ],
     "shared": [
       {
         "updatedAt": "2026-06-13T17:36:23.695Z",

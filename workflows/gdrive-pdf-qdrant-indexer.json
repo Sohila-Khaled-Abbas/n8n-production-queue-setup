@@ -1,5 +1,5 @@
 {
-  "name": "Google Drive PDF → Qdrant RAG Indexer",
+  "name": "Google Drive PDF \u2192 Qdrant RAG Indexer",
   "nodes": [
     {
       "parameters": {},
@@ -7,7 +7,10 @@
       "name": "Run Indexer",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
-      "position": [-640, 0],
+      "position": [
+        -640,
+        0
+      ],
       "notes": "Click 'Test workflow' to index all PDFs in your Google Drive folder."
     },
     {
@@ -23,7 +26,10 @@
       "name": "List All PDFs",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
-      "position": [-420, 0],
+      "position": [
+        -420,
+        0
+      ],
       "credentials": {
         "googleDriveOAuth2Api": {
           "id": "",
@@ -40,7 +46,10 @@
       "name": "Process One by One",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
-      "position": [-200, 0]
+      "position": [
+        -200,
+        0
+      ]
     },
     {
       "parameters": {
@@ -58,7 +67,10 @@
       "name": "Download PDF",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
-      "position": [40, 0],
+      "position": [
+        40,
+        0
+      ],
       "credentials": {
         "googleDriveOAuth2Api": {
           "id": "",
@@ -83,7 +95,10 @@
       "name": "Store in Qdrant",
       "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
       "typeVersion": 1,
-      "position": [280, 0],
+      "position": [
+        280,
+        0
+      ],
       "credentials": {
         "qdrantApi": {
           "id": "",
@@ -115,7 +130,10 @@
       "name": "Load PDF",
       "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
       "typeVersion": 1,
-      "position": [280, 220]
+      "position": [
+        280,
+        220
+      ]
     },
     {
       "parameters": {
@@ -127,7 +145,10 @@
       "name": "Split Text",
       "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
       "typeVersion": 1,
-      "position": [280, 420]
+      "position": [
+        280,
+        420
+      ]
     },
     {
       "parameters": {
@@ -139,11 +160,14 @@
       "name": "Ollama Embeddings",
       "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
       "typeVersion": 1,
-      "position": [520, 220]
+      "position": [
+        520,
+        220
+      ]
     },
     {
       "parameters": {
-        "content": "## 📂 Google Drive PDF → Qdrant RAG Indexer\n\n### Setup (do once before running):\n\n**1. Google Drive Folder:**\n- The folder is pre-configured to your PDF folder (ID: 1kiyeVdh-lP45tH8uV-_8hpPVQc1DR_NK).\n- If you ever want to change it, open the 'List All PDFs' node and change the Folder ID.\n\n**2. Set credentials on both Google Drive nodes:**\n- Click each Google Drive node and select your Google Drive credential.\n\n**3. Set Qdrant credential:**\n- URL: `http://qdrant:6333`\n- No API key is needed.\n\n**4. Verify Ollama has the model:**\n- Ensure you have pulled `nomic-embed-text`.\n\n### How it works:\n- Lists ALL PDFs in your folder\n- Downloads and processes them one by one (avoids running out of memory)\n- Splits each PDF into 1000-char chunks with 200 overlap\n- Embeds via Ollama nomic-embed-text (768 dims)\n- Stores everything in local Qdrant collection `n8n-rag`",
+        "content": "## \ud83d\udcc2 Google Drive PDF \u2192 Qdrant RAG Indexer\n\n### Setup (do once before running):\n\n**1. Google Drive Folder:**\n- The folder is pre-configured to your PDF folder (ID: 1kiyeVdh-lP45tH8uV-_8hpPVQc1DR_NK).\n- If you ever want to change it, open the 'List All PDFs' node and change the Folder ID.\n\n**2. Set credentials on both Google Drive nodes:**\n- Click each Google Drive node and select your Google Drive credential.\n\n**3. Set Qdrant credential:**\n- URL: `http://qdrant:6333`\n- No API key is needed.\n\n**4. Verify Ollama has the model:**\n- Ensure you have pulled `nomic-embed-text`.\n\n### How it works:\n- Lists ALL PDFs in your folder\n- Downloads and processes them one by one (avoids running out of memory)\n- Splits each PDF into 1000-char chunks with 200 overlap\n- Embeds via Ollama nomic-embed-text (768 dims)\n- Stores everything in local Qdrant collection `n8n-rag`",
         "height": 460,
         "width": 440,
         "color": 7
@@ -152,7 +176,10 @@
       "name": "Setup Instructions",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [-640, 220]
+      "position": [
+        -640,
+        220
+      ]
     }
   ],
   "connections": {
@@ -254,7 +281,48 @@
     "errorWorkflow": ""
   },
   "staticData": null,
-  "tags": ["RAG", "Qdrant", "Google Drive", "Ollama"],
+  "tags": [
+    "RAG",
+    "Qdrant",
+    "Google Drive",
+    "Ollama",
+    {
+      "createdAt": "2026-07-16T15:40:40.199187+00:00",
+      "updatedAt": "2026-07-16T15:40:40.199201+00:00",
+      "id": "tag_vector_storage",
+      "name": "Vector Storage"
+    },
+    {
+      "createdAt": "2026-07-16T15:40:40.199208+00:00",
+      "updatedAt": "2026-07-16T15:40:40.199211+00:00",
+      "id": "tag_rag",
+      "name": "RAG"
+    },
+    {
+      "createdAt": "2026-07-16T15:40:40.199215+00:00",
+      "updatedAt": "2026-07-16T15:40:40.199217+00:00",
+      "id": "tag_production_automation",
+      "name": "Production Automation"
+    },
+    {
+      "createdAt": "2026-07-16T15:40:40.199220+00:00",
+      "updatedAt": "2026-07-16T15:40:40.199223+00:00",
+      "id": "tag_data_pipeline",
+      "name": "Data Pipeline"
+    },
+    {
+      "createdAt": "2026-07-16T15:40:40.199226+00:00",
+      "updatedAt": "2026-07-16T15:40:40.199244+00:00",
+      "id": "tag_event-driven_architecture",
+      "name": "Event-Driven Architecture"
+    },
+    {
+      "createdAt": "2026-07-16T15:40:40.199248+00:00",
+      "updatedAt": "2026-07-16T15:40:40.199250+00:00",
+      "id": "tag_agentic_ai",
+      "name": "Agentic AI"
+    }
+  ],
   "triggerCount": 0,
   "updatedAt": "2026-07-06T00:00:00.000Z",
   "versionId": "1"

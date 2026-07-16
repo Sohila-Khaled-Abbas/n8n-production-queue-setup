@@ -101,7 +101,26 @@
     "versionCounter": 19,
     "triggerCount": 0,
     "sourceWorkflowId": null,
-    "tags": [],
+    "tags": [
+      {
+        "createdAt": "2026-07-16T15:40:44.099434+00:00",
+        "updatedAt": "2026-07-16T15:40:44.099455+00:00",
+        "id": "tag_production_automation",
+        "name": "Production Automation"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:44.099465+00:00",
+        "updatedAt": "2026-07-16T15:40:44.099469+00:00",
+        "id": "tag_agentic_ai",
+        "name": "Agentic AI"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:44.099474+00:00",
+        "updatedAt": "2026-07-16T15:40:44.099478+00:00",
+        "id": "tag_event-driven_architecture",
+        "name": "Event-Driven Architecture"
+      }
+    ],
     "shared": [
       {
         "updatedAt": "2026-07-01T21:21:48.814Z",

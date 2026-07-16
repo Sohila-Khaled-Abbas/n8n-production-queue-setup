@@ -1,6 +1,9 @@
 # 💼 Production n8n Workflow Portfolio
 
-This portfolio contains **32 production-grade automation workflows** exported directly from our running n8n container. These workflows solve real-world problems by integrating LLMs, vector databases (Qdrant, Supabase PgVector), relational databases (MSSQL, PostgreSQL), CRM platforms, and interactive interfaces (Telegram, Gmail, Google Sheets).
+This portfolio contains **45 production-grade automation workflows**. These workflows solve real-world problems by integrating LLMs, vector databases (Qdrant, Supabase PgVector), relational databases (MSSQL, PostgreSQL), CRM platforms, and interactive interfaces (Telegram, Gmail, Google Sheets).
+
+> [!TIP]
+> **Intelligent Tagging System:** All workflows in this repository have been programmatically tagged using a "software engineering mentality". When you import these workflows into n8n, you'll see advanced architectural tags like **`Data Pipeline`**, **`Event-Driven Architecture`**, **`RAG`**, **`Agentic AI`**, and **`Orchestration`** automatically applied to them based on their internal node structure.
 
 ---
 

@@ -255,6 +255,36 @@
         "createdAt": "2026-07-15T13:20:47.917Z",
         "id": "zinCZAocah3K8cDU",
         "name": "GPT-OSS-20B"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:41.021999+00:00",
+        "updatedAt": "2026-07-16T15:40:41.022013+00:00",
+        "id": "tag_production_automation",
+        "name": "Production Automation"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:41.022020+00:00",
+        "updatedAt": "2026-07-16T15:40:41.022023+00:00",
+        "id": "tag_data_pipeline",
+        "name": "Data Pipeline"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:41.022026+00:00",
+        "updatedAt": "2026-07-16T15:40:41.022029+00:00",
+        "id": "tag_event-driven_architecture",
+        "name": "Event-Driven Architecture"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:41.022033+00:00",
+        "updatedAt": "2026-07-16T15:40:41.022035+00:00",
+        "id": "tag_agentic_ai",
+        "name": "Agentic AI"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:41.022039+00:00",
+        "updatedAt": "2026-07-16T15:40:41.022041+00:00",
+        "id": "tag_data_transformation",
+        "name": "Data Transformation"
       }
     ],
     "shared": [

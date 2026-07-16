@@ -196,6 +196,30 @@
         "createdAt": "2026-07-05T20:54:10.312Z",
         "id": "YPOBiRLmef0fLiKM",
         "name": "RAG"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:44.162740+00:00",
+        "updatedAt": "2026-07-16T15:40:44.162760+00:00",
+        "id": "tag_vector_storage",
+        "name": "Vector Storage"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:44.162770+00:00",
+        "updatedAt": "2026-07-16T15:40:44.162775+00:00",
+        "id": "tag_production_automation",
+        "name": "Production Automation"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:44.162782+00:00",
+        "updatedAt": "2026-07-16T15:40:44.162786+00:00",
+        "id": "tag_event-driven_architecture",
+        "name": "Event-Driven Architecture"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:44.162792+00:00",
+        "updatedAt": "2026-07-16T15:40:44.162797+00:00",
+        "id": "tag_agentic_ai",
+        "name": "Agentic AI"
       }
     ],
     "shared": [

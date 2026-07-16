@@ -307,7 +307,44 @@
     "versionCounter": 11,
     "triggerCount": 0,
     "sourceWorkflowId": null,
-    "tags": [],
+    "tags": [
+      {
+        "createdAt": "2026-07-16T15:40:39.922849+00:00",
+        "updatedAt": "2026-07-16T15:40:39.922862+00:00",
+        "id": "tag_vector_storage",
+        "name": "Vector Storage"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:39.922868+00:00",
+        "updatedAt": "2026-07-16T15:40:39.922871+00:00",
+        "id": "tag_rag",
+        "name": "RAG"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:39.922874+00:00",
+        "updatedAt": "2026-07-16T15:40:39.922877+00:00",
+        "id": "tag_production_automation",
+        "name": "Production Automation"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:39.922881+00:00",
+        "updatedAt": "2026-07-16T15:40:39.922883+00:00",
+        "id": "tag_data_pipeline",
+        "name": "Data Pipeline"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:39.922887+00:00",
+        "updatedAt": "2026-07-16T15:40:39.922889+00:00",
+        "id": "tag_event-driven_architecture",
+        "name": "Event-Driven Architecture"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:39.922893+00:00",
+        "updatedAt": "2026-07-16T15:40:39.922895+00:00",
+        "id": "tag_agentic_ai",
+        "name": "Agentic AI"
+      }
+    ],
     "shared": [
       {
         "updatedAt": "2026-07-02T19:34:28.551Z",

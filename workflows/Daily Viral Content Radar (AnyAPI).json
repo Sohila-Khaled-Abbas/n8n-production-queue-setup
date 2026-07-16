@@ -1223,6 +1223,36 @@
         "createdAt": "2026-07-07T22:04:11.368Z",
         "id": "7oGNlQUzjXpkaBkv",
         "name": "API"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:39.514064+00:00",
+        "updatedAt": "2026-07-16T15:40:39.514086+00:00",
+        "id": "tag_production_automation",
+        "name": "Production Automation"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:39.514097+00:00",
+        "updatedAt": "2026-07-16T15:40:39.514101+00:00",
+        "id": "tag_data_pipeline",
+        "name": "Data Pipeline"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:39.514108+00:00",
+        "updatedAt": "2026-07-16T15:40:39.514112+00:00",
+        "id": "tag_event-driven_architecture",
+        "name": "Event-Driven Architecture"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:39.514119+00:00",
+        "updatedAt": "2026-07-16T15:40:39.514124+00:00",
+        "id": "tag_agentic_ai",
+        "name": "Agentic AI"
+      },
+      {
+        "createdAt": "2026-07-16T15:40:39.514129+00:00",
+        "updatedAt": "2026-07-16T15:40:39.514134+00:00",
+        "id": "tag_data_transformation",
+        "name": "Data Transformation"
       }
     ],
     "shared": [

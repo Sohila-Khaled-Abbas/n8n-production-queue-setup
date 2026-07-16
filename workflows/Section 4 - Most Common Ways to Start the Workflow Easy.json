@@ -16,7 +16,7 @@
         0
       ],
       "id": "de8984f5-8462-4e5f-9ed1-5e8bb4cbd9c5",
-      "name": "When clicking ‘Execute workflow’"
+      "name": "When clicking \u2018Execute workflow\u2019"
     },
     {
       "parameters": {
@@ -335,7 +335,7 @@
         ]
       ]
     },
-    "When clicking ‘Execute workflow’": {
+    "When clicking \u2018Execute workflow\u2019": {
       "main": [
         [
           {
@@ -400,7 +400,32 @@
   "versionCounter": 6,
   "triggerCount": 5,
   "sourceWorkflowId": null,
-  "tags": [],
+  "tags": [
+    {
+      "createdAt": "2026-07-16T15:40:44.579258+00:00",
+      "updatedAt": "2026-07-16T15:40:44.579271+00:00",
+      "id": "tag_production_automation",
+      "name": "Production Automation"
+    },
+    {
+      "createdAt": "2026-07-16T15:40:44.579278+00:00",
+      "updatedAt": "2026-07-16T15:40:44.579281+00:00",
+      "id": "tag_agentic_ai",
+      "name": "Agentic AI"
+    },
+    {
+      "createdAt": "2026-07-16T15:40:44.579284+00:00",
+      "updatedAt": "2026-07-16T15:40:44.579287+00:00",
+      "id": "tag_data_transformation",
+      "name": "Data Transformation"
+    },
+    {
+      "createdAt": "2026-07-16T15:40:44.579290+00:00",
+      "updatedAt": "2026-07-16T15:40:44.579293+00:00",
+      "id": "tag_event-driven_architecture",
+      "name": "Event-Driven Architecture"
+    }
+  ],
   "shared": [
     {
       "updatedAt": "2026-07-01T13:03:28.757Z",
