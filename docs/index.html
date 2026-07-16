@@ -64,6 +64,12 @@
     <!-- Marked.js for markdown parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
+    <!-- Mermaid.js for diagram rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: false, theme: 'dark' });
+    </script>
+    
     <!-- Custom styling -->
     <style>
         /* Critical Layout Fixes */
@@ -351,10 +357,10 @@
                                 Open in New Tab
                             </a>
                         </div>
-                        <div class="flex-1 bg-slate-900/10 flex items-center justify-center p-6 overflow-hidden">
-                            <object data="./infographic.svg" type="image/svg+xml" class="w-full h-full max-w-5xl rounded-lg">
-                                <img src="./infographic.png" alt="Architecture Diagram" class="max-w-full max-h-full object-contain">
-                            </object>
+                        <div class="flex-1 bg-slate-900/10 p-6 overflow-auto">
+                            <div id="diagram-content" class="w-full h-full flex flex-col items-center justify-center prose prose-invert max-w-none">
+                                <div class="animate-pulse text-slate-500">Loading architecture diagram...</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -451,6 +457,17 @@
                 
                 // Pre-process custom alert formatting from GFM style
                 switchGuide(activeGuide);
+                
+                // Render diagram
+                if (dbData.guides && dbData.guides.infographic) {
+                    let diagramHtml = marked.parse ? marked.parse(dbData.guides.infographic) : marked(dbData.guides.infographic);
+                    // Convert marked's default code block into mermaid div
+                    diagramHtml = diagramHtml.replace(/<pre><code class="language-mermaid">([\s\S]*?)<\/code><\/pre>/gi, '<div class="mermaid">$1</div>');
+                    document.getElementById('diagram-content').innerHTML = diagramHtml;
+                    setTimeout(() => {
+                        mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+                    }, 100);
+                }
                 
             } catch (err) {
                 console.error("Failed to load compiled docs database:", err);

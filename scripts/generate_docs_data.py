@@ -72,7 +72,8 @@ def compile_docs_data():
         'architecture': 'architecture.md',
         'production_guide': 'production_guide.md',
         'scripts': 'scripts.md',
-        'troubleshooting': 'troubleshooting.md'
+        'troubleshooting': 'troubleshooting.md',
+        'infographic': 'infographic.md'
     }
     
     for key, filename in guide_files.items():

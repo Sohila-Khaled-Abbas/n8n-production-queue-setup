@@ -7,8 +7,11 @@
 **A production-grade, self-hosted n8n deployment with dynamic worker autoscaling, Puppeteer/Playwright browser automation, queue-mode execution, PostgreSQL persistence, and automated Redis queue monitoring.**
 
 [![n8n Version](https://img.shields.io/badge/n8n-2.28.6-FF6D5A?logo=n8n&logoColor=white)](https://hub.docker.com/r/n8nio/n8n)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![FastMCP](https://img.shields.io/badge/FastMCP-Server-092E20?logo=fastapi&logoColor=white)](https://github.com/jlowin/fastmcp)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://hub.docker.com/_/postgres)
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)](https://hub.docker.com/_/redis)
+[![Qdrant](https://img.shields.io/badge/Qdrant-Vector_DB-ff1b44?logo=qdrant&logoColor=white)](https://qdrant.tech/)
 [![Docker Compose](https://img.shields.io/badge/Docker_Compose-v2-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg)](LICENSE)
 
