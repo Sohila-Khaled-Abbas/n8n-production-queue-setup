@@ -50,6 +50,8 @@ app = FastAPI(title="n8n AI Chat UI", lifespan=lifespan)
 class GenerateRequest(BaseModel):
     session_id: str
     messages: list
+    model_id: str = None
+    provider: str = None
 
 class ExportRequest(BaseModel):
     workflow: dict
@@ -139,6 +141,63 @@ async def api_get_history(session_id: str, db: Session = Depends(get_db)):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+@app.get("/api/templates")
+async def api_get_templates(search: str = ""):
+    try:
+        url = f"https://api.n8n.io/api/templates/workflows?search={urllib.parse.quote(search)}&limit=10"
+        request = urllib.request.Request(url, headers={'User-Agent': 'n8n-ai-assistant'})
+        with urllib.request.urlopen(request) as response:
+            result = json.loads(response.read().decode())
+            return {"success": True, "templates": result.get('workflows', [])}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.get("/api/models")
+async def get_models():
+    """
+    Dynamically fetches available models from the configured providers in .env
+    """
+    models = []
+    
+    # Check Ollama
+    ollama_host = os.getenv("OLLAMA_HOST", "")
+    if ollama_host:
+        ollama_host = ollama_host.replace("host.docker.internal", "localhost")
+        if not ollama_host.startswith("http"):
+            ollama_host = f"http://{ollama_host}"
+        try:
+            res = requests.get(f"{ollama_host}/api/tags", timeout=2)
+            if res.status_code == 200:
+                for m in res.json().get("models", []):
+                    models.append({"id": m["name"], "name": f"Ollama: {m['name']}", "provider": "ollama"})
+        except Exception as e:
+            print(f"[models] Failed to fetch from Ollama: {e}")
+
+    # Check OpenRouter
+    openrouter_key = os.getenv("OPENROUTER_API_KEY")
+    if openrouter_key:
+        try:
+            res = requests.get("https://openrouter.ai/api/v1/models", headers={"Authorization": f"Bearer {openrouter_key}"}, timeout=5)
+            if res.status_code == 200:
+                # To prevent overloading the UI, let's just grab the popular/free ones or the first 50
+                or_models = res.json().get("data", [])
+                for m in or_models[:100]: # limit to 100
+                    models.append({"id": m["id"], "name": f"OpenRouter: {m['name']}", "provider": "openrouter"})
+            else:
+                models.append({"id": "anthropic/claude-3.5-sonnet:beta", "name": "OpenRouter: Claude 3.5 Sonnet", "provider": "openrouter"})
+        except:
+            models.append({"id": "anthropic/claude-3.5-sonnet:beta", "name": "OpenRouter: Claude 3.5 Sonnet", "provider": "openrouter"})
+
+    # Check HuggingFace
+    hf_key = os.getenv("HUGGINGFACE_API_TOKEN")
+    if hf_key:
+        models.append({"id": "meta-llama/Meta-Llama-3-8B-Instruct", "name": "HF: Llama-3-8B-Instruct", "provider": "huggingface"})
+        models.append({"id": "mistralai/Mistral-7B-Instruct-v0.2", "name": "HF: Mistral-7B-Instruct", "provider": "huggingface"})
+        models.append({"id": "Qwen/Qwen2.5-7B-Instruct", "name": "HF: Qwen-2.5-7B", "provider": "huggingface"})
+        models.append({"id": "Qwen/Qwen2.5-Coder-32B-Instruct", "name": "HF: Qwen-Coder-32B", "provider": "huggingface"})
+
+    return {"success": True, "models": models}
+
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     html_content = r'''<!DOCTYPE html>
@@ -176,7 +235,15 @@ async def read_root(request: Request):
             <div id="history-list" class="space-y-2"></div>
         </div>
         
-        <div class="mt-auto border-t border-slate-700 pt-4">
+        <div class="mt-auto border-t border-slate-700 pt-4 flex flex-col gap-2">
+            <button onclick="openTemplates()" class="flex items-center gap-2 w-full p-2 hover:bg-slate-700 rounded transition text-sm text-green-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                Community Templates
+            </button>
+            <button onclick="clearChat()" class="flex items-center gap-2 w-full p-2 hover:bg-slate-700 rounded transition text-sm text-red-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                Clear Chat History
+            </button>
             <button onclick="openSettings()" class="flex items-center gap-2 w-full p-2 hover:bg-slate-700 rounded transition text-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                 n8n Settings
@@ -246,11 +313,80 @@ async def read_root(request: Request):
         </div>
     </div>
 
+    <!-- Templates Modal -->
+    <div id="templates-modal" class="modal fixed inset-0 z-50 items-center justify-center">
+        <div class="bg-[#202123] rounded-xl border border-slate-600 w-full max-w-2xl p-6 shadow-2xl flex flex-col max-h-[80vh]">
+            <h2 class="text-xl font-bold mb-4">Search n8n Community Templates</h2>
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="template-search" class="flex-1 bg-[#343541] border border-slate-600 rounded p-2 text-white" placeholder="e.g. Telegram, Google Sheets, Notion...">
+                <button onclick="searchTemplates()" class="px-4 py-2 rounded bg-rose-600 hover:bg-rose-700 font-medium">Search</button>
+            </div>
+            <div id="templates-results" class="flex-1 overflow-y-auto space-y-3 mb-4"></div>
+            <div class="mt-auto flex justify-end gap-3 pt-4 border-t border-slate-700">
+                <button onclick="closeTemplates()" class="px-4 py-2 rounded text-slate-300 hover:bg-slate-700">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
     <script>
         let currentWorkflowJson = null;
         let chatHistory = [];
+
+        function clearChat() {
+            if (confirm("Are you sure you want to clear your chat history?")) {
+                sessionId = 'sess_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('chatSessionId', sessionId);
+                newChat();
+            }
+        }
+
+        function openTemplates() {
+            document.getElementById('templates-modal').classList.add('active');
+        }
+
+        function closeTemplates() {
+            document.getElementById('templates-modal').classList.remove('active');
+        }
+
+        async function searchTemplates() {
+            const query = document.getElementById('template-search').value;
+            const resultsDiv = document.getElementById('templates-results');
+            resultsDiv.innerHTML = '<div class="text-center text-slate-400 py-4">Searching...</div>';
+            try {
+                const res = await fetch(`/api/templates?search=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                if (data.success && data.templates.length > 0) {
+                    resultsDiv.innerHTML = data.templates.map(t => `
+                        <div class="p-3 border border-slate-600 rounded hover:border-rose-500 bg-[#343541]">
+                            <h3 class="font-bold mb-1">${t.name}</h3>
+                            <p class="text-sm text-slate-300 mb-3">${t.description ? t.description.substring(0, 100) + '...' : 'No description'}</p>
+                            <button onclick='useTemplate(${JSON.stringify(t)})' class="px-3 py-1 bg-slate-700 hover:bg-rose-600 text-sm rounded transition">Load into Chat</button>
+                        </div>
+                    `).join('');
+                } else {
+                    resultsDiv.innerHTML = '<div class="text-center text-slate-400 py-4">No templates found.</div>';
+                }
+            } catch(e) {
+                resultsDiv.innerHTML = '<div class="text-center text-red-400 py-4">Error fetching templates.</div>';
+            }
+        }
+
+        function useTemplate(template) {
+            closeTemplates();
+            // Just ask the AI to explain and adapt the template
+            const prompt = `I found this community template: "${template.name}".
+
+Description: ${template.description}
+
+Please help me adapt it for my needs! Here is the JSON:
+\`\`\`json
+${JSON.stringify(template.workflow || {})}
+\`\`\``;
+            document.getElementById('prompt-input').value = prompt;
+            sendPrompt();
+        }
 
         // Auto-resize textarea
         const tx = document.getElementById('prompt-input');
@@ -398,11 +534,24 @@ async def read_root(request: Request):
             scrollToBottom();
 
             try {
+                const selectedModelIdx = document.getElementById('model-select').value;
+                let modelParams = {};
+                if (selectedModelIdx !== "" && availableModels[selectedModelIdx]) {
+                    modelParams = {
+                        model_id: availableModels[selectedModelIdx].id,
+                        provider: availableModels[selectedModelIdx].provider
+                    };
+                }
+
                 // Send the entire chat history so the AI has context
                 const res = await fetch('/api/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ session_id: sessionId, messages: chatHistory })
+                    body: JSON.stringify({ 
+                        session_id: sessionId, 
+                        messages: chatHistory,
+                        ...modelParams
+                    })
                 });
                 const data = await res.json();
                 

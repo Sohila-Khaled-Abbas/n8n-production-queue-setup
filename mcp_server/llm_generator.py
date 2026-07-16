@@ -18,15 +18,39 @@ def get_available_providers():
         providers.append("openrouter")
     return providers
 
-def get_client_and_model(prompt: str):
+def get_client_and_model(prompt: str, preferred_model: str = None, preferred_provider: str = None):
     """
-    Selects the best available API and model based on prompt complexity
+    Selects the best available API and model based on user preference, prompt complexity
     and available environment keys.
     """
     providers = get_available_providers()
     if not providers:
         raise ValueError("No AI API keys found. Please set OPENROUTER_API_KEY, HUGGINGFACE_API_TOKEN, or OLLAMA_HOST in the .env file.")
 
+    # Override with preferences if valid
+    if preferred_provider in providers:
+        if preferred_provider == "openrouter":
+            client = OpenAI(
+                base_url="https://openrouter.ai/api/v1",
+                api_key=os.getenv("OPENROUTER_API_KEY"),
+            )
+            return client, preferred_model or "anthropic/claude-3.5-sonnet:beta"
+        
+        elif preferred_provider == "ollama":
+            ollama_host = os.getenv("OLLAMA_HOST").replace("host.docker.internal", "localhost")
+            if not ollama_host.startswith("http"):
+                ollama_host = f"http://{ollama_host}"
+            client = OpenAI(base_url=f"{ollama_host}/v1", api_key="ollama")
+            return client, preferred_model or "llama3"
+
+        elif preferred_provider == "huggingface":
+            client = OpenAI(
+                base_url="https://api-inference.huggingface.co/v1/",
+                api_key=os.getenv("HUGGINGFACE_API_TOKEN")
+            )
+            return client, preferred_model or "meta-llama/Meta-Llama-3-8B-Instruct"
+
+    # Default logic if no valid preference
     if "openrouter" in providers:
         client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
@@ -34,20 +58,36 @@ def get_client_and_model(prompt: str):
         )
         return client, "anthropic/claude-3.5-sonnet:beta"
 
+    if "ollama" in providers:
+        ollama_host = os.getenv("OLLAMA_HOST").replace("host.docker.internal", "localhost")
+        if not ollama_host.startswith("http"):
+            ollama_host = f"http://{ollama_host}"
+        
+        # Try to find an available model dynamically
+        model_name = "llama3" # default fallback
+        import requests
+        try:
+            res = requests.get(f"{ollama_host}/api/tags", timeout=2)
+            if res.status_code == 200:
+                models = res.json().get("models", [])
+                if models:
+                    model_names = [m["name"] for m in models]
+                    if "llama3:latest" in model_names or "llama3" in model_names:
+                        model_name = "llama3"
+                    else:
+                        model_name = model_names[0]
+        except:
+            pass
+            
+        client = OpenAI(base_url=f"{ollama_host}/v1", api_key="ollama")
+        return client, model_name
+
     if "huggingface" in providers:
         client = OpenAI(
             base_url="https://api-inference.huggingface.co/v1/",
             api_key=os.getenv("HUGGINGFACE_API_TOKEN")
         )
-        # Using a solid code generation model on HF
         return client, "meta-llama/Meta-Llama-3-8B-Instruct"
-
-    if "ollama" in providers:
-        ollama_host = os.getenv("OLLAMA_HOST").replace("host.docker.internal", "localhost")
-        if not ollama_host.startswith("http"):
-            ollama_host = f"http://{ollama_host}"
-        client = OpenAI(base_url=f"{ollama_host}/v1", api_key="ollama")
-        return client, "llama3"
 
     raise ValueError("Failed to select a valid AI provider.")
 
@@ -58,13 +98,14 @@ from n8n_client import build_knowledge_index, build_credential_index
 KNOWLEDGE_INDEX = build_knowledge_index() or "(No local portfolio found from API)"
 CREDENTIAL_INDEX = build_credential_index() or "(No local credentials found from API)"
 
-def generate_workflow(messages: list) -> dict:
+def generate_workflow(messages: list, model_name: str = None, provider: str = None) -> dict:
     """
-    Generates a conversational response and an optional n8n JSON workflow based on the chat history.
+    Main entry point for conversational workflow generation.
+    Takes a conversation history, uses the LLM, and extracts generated n8n JSON.
     """
     # Extract the last user message to determine model routing
     last_prompt = messages[-1]["content"] if messages else ""
-    client, model = get_client_and_model(last_prompt)
+    client, model = get_client_and_model(last_prompt, preferred_model=model_name, preferred_provider=provider)
     print(f"[llm_generator] Routing conversational request to model: {model}")
 
     system_message = f"""You are an elite n8n Workflow Architect and Data Engineer. You are chatting interactively with the user.
@@ -165,6 +206,13 @@ CRITICAL: Ensure `connections` perfectly matches the `name` of the nodes."""
             return {"success": True, "message": content, "workflow": workflow_json}
 
         except Exception as e:
+            # We catch connection errors and give a better message
+            error_str = str(e).lower()
+            if "connection" in error_str or "timeout" in error_str or "503" in error_str:
+                print(f"[llm_generator] Connection error with model {model}: {e}")
+                if attempt < max_retries - 1:
+                    continue # Retry on connection errors
+                return {"error": f"Failed to connect to the AI Provider ({model}). Please check your .env keys (like HUGGINGFACE_API_TOKEN, OPENROUTER_API_KEY) or ensure your local Ollama is running. Raw error: {str(e)}"}
             return {"error": f"Failed to process request: {str(e)}"}
             
     return {"error": "Failed to generate valid n8n JSON after 3 attempts. The model may be struggling with complex structures."}
