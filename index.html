@@ -1,754 +1,272 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-950 text-slate-100 dark">
+<html lang="en">
 <head>
-    <script>
-        window.onerror = function(message, source, lineno, colno, error) {
-            const errDiv = document.createElement('div');
-            errDiv.style.position = 'fixed';
-            errDiv.style.top = '0';
-            errDiv.style.left = '0';
-            errDiv.style.width = '100%';
-            errDiv.style.backgroundColor = '#ef4444';
-            errDiv.style.color = '#ffffff';
-            errDiv.style.padding = '12px';
-            errDiv.style.zIndex = '99999';
-            errDiv.style.fontFamily = 'monospace';
-            errDiv.style.fontSize = '12px';
-            errDiv.style.whiteSpace = 'pre-wrap';
-            errDiv.innerHTML = '<strong>JS Error:</strong> ' + message + ' at ' + source + ':' + lineno + ':' + colno + '\n' + (error ? error.stack : '');
-            (document.body || document.documentElement).appendChild(errDiv);
-            return false;
-        };
-        window.onunhandledrejection = function(event) {
-            const errDiv = document.createElement('div');
-            errDiv.style.position = 'fixed';
-            errDiv.style.top = '0';
-            errDiv.style.left = '0';
-            errDiv.style.width = '100%';
-            errDiv.style.backgroundColor = '#ef4444';
-            errDiv.style.color = '#ffffff';
-            errDiv.style.padding = '12px';
-            errDiv.style.zIndex = '99999';
-            errDiv.style.fontFamily = 'monospace';
-            errDiv.style.fontSize = '12px';
-            errDiv.style.whiteSpace = 'pre-wrap';
-            errDiv.innerHTML = '<strong>Promise Rejection:</strong> ' + event.reason + '\n' + (event.reason && event.reason.stack ? event.reason.stack : '');
-            (document.body || document.documentElement).appendChild(errDiv);
-        };
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>n8n Production Stack Hub</title>
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>n8n Production Stack</title>
     
-    <!-- Tailwind CSS (V4) -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
-                        outfit: ['Outfit', 'sans-serif'],
-                        mono: ['Fira Code', 'monospace'],
-                    }
-                }
-            }
-        }
-    </script>
     
-    <!-- Marked.js for markdown parsing -->
+    <!-- Marked.js & Mermaid.js -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@9.4.3/dist/mermaid.min.js"></script>
     
-    <!-- Mermaid.js for diagram rendering -->
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        mermaid.initialize({ startOnLoad: false, theme: 'dark' });
-    </script>
-    
-    <!-- Custom styling -->
     <style>
-        /* Critical Layout Fixes */
-        html, body {
-            height: 100vh;
-            width: 100vw;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-color: #020617; /* bg-slate-950 */
-        }
-        .app-container {
-            display: flex;
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-        }
-        .app-main {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            min-width: 0; /* CRITICAL: Prevents flex child collapsing or overflowing in Brave/Chromium */
-            height: 100%;
-            overflow: hidden;
-            background-color: #020617; /* bg-slate-950 */
-        }
-        .app-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 2rem;
-        }
-        .tab-pane.hidden {
-            display: none;
-        }
-
-        /* Glassmorphism effects */
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.45);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+        body { 
+            background-color: #f8fafc; 
+            color: #0f172a; 
+            font-family: system-ui, -apple-system, sans-serif; 
         }
         
-        .glass-panel-hover:hover {
-            background: rgba(30, 41, 59, 0.6);
-            border-color: rgba(255, 255, 255, 0.1);
-            transform: translateY(-2px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        /* Markdown Typography Styles */
+        .prose h1 { font-size: 2.25rem; font-weight: 700; margin-bottom: 1.5rem; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+        .prose h2 { font-size: 1.5rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem; color: #1e293b; }
+        .prose h3 { font-size: 1.25rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #334155; }
+        .prose p { margin-bottom: 1.25rem; line-height: 1.7; color: #475569; }
+        .prose ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.25rem; color: #475569; }
+        .prose li { margin-bottom: 0.5rem; }
+        .prose a { color: #2563eb; text-decoration: none; }
+        .prose a:hover { text-decoration: underline; }
+        .prose strong { font-weight: 600; color: #0f172a; }
+        .prose blockquote { border-left: 4px solid #cbd5e1; padding-left: 1rem; color: #64748b; font-style: italic; margin-bottom: 1.25rem; }
+        
+        /* Code Blocks */
+        .prose pre { 
+            background-color: #1e293b; 
+            color: #f8fafc; 
+            padding: 1.25rem; 
+            border-radius: 0.5rem; 
+            overflow-x: auto; 
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+        .prose code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+        .prose p code, .prose li code { 
+            background-color: #f1f5f9; 
+            padding: 0.2rem 0.4rem; 
+            border-radius: 0.25rem; 
+            color: #ef4444; 
+            font-size: 0.875em;
         }
         
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        /* Sidebar Navigation */
+        .nav-link { 
+            cursor: pointer; 
+            padding: 0.5rem 1rem; 
+            border-radius: 0.375rem; 
+            transition: all 0.2s; 
+            color: #475569;
+            font-weight: 500;
         }
-        ::-webkit-scrollbar-track {
-            background: #090d16;
+        .nav-link:hover { 
+            background-color: #f1f5f9; 
+            color: #0f172a;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #1e293b;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #334155;
+        .nav-link.active { 
+            background-color: #e0f2fe; 
+            color: #0369a1; 
+            font-weight: 600; 
         }
         
-        /* Markdown rendering overrides */
-        .prose h1 { font-family: 'Outfit', sans-serif; font-weight: 700; color: #f8fafc; font-size: 1.875rem; margin-top: 2rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 0.5rem; }
-        .prose h2 { font-family: 'Outfit', sans-serif; font-weight: 600; color: #f1f5f9; font-size: 1.5rem; margin-top: 1.75rem; margin-bottom: 0.75rem; }
-        .prose h3 { font-family: 'Outfit', sans-serif; font-weight: 600; color: #e2e8f0; font-size: 1.25rem; margin-top: 1.5rem; margin-bottom: 0.5rem; }
-        .prose p { margin-bottom: 1rem; color: #94a3b8; line-height: 1.75; }
-        .prose ul, .prose ol { margin-bottom: 1rem; padding-left: 1.5rem; color: #94a3b8; }
-        .prose ul { list-style-type: disc; }
-        .prose ol { list-style-type: decimal; }
-        .prose li { margin-bottom: 0.375rem; }
-        .prose code { font-family: 'Fira Code', monospace; font-size: 0.875rem; background: rgba(30, 41, 59, 0.5); padding: 0.2rem 0.4rem; border-radius: 0.25rem; color: #f43f5e; }
-        .prose pre { background: #020617 !important; border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 0.5rem; padding: 1rem; overflow-x: auto; margin-bottom: 1.5rem; position: relative; }
-        .prose pre code { background: transparent; padding: 0; border-radius: 0; color: #cbd5e1; }
-        .prose table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
-        .prose th { background: rgba(15, 23, 42, 0.6); font-weight: 600; text-align: left; padding: 0.75rem; border-bottom: 2px solid rgba(255, 255, 255, 0.1); color: #f8fafc; }
-        .prose td { padding: 0.75rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: #94a3b8; }
-        .prose tr:hover td { background: rgba(255, 255, 255, 0.02); }
-        .prose blockquote { border-left: 4px solid #f97316; padding-left: 1rem; margin-bottom: 1.5rem; font-style: italic; color: #cbd5e1; }
-        .prose a { color: #38bdf8; text-decoration: none; border-bottom: 1px dashed rgba(56, 189, 248, 0.4); }
-        .prose a:hover { color: #0ea5e9; border-bottom-style: solid; }
-        
-        /* Alerts styling from markdown extension */
-        .alert-important { border-left: 4px solid #ef4444; background: rgba(239, 68, 68, 0.05); padding: 1rem; margin-bottom: 1.5rem; border-radius: 0 0.5rem 0.5rem 0; }
-        .alert-tip { border-left: 4px solid #22c55e; background: rgba(34, 197, 94, 0.05); padding: 1rem; margin-bottom: 1.5rem; border-radius: 0 0.5rem 0.5rem 0; }
-        .alert-warning { border-left: 4px solid #eab308; background: rgba(234, 179, 8, 0.05); padding: 1rem; margin-bottom: 1.5rem; border-radius: 0 0.5rem 0.5rem 0; }
-        .alert-note { border-left: 4px solid #3b82f6; background: rgba(59, 130, 246, 0.05); padding: 1rem; margin-bottom: 1.5rem; border-radius: 0 0.5rem 0.5rem 0; }
+        /* Loading Spinner */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="h-screen w-screen font-sans antialiased text-slate-300 bg-slate-950 overflow-hidden">
-    <div class="app-container">
-        
-        <!-- Sidebar Navigation -->
-        <aside class="flex flex-col flex-shrink-0 w-64 border-r border-slate-900 bg-slate-950/80 backdrop-blur-xl">
-            <div class="flex items-center h-16 px-6 gap-3 border-b border-slate-900">
-                <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-orange-600 font-bold text-white text-lg">
-                    N
-                </div>
-                <div>
-                    <h1 class="font-outfit font-bold text-white leading-tight">n8n Production</h1>
-                    <p class="text-xs text-slate-500 font-semibold tracking-wider uppercase">Autoscaling Hub</p>
-                </div>
-            </div>
-            
-            <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
-                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 gap-3 text-slate-400 hover:text-white hover:bg-slate-900/60">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"/></svg>
-                    Dashboard
-                </button>
-                
-                <button onclick="switchTab('workflows')" id="nav-workflows" class="flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 gap-3 text-slate-400 hover:text-white hover:bg-slate-900/60">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                    Workflow Explorer
-                    <span id="badge-workflow-count" class="ml-auto px-1.5 py-0.5 text-2xs font-bold rounded bg-slate-800 text-slate-400">0</span>
-                </button>
-                
-                <button onclick="switchTab('guides')" id="nav-guides" class="flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 gap-3 text-slate-400 hover:text-white hover:bg-slate-900/60">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                    Interactive Guides
-                </button>
-                
-                <button onclick="switchTab('diagram')" id="nav-diagram" class="flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 gap-3 text-slate-400 hover:text-white hover:bg-slate-900/60">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                    System Blueprint
-                </button>
-            </div>
-            
-            <div class="p-4 border-t border-slate-900 bg-slate-950">
-                <div class="flex items-center gap-3">
-                    <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                    <span class="text-xs font-semibold text-slate-400">Stack Status: Healthy</span>
-                </div>
-                <p class="mt-1 text-3xs text-slate-600 font-mono">Mode: Queue-Mode (autoscaled)</p>
-            </div>
-        </aside>
-        
-        <!-- Main Content Area -->
-        <main class="app-main">
-            
-            <!-- Tab Contents -->
-            <div class="app-content">
-                
-                <!-- DASHBOARD TAB -->
-                <div id="tab-dashboard" class="space-y-8 tab-pane">
-                    <div class="relative overflow-hidden rounded-2xl border border-slate-900 bg-gradient-to-r from-slate-900 to-slate-950 p-8">
-                        <div class="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 rounded-full bg-orange-600/10 blur-3xl pointer-events-none"></div>
-                        <div class="relative z-10 max-w-3xl space-y-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-950 text-orange-400 border border-orange-900/50">Production Ready</span>
-                            <h2 class="text-3xl font-outfit font-extrabold text-white sm:text-4xl">n8n Autoscaling Production Stack</h2>
-                            <p class="text-base text-slate-400 leading-relaxed">
-                                Welcome to the Operations Hub. This is your interactive panel containing 31 production-grade automation workflows, full system architecture blueprints, developer-level maintenance scripts, and robust deployment instructions.
-                            </p>
-                            <div class="flex gap-4 pt-2">
-                                <button onclick="switchTab('workflows')" class="px-5 py-2.5 text-sm font-semibold rounded-lg bg-orange-600 text-white hover:bg-orange-500 shadow-lg shadow-orange-950/20 hover:scale-102 transition-all">
-                                    Explore 31 Workflows
-                                </button>
-                                <button onclick="switchTab('guides')" class="px-5 py-2.5 text-sm font-semibold rounded-lg bg-slate-900 text-slate-300 hover:text-white border border-slate-800 hover:border-slate-700 transition-all">
-                                    Read Deploy Guide
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Stats Grid -->
-                    <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
-                        <div class="glass-panel rounded-xl p-6 relative overflow-hidden">
-                            <p class="text-xs font-semibold text-slate-500 tracking-wider uppercase">Workflows Exported</p>
-                            <h3 id="stat-total-workflows" class="mt-2 text-4xl font-outfit font-bold text-white">0</h3>
-                            <p class="mt-1 text-xs text-slate-400 flex items-center gap-1.5">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Ready to import into n8n
-                            </p>
-                        </div>
-                        <div class="glass-panel rounded-xl p-6 relative overflow-hidden">
-                            <p class="text-xs font-semibold text-slate-500 tracking-wider uppercase">Active Workers Replicas</p>
-                            <h3 class="mt-2 text-4xl font-outfit font-bold text-white">1 – 2</h3>
-                            <p class="mt-1 text-xs text-slate-400 flex items-center gap-1.5 font-mono">
-                                Autoscaler range limits (N:1)
-                            </p>
-                        </div>
-                        <div class="glass-panel rounded-xl p-6 relative overflow-hidden">
-                            <p class="text-xs font-semibold text-slate-500 tracking-wider uppercase">Total Configured Nodes</p>
-                            <h3 id="stat-total-nodes" class="mt-2 text-4xl font-outfit font-bold text-white">0</h3>
-                            <p class="mt-1 text-xs text-slate-400 flex items-center gap-1.5">
-                                AI agents, databases, triggers
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <!-- Highlights Sections -->
-                    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                        <div class="glass-panel rounded-xl p-6 space-y-4">
-                            <h3 class="font-outfit font-bold text-lg text-white">🛡️ Stack Architecture Overview</h3>
-                            <p class="text-sm text-slate-400 leading-relaxed">
-                                Configured in **Queue Mode** using Redis as a job broker and PostgreSQL for credentials. This stack offloads all manual and automated executions to dynamically scaled worker nodes (`n8n-worker`) paired 1:1 with isolated Javascript/Python task runner sidecars (`n8n-worker-runner`).
-                            </p>
-                            <div class="border-t border-slate-900 pt-4 flex justify-between items-center text-xs">
-                                <span class="text-slate-500 font-semibold uppercase">Trigger Nodes</span>
-                                <span class="text-orange-400 font-mono">Webhook, Google Drive, Cron, Telegram</span>
-                            </div>
-                        </div>
-                        <div class="glass-panel rounded-xl p-6 space-y-4">
-                            <h3 class="font-outfit font-bold text-lg text-white">⚡ Production Storage Optimization</h3>
-                            <p class="text-sm text-slate-400 leading-relaxed">
-                                We upgraded the binary data storage mode from database buffer mode to **filesystem mode** (`N8N_DEFAULT_BINARY_DATA_MODE=filesystem`). Files are streamed directly to disk, resolving memory spikes and connection drop errors (`ECONNRESET`) during large downloads.
-                            </p>
-                            <div class="border-t border-slate-900 pt-4 flex justify-between items-center text-xs">
-                                <span class="text-slate-500 font-semibold uppercase">Active Storage</span>
-                                <span class="text-emerald-400 font-mono">./n8n-data/binaryData</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- WORKFLOW EXPLORER TAB -->
-                <div id="tab-workflows" class="space-y-6 tab-pane hidden">
-                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-900 pb-5">
-                        <div>
-                            <h2 class="text-2xl font-outfit font-bold text-white">Workflow Registry</h2>
-                            <p class="text-sm text-slate-500 mt-1">Search and copy any of the 31 production-grade workflows.</p>
-                        </div>
-                        <!-- Search & Filter Controls -->
-                        <div class="flex gap-3">
-                            <div class="relative w-64">
-                                <input type="text" id="search-input" oninput="filterWorkflows()" placeholder="Search workflows..." class="w-full px-4 py-2.5 text-sm bg-slate-900 border border-slate-800 rounded-lg focus:outline-none focus:border-orange-500 transition text-white">
-                                <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-500">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Workflows List Grid -->
-                    <div id="workflows-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                        <!-- Workflow cards injected here -->
-                    </div>
-                </div>
-                
-                <!-- INTERACTIVE GUIDES TAB -->
-                <div id="tab-guides" class="h-[calc(100vh-10rem)] tab-pane hidden">
-                    <div class="flex h-full border border-slate-900 rounded-xl overflow-hidden glass-panel">
-                        <!-- Navigation Sidebar -->
-                        <div class="w-64 border-r border-slate-900 bg-slate-950/60 p-4 space-y-1">
-                            <h4 class="text-2xs font-semibold text-slate-500 tracking-wider uppercase px-3 mb-3">Documentation Pages</h4>
-                            <button onclick="switchGuide('production_guide')" id="btn-guide-production_guide" class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-900 transition">
-                                📖 Operations Guide
-                            </button>
-                            <button onclick="switchGuide('scripts')" id="btn-guide-scripts" class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-900 transition">
-                                🛠️ Scripts Reference
-                            </button>
-                            <button onclick="switchGuide('architecture')" id="btn-guide-architecture" class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-900 transition">
-                                📐 Stack Architecture
-                            </button>
-                            <button onclick="switchGuide('troubleshooting')" id="btn-guide-troubleshooting" class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-900 transition">
-                                🚨 Troubleshooting Checklist
-                            </button>
-                        </div>
-                        <!-- Content Pane -->
-                        <div class="flex-1 flex flex-col bg-slate-950/20 overflow-hidden">
-                            <div class="h-10 border-b border-slate-900 bg-slate-950/80 px-6 flex items-center justify-between">
-                                <span id="guide-title" class="text-xs font-semibold font-mono text-orange-400 uppercase">Operations Guide</span>
-                                <span class="text-2xs text-slate-500">Press Ctrl+F to search within text</span>
-                            </div>
-                            <div class="flex-1 overflow-y-auto px-8 py-8">
-                                <article id="guide-content" class="prose prose-invert max-w-4xl">
-                                    <!-- Parsed markdown will render here -->
-                                </article>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- ARCHITECTURE DIAGRAM TAB -->
-                <div id="tab-diagram" class="h-[calc(100vh-10rem)] tab-pane hidden">
-                    <div class="flex flex-col h-full border border-slate-900 rounded-xl overflow-hidden glass-panel">
-                        <div class="h-12 border-b border-slate-900 bg-slate-950/80 px-6 flex items-center justify-between">
-                            <div>
-                                <h3 class="text-sm font-bold text-white font-outfit">System Blueprint (Interactive SVG)</h3>
-                                <p class="text-3xs text-slate-500">Vector layout mapping ports, volumes, and brokers.</p>
-                            </div>
-                            <a href="./infographic.svg" target="_blank" class="px-3 py-1.5 text-2xs font-semibold rounded bg-slate-900 text-slate-300 hover:text-white border border-slate-800 transition">
-                                Open in New Tab
-                            </a>
-                        </div>
-                        <div class="flex-1 bg-slate-900/10 p-6 overflow-auto">
-                            <div id="diagram-content" class="w-full h-full flex flex-col items-center justify-center prose prose-invert max-w-none">
-                                <div class="animate-pulse text-slate-500">Loading architecture diagram...</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-            </div>
-        </main>
-    </div>
+<body class="flex h-screen overflow-hidden">
     
-    <!-- Workflow Details Dialog -->
-    <div id="workflow-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="glass-panel w-full max-w-4xl max-h-[85vh] rounded-2xl flex flex-col shadow-2xl overflow-hidden">
-            <!-- Modal Header -->
-            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-900 bg-slate-950/80">
-                <div>
-                    <h3 id="modal-workflow-name" class="font-outfit font-extrabold text-white text-lg sm:text-xl">Workflow Details</h3>
-                    <div class="flex gap-2 items-center mt-1">
-                        <span id="modal-workflow-badge-active" class="px-2 py-0.5 rounded text-3xs font-bold font-mono">ACTIVE</span>
-                        <span id="modal-workflow-badge-nodes" class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-3xs font-bold font-mono">0 NODES</span>
-                    </div>
-                </div>
-                <button onclick="closeWorkflowModal()" class="text-slate-500 hover:text-white p-1 rounded-lg hover:bg-slate-900 transition">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
-            <!-- Modal Body -->
-            <div class="flex-1 overflow-y-auto p-6 space-y-6">
-                <!-- Description -->
-                <div>
-                    <h4 class="text-xs font-semibold text-slate-500 tracking-wider uppercase mb-2">Description</h4>
-                    <p id="modal-workflow-desc" class="text-sm text-slate-300 leading-relaxed"></p>
-                </div>
-                <!-- Details Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h4 class="text-xs font-semibold text-slate-500 tracking-wider uppercase mb-2">Triggers</h4>
-                        <div id="modal-workflow-triggers" class="flex flex-wrap gap-1.5">
-                            <!-- Triggers injected here -->
-                        </div>
-                    </div>
-                    <div>
-                        <h4 class="text-xs font-semibold text-slate-500 tracking-wider uppercase mb-2">Node Types Involved</h4>
-                        <div id="modal-workflow-nodetypes" class="flex flex-wrap gap-1.5">
-                            <!-- Node types injected here -->
-                        </div>
-                    </div>
-                </div>
-                <!-- JSON Code Block -->
-                <div class="flex flex-col border border-slate-900 rounded-lg overflow-hidden bg-slate-950">
-                    <div class="flex items-center justify-between px-4 py-2 border-b border-slate-900 bg-slate-950/80">
-                        <span class="text-3xs font-mono text-slate-500">n8n nodes structure (ready to paste)</span>
-                        <button id="btn-copy-workflow" class="flex items-center gap-1.5 px-3 py-1.5 rounded text-2xs font-semibold bg-orange-600/10 text-orange-400 hover:bg-orange-600 hover:text-white transition">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
-                            Copy Nodes JSON
-                        </button>
-                    </div>
-                    <pre class="p-4 text-xs font-mono text-slate-400 overflow-x-auto max-h-[300px] select-all"><code id="modal-workflow-json"></code></pre>
-                </div>
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-slate-200 flex flex-col h-full shrink-0 shadow-sm z-10">
+        <div class="p-6 border-b border-slate-100 flex items-center gap-3">
+            <div class="w-8 h-8 rounded bg-red-500 text-white flex items-center justify-center font-bold text-xl shadow-sm shadow-red-500/20">N</div>
+            <div>
+                <div class="font-bold text-slate-800 leading-tight">n8n Hub</div>
+                <div class="text-xs text-slate-400">Documentation</div>
             </div>
         </div>
-    </div>
-    
-    <script>
-        // State variables
-        let dbData = null;
-        let activeTab = 'dashboard';
-        let activeGuide = 'production_guide';
+        <nav class="p-4 space-y-1 flex-1 overflow-y-auto" id="sidebar-nav">
+            <a class="nav-link block active" id="nav-workflows" onclick="showSection('workflows')">Workflows Directory</a>
+            <div class="my-4 border-t border-slate-100"></div>
+            <div class="px-4 mb-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Guides</div>
+            <a class="nav-link block" id="nav-architecture" onclick="showSection('architecture')">Architecture & Design</a>
+            <a class="nav-link block" id="nav-production_guide" onclick="showSection('production_guide')">Production Guide</a>
+            <a class="nav-link block" id="nav-scripts" onclick="showSection('scripts')">Operational Scripts</a>
+            <a class="nav-link block" id="nav-troubleshooting" onclick="showSection('troubleshooting')">Troubleshooting</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-8 lg:p-12" id="main-content">
         
-        // Fetch compiled data
-        async function loadDatabase() {
+        <!-- Loading Indicator -->
+        <div id="loading" class="flex flex-col items-center justify-center h-full text-slate-500">
+            <div class="loader mb-4"></div>
+            <p>Loading compiled documentation...</p>
+        </div>
+        
+        <!-- Workflows Grid Section -->
+        <section id="section-workflows" class="hidden max-w-6xl mx-auto">
+            <div class="flex items-end justify-between mb-8 pb-4 border-b border-slate-200">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800">Workflows Directory</h1>
+                    <p class="text-slate-500 mt-2">Browse the <span id="wf-count" class="font-bold text-slate-700">0</span> automation pipelines currently active in your deployment.</p>
+                </div>
+            </div>
+            
+            <div id="workflows-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+        </section>
+
+        <!-- Markdown Document Section -->
+        <section id="section-markdown" class="hidden max-w-4xl mx-auto prose prose-slate">
+            <!-- Content injected here -->
+        </section>
+        
+    </main>
+
+    <script>
+        let dbData = null;
+        
+        async function init() {
             try {
-                const response = await fetch('./data.json');
-                dbData = await response.json();
+                const res = await fetch('./data.json');
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 
-                // Initialize stats
-                document.getElementById('badge-workflow-count').textContent = dbData.stats.totalWorkflows;
-                document.getElementById('stat-total-workflows').textContent = dbData.stats.totalWorkflows;
-                document.getElementById('stat-total-nodes').textContent = dbData.stats.totalNodesCount;
+                dbData = await res.json();
                 
-                // Load workflows grid
-                renderWorkflowsGrid(dbData.workflows);
+                // Initialize Markdown parser
+                marked.setOptions({ breaks: true, gfm: true });
                 
-                // Initialize guides markdown rendering
-                if (typeof marked.use === 'function') {
-                    marked.use({
-                        breaks: true,
-                        gfm: true
-                    });
-                } else if (typeof marked.setOptions === 'function') {
-                    marked.setOptions({
-                        breaks: true,
-                        gfm: true
-                    });
-                }
+                // Initialize Mermaid diagram renderer
+                mermaid.initialize({ startOnLoad: false, theme: 'default' });
                 
-                // Pre-process custom alert formatting from GFM style
-                switchGuide(activeGuide);
-                
-                // Render diagram
-                if (dbData.guides && dbData.guides.infographic) {
-                    let diagramHtml = marked.parse ? marked.parse(dbData.guides.infographic) : marked(dbData.guides.infographic);
-                    // Convert marked's default code block into mermaid div
-                    diagramHtml = diagramHtml.replace(/<pre><code class="language-mermaid">([\s\S]*?)<\/code><\/pre>/gi, '<div class="mermaid">$1</div>');
-                    document.getElementById('diagram-content').innerHTML = diagramHtml;
-                    setTimeout(() => {
-                        mermaid.init(undefined, document.querySelectorAll('.mermaid'));
-                    }, 100);
-                }
+                document.getElementById('loading').style.display = 'none';
+                renderWorkflows();
+                showSection('workflows');
                 
             } catch (err) {
-                console.error("Failed to load compiled docs database:", err);
-                document.getElementById('workflows-grid').innerHTML = `
-                    <div class="col-span-full py-12 text-center border border-dashed border-red-900/30 rounded-xl bg-red-950/5">
-                        <svg class="w-12 h-12 mx-auto text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                        <h4 class="mt-4 font-bold text-white text-sm">Failed to Load Database</h4>
-                        <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Please run "python scripts/generate_docs_data.py" first to generate the required documentation database file.</p>
+                document.getElementById('loading').innerHTML = `
+                    <div class="bg-red-50 border border-red-200 text-red-700 p-6 rounded-lg max-w-md text-center">
+                        <svg class="w-12 h-12 text-red-400 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <h3 class="font-bold text-lg mb-1">Failed to Load Database</h3>
+                        <p class="text-sm">Could not load <code>data.json</code>. Did you run the Python generation script?</p>
+                        <p class="text-xs text-red-500 mt-2 font-mono">${err.message}</p>
                     </div>
                 `;
             }
         }
         
-        // Switch between major navigation tabs
-        function switchTab(tabId) {
-            // Hide all tab panes
-            document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
-            
-            // Remove active classes from navigation buttons
-            document.querySelectorAll('nav button').forEach(el => {
-                el.classList.remove('bg-slate-900', 'text-white');
-                el.classList.add('text-slate-400');
-            });
-            
-            // Show selected tab pane
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            
-            // Add active class to clicked nav button
-            const activeBtn = document.getElementById(`nav-${tabId}`);
-            if (activeBtn) {
-                activeBtn.classList.remove('text-slate-400');
-                activeBtn.classList.add('bg-slate-900', 'text-white');
-            }
-            
-            activeTab = tabId;
-        }
-        
-        // Render workflows cards grid
-        function renderWorkflowsGrid(workflows) {
+        function renderWorkflows() {
             const grid = document.getElementById('workflows-grid');
-            grid.innerHTML = '';
+            document.getElementById('wf-count').textContent = dbData.workflows.length;
             
-            if (workflows.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full py-12 text-center text-slate-500 font-medium">
-                        No workflows found matching search criteria.
-                    </div>
-                `;
-                return;
-            }
-            
-            workflows.forEach(w => {
-                const card = document.createElement('div');
-                card.className = 'glass-panel glass-panel-hover rounded-xl p-5 flex flex-col justify-between cursor-pointer';
-                card.onclick = () => openWorkflowModal(w);
-                
-                const activeBadge = w.active 
-                    ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>'
-                    : '<span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span>';
-                
-                // Join first 3 node types as preview badges
-                const typesPreview = w.nodeTypes.slice(0, 3).map(type => 
-                    `<span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-3xs font-semibold font-mono text-slate-400">${type}</span>`
-                ).join(' ');
-                
-                // Get trigger name/type
-                const triggerPreview = w.triggers.length > 0
-                    ? w.triggers[0].type
-                    : 'Manual';
-                
-                card.innerHTML = `
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-3xs font-mono font-bold tracking-widest text-slate-500 uppercase flex items-center gap-1.5">
-                                ${activeBadge} ${triggerPreview} Triggered
-                            </span>
-                            <span class="text-3xs font-mono font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">
-                                ${w.nodeCount} NODES
-                            </span>
-                        </div>
-                        <h4 class="font-outfit font-extrabold text-white text-base leading-tight">${w.name}</h4>
-                        <p class="text-xs text-slate-400 line-clamp-2 leading-relaxed">${w.description}</p>
-                    </div>
-                    <div class="border-t border-slate-900 mt-4 pt-3 flex items-center justify-between">
-                        <div class="flex gap-1 overflow-hidden max-w-[70%]">
-                            ${typesPreview}
-                        </div>
-                        <span class="text-2xs font-semibold text-orange-400 flex items-center gap-1 hover:text-orange-300">
-                            Inspect 
-                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            grid.innerHTML = dbData.workflows.map(w => {
+                const triggerType = w.triggers && w.triggers.length > 0 ? w.triggers[0].type : 'Manual';
+                const nodeTypesList = (w.nodeTypes || []).slice(0, 3).map(t => 
+                    `<span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 truncate max-w-[120px]">${t}</span>`
+                ).join('');
+
+                return `
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="text-[10px] font-bold uppercase tracking-wider ${w.active ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : 'text-slate-500 bg-slate-50 border-slate-200'} px-2 py-1 rounded border">
+                            ${w.active ? '● Active' : 'Inactive'}
+                        </span>
+                        <span class="text-xs font-mono font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100">
+                            ${w.nodeCount} NODES
                         </span>
                     </div>
+                    
+                    <h3 class="font-bold text-slate-800 text-lg leading-tight mb-2">${w.name}</h3>
+                    <p class="text-sm text-slate-500 line-clamp-3 mb-6 flex-1">${w.description || 'No description provided.'}</p>
+                    
+                    <div class="mt-auto pt-4 border-t border-slate-100">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Primary Trigger</div>
+                        <span class="text-xs font-medium text-blue-700 bg-blue-50 px-2 py-1 rounded border border-blue-100 mb-3 inline-block">
+                            ⚡ ${triggerType}
+                        </span>
+                        
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 mt-2">Nodes</div>
+                        <div class="flex flex-wrap gap-1.5">
+                            ${nodeTypesList}
+                            ${w.nodeTypes.length > 3 ? `<span class="text-xs text-slate-400 px-1 py-0.5">+${w.nodeTypes.length - 3}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
                 `;
-                grid.appendChild(card);
-            });
+            }).join('');
         }
         
-        // Search & filter workflows
-        function filterWorkflows() {
-            const query = document.getElementById('search-input').value.toLowerCase().trim();
-            if (!dbData) return;
+        function showSection(id) {
+            // Hide all sections
+            document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
             
-            const filtered = dbData.workflows.filter(w => 
-                w.name.toLowerCase().includes(query) || 
-                w.description.toLowerCase().includes(query) ||
-                w.nodeTypes.some(t => t.toLowerCase().includes(query))
-            );
+            // Remove active state from all links
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             
-            renderWorkflowsGrid(filtered);
-        }
-        
-        // Open detailed workflow modal
-        function openWorkflowModal(w) {
-            if (!w) return;
+            // Set active state on clicked link
+            const navElement = document.getElementById('nav-' + id);
+            if (navElement) navElement.classList.add('active');
             
-            document.getElementById('modal-workflow-name').textContent = w.name;
-            document.getElementById('modal-workflow-desc').textContent = w.description;
-            
-            // Set active state badge
-            const activeBadge = document.getElementById('modal-workflow-badge-active');
-            if (w.active) {
-                activeBadge.textContent = 'ACTIVE';
-                activeBadge.className = 'px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 text-3xs font-bold font-mono border border-emerald-900/50';
+            if (id === 'workflows') {
+                document.getElementById('section-workflows').classList.remove('hidden');
             } else {
-                activeBadge.textContent = 'INACTIVE';
-                activeBadge.className = 'px-2 py-0.5 rounded bg-slate-900 text-slate-500 text-3xs font-bold font-mono border border-slate-800';
-            }
-            
-            document.getElementById('modal-workflow-badge-nodes').textContent = `${w.nodeCount} NODES`;
-            
-            // Render triggers list
-            const triggersContainer = document.getElementById('modal-workflow-triggers');
-            triggersContainer.innerHTML = '';
-            if (w.triggers.length > 0) {
-                w.triggers.forEach(t => {
-                    const badge = document.createElement('span');
-                    badge.className = 'px-2 py-1 rounded-md bg-slate-900 border border-slate-800 text-xs text-slate-300 font-mono';
-                    badge.textContent = `${t.type} (${t.name})`;
-                    triggersContainer.appendChild(badge);
+                const mdSection = document.getElementById('section-markdown');
+                mdSection.classList.remove('hidden');
+                
+                let content = dbData.guides[id] || '';
+                
+                // Specifically for architecture, prepend the infographic diagram if available
+                if (id === 'architecture' && dbData.guides.infographic) {
+                    content = dbData.guides.infographic + '\n\n---\n\n' + content;
+                }
+                
+                // Handle GitHub alert blocks
+                content = content.replace(/> \[!(.*?)\]\n(> .*?(?:\n> .*?)*)/g, (match, type, text) => {
+                    const cleanText = text.replace(/^> /gm, '');
+                    let color = 'blue';
+                    if (type === 'NOTE') color = 'blue';
+                    else if (type === 'TIP') color = 'emerald';
+                    else if (type === 'IMPORTANT') color = 'purple';
+                    else if (type === 'WARNING') color = 'orange';
+                    else if (type === 'CAUTION') color = 'red';
+                    
+                    return `<div class="bg-${color}-50 border-l-4 border-${color}-500 p-4 my-4 rounded-r-md">
+                        <div class="font-bold text-${color}-800 text-sm tracking-wider uppercase mb-1">${type}</div>
+                        <div class="text-${color}-900 text-sm">${marked.parse(cleanText)}</div>
+                    </div>`;
                 });
-            } else {
-                triggersContainer.innerHTML = '<span class="text-xs text-slate-500 font-mono">Manual Trigger (no trigger nodes)</span>';
-            }
-            
-            // Render node types
-            const nodeTypesContainer = document.getElementById('modal-workflow-nodetypes');
-            nodeTypesContainer.innerHTML = '';
-            w.nodeTypes.forEach(t => {
-                const badge = document.createElement('span');
-                badge.className = 'px-2 py-1 rounded-md bg-orange-950/20 border border-orange-900/30 text-xs text-orange-400 font-mono';
-                badge.textContent = t;
-                nodeTypesContainer.appendChild(badge);
-            });
-            
-            // Render JSON pre
-            document.getElementById('modal-workflow-json').textContent = w.rawJson;
-            
-            // Set copy button event handler
-            const copyBtn = document.getElementById('btn-copy-workflow');
-            copyBtn.onclick = () => {
-                navigator.clipboard.writeText(w.rawJson).then(() => {
-                    copyBtn.innerHTML = `
-                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        Copied JSON!
-                    `;
-                    setTimeout(() => {
-                        copyBtn.innerHTML = `
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
-                            Copy Nodes JSON
-                        `;
-                    }, 2000);
-                });
-            };
-            
-            // Show modal
-            document.getElementById('workflow-modal').classList.remove('hidden');
-        }
-        
-        // Close workflow modal
-        function closeWorkflowModal() {
-            document.getElementById('workflow-modal').classList.add('hidden');
-        }
-        
-        // Render selected guide markdown
-        function switchGuide(guideKey) {
-            if (!dbData || !dbData.guides[guideKey]) return;
-            
-            activeGuide = guideKey;
-            
-            // Update guide titles
-            const titleMap = {
-                'production_guide': 'Operations & Tuning Guide',
-                'scripts': 'Operational & Diagnostic Scripts Reference',
-                'architecture': 'System Components Architecture In-Depth',
-                'troubleshooting': 'Exhaustive Troubleshooting Checklist'
-            };
-            document.getElementById('guide-title').textContent = titleMap[guideKey] || guideKey;
-            
-            // Render active button style
-            document.querySelectorAll('#tab-guides .w-64 button').forEach(el => {
-                el.classList.remove('bg-slate-900', 'text-white');
-                el.classList.add('text-slate-400');
-            });
-            
-            // Add active button style
-            const targetBtn = document.getElementById(`btn-guide-${guideKey}`);
-            if (targetBtn) {
-                targetBtn.classList.remove('text-slate-400');
-                targetBtn.classList.add('bg-slate-900', 'text-white');
-            }
-            
-            // Render markdown content
-            let mdContent = dbData.guides[guideKey];
-            
-            // Pre-process markdown for GitHub-style alerts:
-            // > [!NOTE] -> <div class="alert-note">...</div>
-            // This transforms standard markdown blockquotes with alerts into neat containers.
-            mdContent = mdContent.replace(/>\s*\[!NOTE\]\s*\n([\s\S]*?)(?=\n\n|\n> ---|\n---|\n#|\n$)/g, (match, content) => {
-                const lines = content.split('\n').map(l => l.replace(/^>\s*/, '')).join('\n');
-                return `<div class="alert-note"><strong>Note:</strong> ${lines}</div>`;
-            });
-            mdContent = mdContent.replace(/>\s*\[!IMPORTANT\]\s*\n([\s\S]*?)(?=\n\n|\n> ---|\n---|\n#|\n$)/g, (match, content) => {
-                const lines = content.split('\n').map(l => l.replace(/^>\s*/, '')).join('\n');
-                return `<div class="alert-note" style="border-color: #3b82f6; background: rgba(59, 130, 246, 0.05);"><strong>Important:</strong> ${lines}</div>`;
-            });
-            mdContent = mdContent.replace(/>\s*\[!TIP\]\s*\n([\s\S]*?)(?=\n\n|\n> ---|\n---|\n#|\n$)/g, (match, content) => {
-                const lines = content.split('\n').map(l => l.replace(/^>\s*/, '')).join('\n');
-                return `<div class="alert-tip"><strong>Tip:</strong> ${lines}</div>`;
-            });
-            mdContent = mdContent.replace(/>\s*\[!WARNING\]\s*\n([\s\S]*?)(?=\n\n|\n> ---|\n---|\n#|\n$)/g, (match, content) => {
-                const lines = content.split('\n').map(l => l.replace(/^>\s*/, '')).join('\n');
-                return `<div class="alert-warning"><strong>Warning:</strong> ${lines}</div>`;
-            });
-            mdContent = mdContent.replace(/>\s*\[!CAUTION\]\s*\n([\s\S]*?)(?=\n\n|\n> ---|\n---|\n#|\n$)/g, (match, content) => {
-                const lines = content.split('\n').map(l => l.replace(/^>\s*/, '')).join('\n');
-                return `<div class="alert-important"><strong>Caution:</strong> ${lines}</div>`;
-            });
-            
-            // Resolve local file schema links into relative links so they work in the web app
-            mdContent = mdContent.replace(/file:\/\/\/d:\/courses\/Data%20Science\/Data%20Engineering\/n8n\//g, './');
-            
-            // Parse to HTML
-            document.getElementById('guide-content').innerHTML = marked.parse(mdContent);
-            
-            // Attach copy buttons to all generated code blocks
-            document.querySelectorAll('#guide-content pre').forEach(preEl => {
-                const codeEl = preEl.querySelector('code');
-                if (!codeEl) return;
                 
-                // Create copy button
-                const btn = document.createElement('button');
-                btn.className = 'absolute top-2 right-2 p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 opacity-0 group-hover:opacity-100 transition duration-150';
-                btn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>';
+                // Parse markdown
+                let html = marked.parse(content);
                 
-                // Add hover tracking classes to container
-                preEl.classList.add('group');
-                preEl.appendChild(btn);
+                // Convert marked code blocks to mermaid divs
+                html = html.replace(/<pre><code class="language-mermaid">([\s\S]*?)<\/code><\/pre>/gi, '<div class="mermaid">$1</div>');
                 
-                btn.onclick = () => {
-                    const text = codeEl.textContent;
-                    navigator.clipboard.writeText(text).then(() => {
-                        btn.innerHTML = '<svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
-                        setTimeout(() => {
-                            btn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>';
-                        }, 2000);
-                    });
-                };
-            });
-        }
-        
-        // Modal click-out listener
-        window.onclick = function(event) {
-            const modal = document.getElementById('workflow-modal');
-            if (event.target === modal) {
-                closeWorkflowModal();
+                mdSection.innerHTML = html;
+                
+                // Render mermaid diagrams
+                setTimeout(() => {
+                    try {
+                        mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+                    } catch (e) {
+                        console.error('Mermaid render error:', e);
+                    }
+                }, 100);
             }
         }
         
-        // Start app
-        switchTab('dashboard');
-        loadDatabase();
+        // Start application
+        window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
