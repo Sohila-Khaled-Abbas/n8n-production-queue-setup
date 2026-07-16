@@ -158,7 +158,7 @@ async def read_root(request: Request):
     return HTMLResponse(content=html_content)
 
 # Mount the FastMCP app at the root (it will handle /sse and /messages)
-app.mount("/", mcp.get_asgi_app())
+app.mount("/", mcp.http_app())
 
 if __name__ == "__main__":
     print("Starting n8n Workflow Generator MCP Server on port 8000...")
