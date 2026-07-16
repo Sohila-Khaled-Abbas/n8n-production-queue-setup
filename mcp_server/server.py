@@ -38,7 +38,7 @@ async def create_n8n_workflow(prompt: str) -> str:
 app = FastAPI(title="n8n AI Chat UI")
 
 class GenerateRequest(BaseModel):
-    prompt: str
+    messages: list
 
 class ExportRequest(BaseModel):
     workflow: dict
@@ -48,10 +48,10 @@ class ExportRequest(BaseModel):
 @app.post("/api/generate")
 async def api_generate(req: GenerateRequest):
     try:
-        workflow_json = generate_workflow(req.prompt)
-        if "error" in workflow_json:
-            return {"success": False, "error": workflow_json["error"]}
-        return {"success": True, "workflow": workflow_json}
+        response = generate_workflow(req.messages)
+        if "error" in response:
+            return {"success": False, "error": response["error"]}
+        return response
     except Exception as e:
         return {"success": False, "error": str(e)}
 
@@ -331,17 +331,18 @@ async def read_root(request: Request):
             scrollToBottom();
 
             try {
+                // Send the entire chat history so the AI has context
                 const res = await fetch('/api/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt })
+                    body: JSON.stringify({ messages: chatHistory })
                 });
                 const data = await res.json();
                 
                 document.getElementById(loadingId).remove();
                 
-                if (data.success && data.workflow) {
-                    addMessage('bot', `<p>I have built the workflow based on your requirements. You can review the JSON below or export it directly.</p>`, data.workflow);
+                if (data.success) {
+                    addMessage('bot', `<p>${data.message.replace(/\n/g, '<br>')}</p>`, data.workflow);
                 } else {
                     addMessage('bot', `<p class="text-red-400">Error: ${data.error}</p>`);
                 }

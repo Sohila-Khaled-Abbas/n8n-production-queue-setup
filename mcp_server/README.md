@@ -4,10 +4,11 @@ A FastMCP-based Server-Sent Events (SSE) server and standalone **ChatGPT-style W
 
 ## Features
 
-- **Standalone AI Chat UI**: The root URL serves a complete ChatGPT-like interface where you can chat with the AI to design your workflows.
+- **Conversational AI Agent**: The root URL serves a complete ChatGPT-like interface where you can chat interactively to design, discuss, and refine your workflows.
+- **Portfolio Knowledge Injection**: The AI automatically indexes your existing workflows (from `docs/data.json`) to suggest ideas based on your own n8n portfolio!
+- **Persistent Chat History**: Your chat history is saved directly in your browser (`localStorage`) so your conversations persist across reloads.
 - **1-Click n8n Export**: The web UI connects directly to your n8n instance via the REST API (`/api/v1/workflows`) to automatically push generated workflows with a single click.
-- **Smart Routing**: Connects to the best available LLM provider (OpenRouter, HuggingFace, or Ollama) using `llm_generator.py`.
-- **FastMCP Powered**: Still exposes the `create_n8n_workflow` tool seamlessly via SSE for traditional MCP clients.
+- **Smart Routing & Prompt Enhancing**: Connects to the best available LLM provider and automatically enhances short prompts with professional n8n architectures before generating the code.
 
 ## Running the Server
 

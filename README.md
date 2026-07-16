@@ -43,7 +43,7 @@
 | **Production-Tuned PostgreSQL** | `shared_buffers`, `wal_buffers`, `checkpoint_completion_target` pre-configured |
 | **Health Checks** | All dependencies are health-checked before n8n starts |
 | **Centralized Log Rotation** | Configurable via `.env` — `LOG_DRIVER`, `LOG_MAX_SIZE`, `LOG_MAX_FILE` |
-| **AI Workflow Generator Chat** | A full-stack AI chat web app hosted on port 8000 that generates workflows using LLMs and securely exports them directly to n8n via its REST API (built with FastMCP and FastAPI). |
+| **Conversational AI Assistant** | A full-stack AI chat web app hosted on port 8000. It features conversational memory, auto-prompt enhancing, dynamic ingestion of your local n8n portfolio for intelligent suggestions, and 1-click exporting to n8n. |
 | **Intelligently Tagged Portfolio** | Includes 45 production-ready workflows structurally parsed and tagged (`RAG`, `Data Pipeline`, `Orchestration`) and an automatically compiled Markdown Documentation Site. |
 
 ---
