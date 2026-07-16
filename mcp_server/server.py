@@ -54,6 +54,9 @@ app = FastAPI(title="n8n AI Chat UI", lifespan=lifespan)
 class GenerateRequest(BaseModel):
     session_id: str
     messages: list
+    custom_skills: str = None
+    model_id: str = None
+    provider: str = None
 
 class ExportRequest(BaseModel):
     workflow: dict
@@ -81,7 +84,7 @@ async def api_generate(req: GenerateRequest, db: Session = Depends(get_db)):
         db.commit()
 
         # Generate response
-        response = generate_workflow(req.messages)
+        response = generate_workflow(req.messages, model_name=req.model_id, provider=req.provider, custom_skills=req.custom_skills)
         
         if "error" in response:
             return {"success": False, "error": response["error"]}
@@ -339,24 +342,29 @@ async def read_root(request: Request):
     <!-- Settings Modal -->
     <div id="settings-modal" class="modal fixed inset-0 z-50 items-center justify-center">
         <div class="bg-[#202123] rounded-xl border border-slate-600 w-full max-w-md p-6 shadow-2xl">
-            <h2 class="text-xl font-bold mb-4">Export Settings</h2>
-            <p class="text-sm text-slate-400 mb-4">Configure your n8n connection to automatically export workflows.</p>
+            <h2 class="text-xl font-bold mb-4">Settings</h2>
+            <p class="text-sm text-slate-400 mb-4">Configure your n8n connection and AI instructions.</p>
             
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-1">n8n Host URL</label>
-                    <input type="text" id="n8n-url" class="w-full bg-[#343541] border border-slate-600 rounded p-2 text-white" placeholder="http://localhost:5678">
+                    <input type="text" id="n8n-url" class="w-full bg-[#343541] border border-slate-600 rounded p-2 text-white" value="https://tightrope-large-petty.ngrok-free.dev" placeholder="http://localhost:80">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">n8n API Key</label>
                     <input type="password" id="n8n-key" class="w-full bg-[#343541] border border-slate-600 rounded p-2 text-white" placeholder="n8n_api_...">
                     <p class="text-xs text-slate-400 mt-1">Generate this in n8n -> Settings -> n8n API</p>
                 </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Global AI Skills & Instructions</label>
+                    <textarea id="n8n-skills" rows="3" class="w-full bg-[#343541] border border-slate-600 rounded p-2 text-white text-sm" placeholder="e.g., 'Always use internal.api.com for HTTP nodes', 'Always add an Error Trigger'"></textarea>
+                    <p class="text-xs text-slate-400 mt-1">These custom rules will be sent to the AI with every prompt.</p>
+                </div>
             </div>
             
             <div class="mt-6 flex justify-end gap-3">
                 <button onclick="closeSettings()" class="px-4 py-2 rounded text-slate-300 hover:bg-slate-700">Cancel</button>
-                <button onclick="saveSettings()" class="px-4 py-2 rounded bg-rose-600 hover:bg-rose-700 font-medium">Save</button>
+                <button onclick="saveSettings()" class="px-4 py-2 rounded bg-rose-600 hover:bg-rose-700 font-medium">Save Settings</button>
             </div>
         </div>
     </div>
@@ -525,9 +533,33 @@ ${JSON.stringify(template.workflow || {})}
                 
                 if (workflowObj) {
                     const jsonStr = JSON.stringify(workflowObj, null, 2);
+                    
+                    // Workflow Diffing Logic
+                    let diffHtml = "";
+                    if (currentWorkflowJson && currentWorkflowJson.nodes && workflowObj.nodes) {
+                        const oldNodes = currentWorkflowJson.nodes;
+                        const newNodes = workflowObj.nodes;
+                        const added = newNodes.filter(n => !oldNodes.find(o => o.name === n.name));
+                        const removed = oldNodes.filter(o => !newNodes.find(n => n.name === o.name));
+                        const modified = newNodes.filter(n => {
+                            const old = oldNodes.find(o => o.name === n.name);
+                            return old && JSON.stringify(old.parameters) !== JSON.stringify(n.parameters);
+                        });
+                        
+                        if (added.length > 0 || removed.length > 0 || modified.length > 0) {
+                            diffHtml = `<div class="mt-4 p-3 bg-slate-800 rounded-lg border border-slate-700 text-sm">
+                                <h4 class="font-bold text-slate-300 mb-2 border-b border-slate-700 pb-1">🔍 Version Control Diff</h4>
+                                <ul class="space-y-1">`;
+                            added.forEach(n => diffHtml += `<li class="text-green-400">🟩 <b>Added:</b> ${n.name} (${n.type})</li>`);
+                            removed.forEach(n => diffHtml += `<li class="text-red-400">🟥 <b>Removed:</b> ${n.name}</li>`);
+                            modified.forEach(n => diffHtml += `<li class="text-yellow-400">🟨 <b>Modified:</b> ${n.name} parameters updated</li>`);
+                            diffHtml += `</ul></div>`;
+                        }
+                    }
+                    
                     currentWorkflowJson = workflowObj;
                     
-                    html += `
+                    html += diffHtml + `
                         <div class="mt-4 bg-black rounded-lg overflow-hidden border border-slate-700">
                             <div class="flex justify-between items-center px-4 py-2 bg-slate-800 text-xs font-mono border-b border-slate-700">
                                 <span>workflow.json</span>
@@ -539,6 +571,26 @@ ${JSON.stringify(template.workflow || {})}
                             <pre class="m-0 p-4 max-h-96 overflow-y-auto"><code class="language-json">${jsonStr.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
                         </div>
                     `;
+
+                    // Check for webhooks
+                    let webhooks = [];
+                    if (workflowObj.nodes && Array.isArray(workflowObj.nodes)) {
+                        webhooks = workflowObj.nodes.filter(n => n.type === 'n8n-nodes-base.webhook');
+                    }
+                    if (webhooks.length > 0) {
+                        const baseUrl = localStorage.getItem('n8nUrl') || 'http://localhost:80';
+                        webhooks.forEach(wh => {
+                            const path = wh.parameters?.path || 'your-webhook-path';
+                            const method = wh.parameters?.httpMethod || 'GET';
+                            html += `
+                            <div class="mt-4 bg-slate-800 rounded-lg overflow-hidden border border-slate-700 p-4">
+                                <h4 class="text-sm font-bold text-rose-400 mb-2">⚡ Webhook Detected: ${wh.name || 'Webhook'}</h4>
+                                <p class="text-xs text-slate-400 mb-2">You can trigger this webhook using the following curl command after exporting:</p>
+                                <pre class="bg-black p-3 rounded text-xs font-mono text-green-400 overflow-x-auto">curl -X ${method} ${baseUrl}/webhook-test/${path}</pre>
+                            </div>
+                            `;
+                        });
+                    }
                 }
                 
                 html += `</div></div>`;
@@ -607,6 +659,7 @@ ${JSON.stringify(template.workflow || {})}
                     body: JSON.stringify({ 
                         session_id: sessionId, 
                         messages: chatHistory,
+                        custom_skills: localStorage.getItem('n8n_skills') || '',
                         ...modelParams
                     })
                 });
@@ -684,8 +737,9 @@ ${JSON.stringify(template.workflow || {})}
         }
 
         function openSettings() {
-            document.getElementById('n8n-url').value = localStorage.getItem('n8nUrl') || 'http://localhost:5678';
+            document.getElementById('n8n-url').value = localStorage.getItem('n8nUrl') || 'https://tightrope-large-petty.ngrok-free.dev';
             document.getElementById('n8n-key').value = localStorage.getItem('n8nKey') || '';
+            document.getElementById('n8n-skills').value = localStorage.getItem('n8n_skills') || '';
             document.getElementById('settings-modal').classList.add('active');
         }
         function closeSettings() {
@@ -694,6 +748,7 @@ ${JSON.stringify(template.workflow || {})}
         function saveSettings() {
             localStorage.setItem('n8nUrl', document.getElementById('n8n-url').value.trim());
             localStorage.setItem('n8nKey', document.getElementById('n8n-key').value.trim());
+            localStorage.setItem('n8n_skills', document.getElementById('n8n-skills').value.trim());
             closeSettings();
         }
 

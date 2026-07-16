@@ -46,7 +46,9 @@ def get_client_and_model(prompt: str, preferred_model: str = None, preferred_pro
             return client, preferred_model or "openrouter/free"
         
         elif preferred_provider == "ollama":
-            ollama_host = os.getenv("OLLAMA_HOST").replace("host.docker.internal", "127.0.0.1")
+            ollama_host = os.getenv("OLLAMA_HOST", "127.0.0.1:11434")
+            if ollama_host == "0.0.0.0" or "host.docker.internal" in ollama_host:
+                ollama_host = "127.0.0.1:11434"
             if not ollama_host.startswith("http"):
                 ollama_host = f"http://{ollama_host}"
             client = OpenAI(base_url=f"{ollama_host}/v1", api_key="ollama")
@@ -69,7 +71,11 @@ def get_client_and_model(prompt: str, preferred_model: str = None, preferred_pro
                 base_url="https://api-inference.huggingface.co/v1/",
                 api_key=os.getenv("HUGGINGFACE_API_TOKEN")
             )
-            return client, preferred_model or "openai/gpt-oss-120b"
+            # Map the fictional model requested by the user to a highly capable real HF model
+            actual_model = preferred_model or "Qwen/Qwen2.5-Coder-32B-Instruct"
+            if actual_model == "openai/gpt-oss-120b":
+                actual_model = "Qwen/Qwen2.5-Coder-32B-Instruct"
+            return client, actual_model
             
         elif preferred_provider == "agentrouter":
             client = OpenAI(
@@ -140,7 +146,46 @@ from n8n_client import build_knowledge_index, build_credential_index
 KNOWLEDGE_INDEX = build_knowledge_index() or "(No local portfolio found from API)"
 CREDENTIAL_INDEX = build_credential_index() or "(No local credentials found from API)"
 
-def generate_workflow(messages: list, model_name: str = None, provider: str = None) -> dict:
+def fetch_relevant_template(prompt: str) -> str:
+    """Naive keyword extraction to find a community template"""
+    import urllib.parse
+    import requests
+    stop_words = {'make', 'a', 'bot', 'that', 'reads', 'from', 'to', 'and', 'with', 'create', 'workflow', 'the', 'an', 'in', 'on', 'for', 'my', 'i', 'want', 'need', 'using'}
+    words = [w for w in prompt.lower().replace(',', '').replace('.', '').split() if w not in stop_words and len(w) > 2]
+    if not words: return ""
+    query = urllib.parse.quote(' '.join(words[:2]))
+    try:
+        res = requests.get(f'https://api.n8n.io/api/templates/workflows?search={query}', timeout=3)
+        if res.status_code == 200:
+            data = res.json()
+            if data.get('workflows'):
+                w_id = data['workflows'][0]['id']
+                w_res = requests.get(f'https://api.n8n.io/api/templates/workflows/{w_id}', timeout=3)
+                if w_res.status_code == 200:
+                    wf = w_res.json().get('workflow', {}).get('workflow', {})
+                    # Clean up huge things like pinData to save context window
+                    wf.pop('pinData', None)
+                    return json.dumps(wf)
+    except Exception:
+        pass
+def search_n8n_docs(query: str) -> str:
+    """Search official n8n documentation via DuckDuckGo HTML"""
+    import urllib.parse
+    import urllib.request
+    import re
+    try:
+        url = 'https://html.duckduckgo.com/html/'
+        data = urllib.parse.urlencode({'q': f'site:docs.n8n.io {query}'}).encode('utf-8')
+        req = urllib.request.Request(url, data=data, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+        with urllib.request.urlopen(req, timeout=5) as response:
+            html = response.read().decode('utf-8')
+            snippets = re.findall(r'<a class="result__snippet[^>]+>(.*?)</a>', html, re.IGNORECASE | re.DOTALL)
+            clean_snippets = [re.sub(r'<[^>]+>', '', s).strip() for s in snippets]
+            return '\n'.join(clean_snippets[:3]) if clean_snippets else 'No documentation found.'
+    except Exception as e:
+        return f"Error searching docs: {str(e)}"
+
+def generate_workflow(messages: list, model_name: str = None, provider: str = None, custom_skills: str = None) -> dict:
     """
     Main entry point for conversational workflow generation.
     Takes a conversation history, uses the LLM, and extracts generated n8n JSON.
@@ -149,6 +194,23 @@ def generate_workflow(messages: list, model_name: str = None, provider: str = No
     last_prompt = messages[-1]["content"] if messages else ""
     client, model = get_client_and_model(last_prompt, preferred_model=model_name, preferred_provider=provider)
     print(f"[llm_generator] Routing conversational request to model: {model}")
+    template_context = ""
+    fetched_template = fetch_relevant_template(last_prompt)
+    if fetched_template:
+        template_context += f"\n# N8N COMMUNITY TEMPLATE FOUNDATION\nThe user's request matches an official n8n community template. Use this as a strong foundation:\n```json\n{fetched_template}\n```\n"
+
+    # Naive RAG documentation extraction based on keywords
+    import urllib.parse
+    stop_words = {'make', 'a', 'bot', 'that', 'reads', 'from', 'to', 'and', 'with', 'create', 'workflow', 'the', 'an', 'in', 'on', 'for', 'my', 'i', 'want', 'need', 'using'}
+    doc_words = [w for w in last_prompt.lower().replace(',', '').replace('.', '').split() if w not in stop_words and len(w) > 2]
+    if doc_words:
+        docs = search_n8n_docs(' '.join(doc_words[:2]))
+        if docs and docs != "No documentation found.":
+            template_context += f"\n# RAG DOCUMENTATION (OFFICIAL N8N DOCS)\nHere are relevant documentation snippets to ensure you use correct node parameters:\n{docs}\n"
+
+    skills_context = ""
+    if custom_skills:
+        skills_context = f"\n# GLOBAL AI SKILLS & INSTRUCTIONS\nThe user has provided the following custom instructions that you MUST obey:\n{custom_skills}\n"
 
     system_message = f"""You are an elite n8n Workflow Architect and Data Engineer. You are chatting interactively with the user.
 
@@ -159,6 +221,8 @@ def generate_workflow(messages: list, model_name: str = None, provider: str = No
 
 # USER'S EXISTING N8N PORTFOLIO (FOR KNOWLEDGE & SUGGESTIONS)
 {KNOWLEDGE_INDEX}
+{template_context}
+{skills_context}
 
 # WORKFLOW GENERATION RULES (ONLY IF GENERATING A WORKFLOW)
 If you decide to output a workflow:
