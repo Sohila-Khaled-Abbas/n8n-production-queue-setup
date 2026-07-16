@@ -81,6 +81,9 @@
                            │  n8n-init (One-Shot) ────────────────────────────── │
                            │    └── Seeds DB credentials & WAHA community node   │
                            │                                                      │
+                           │  mcp_server (Port 8000) ─────────────────────────── │
+                           │    └── FastMCP AI Workflow Architect                │
+                           │                                                      │
                            │  PostgreSQL (internal)  Redis (internal)            │
                            │  Qdrant (ports 6333/6334)                           │
                            └─────────────────────────────────────────────────────┘
@@ -97,6 +100,7 @@
 | `n8n-autoscaler` | Custom (`autoscaler/Dockerfile`) | Redis queue monitor + Docker Compose scaler |
 | `redis-monitor` | Custom (`monitor/monitor.Dockerfile`) | Queue depth logger |
 | `n8n-init` | `docker.n8n.io/n8nio/n8n:2.28.6` | One-shot credential provisioner |
+| `mcp_server` | Custom Python (`mcp_server/server.py`) | **FastMCP n8n AI Workflow Architect** |
 | `n8n-postgres` | `postgres:16-alpine` | Persistent data store |
 | `qdrant` | `qdrant/qdrant:latest` | Vector database |
 | `waha` | `devlikeapro/waha:latest` | WhatsApp HTTP API gateway |

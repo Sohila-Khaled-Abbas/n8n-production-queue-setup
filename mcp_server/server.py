@@ -108,9 +108,16 @@ async def api_export(req: ExportRequest):
         'X-N8N-API-KEY': req.api_key
     }
     
+    # Remove read-only fields for n8n API
+    wf_payload = req.workflow.copy()
+    wf_payload.pop('active', None)
+    wf_payload.pop('id', None)
+    if 'settings' not in wf_payload:
+        wf_payload['settings'] = {}
+    
     request = urllib.request.Request(
         url,
-        data=json.dumps(req.workflow).encode('utf-8'),
+        data=json.dumps(wf_payload).encode('utf-8'),
         headers=headers,
         method='POST'
     )
