@@ -64,13 +64,9 @@ async def api_export(req: ExportRequest):
         'X-N8N-API-KEY': req.api_key
     }
     
-    workflow_data = req.workflow
-    if "settings" not in workflow_data:
-        workflow_data["settings"] = {}
-    
     request = urllib.request.Request(
         url,
-        data=json.dumps(workflow_data).encode('utf-8'),
+        data=json.dumps(req.workflow).encode('utf-8'),
         headers=headers,
         method='POST'
     )
@@ -196,6 +192,7 @@ async def read_root(request: Request):
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
     <script>
         let currentWorkflowJson = null;
+        let chatHistory = [];
 
         // Auto-resize textarea
         const tx = document.getElementById('prompt-input');
@@ -219,7 +216,35 @@ async def read_root(request: Request):
             container.scrollTop = container.scrollHeight;
         }
 
-        function addMessage(role, content, workflowObj = null) {
+        function saveHistory() {
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+        }
+
+        function loadHistory() {
+            const saved = localStorage.getItem('chatHistory');
+            if (saved) {
+                try {
+                    chatHistory = JSON.parse(saved);
+                    // Clear default welcome message
+                    document.getElementById('chat-container').innerHTML = '';
+                    
+                    const histList = document.getElementById('history-list');
+                    histList.innerHTML = '';
+                    
+                    // Re-render all messages
+                    chatHistory.forEach(msg => {
+                        renderMessageHTML(msg.role, msg.content, msg.workflowObj);
+                        if (msg.role === 'user') {
+                            histList.innerHTML = `<div class="p-2 text-sm text-slate-300 hover:bg-slate-700 rounded cursor-pointer truncate">${msg.content}</div>` + histList.innerHTML;
+                        }
+                    });
+                } catch (e) {
+                    console.error('Failed to parse history', e);
+                }
+            }
+        }
+
+        function renderMessageHTML(role, content, workflowObj = null) {
             const container = document.getElementById('chat-container');
             const div = document.createElement('div');
             
@@ -265,6 +290,12 @@ async def read_root(request: Request):
             scrollToBottom();
         }
 
+        function addMessage(role, content, workflowObj = null) {
+            chatHistory.push({ role, content, workflowObj });
+            saveHistory();
+            renderMessageHTML(role, content, workflowObj);
+        }
+
         async function sendPrompt() {
             const input = document.getElementById('prompt-input');
             const btn = document.getElementById('send-btn');
@@ -277,6 +308,10 @@ async def read_root(request: Request):
             btn.disabled = true;
 
             addMessage('user', prompt);
+            
+            // Add to history sidebar
+            const histList = document.getElementById('history-list');
+            histList.innerHTML = `<div class="p-2 text-sm text-slate-300 hover:bg-slate-700 rounded cursor-pointer truncate">${prompt}</div>` + histList.innerHTML;
             
             // Add loading indicator
             const loadingId = 'loading-' + Date.now();
@@ -307,10 +342,6 @@ async def read_root(request: Request):
                 
                 if (data.success && data.workflow) {
                     addMessage('bot', `<p>I have built the workflow based on your requirements. You can review the JSON below or export it directly.</p>`, data.workflow);
-                    
-                    // Add to history sidebar
-                    const histList = document.getElementById('history-list');
-                    histList.innerHTML = `<div class="p-2 text-sm text-slate-300 hover:bg-slate-700 rounded cursor-pointer truncate">${prompt}</div>` + histList.innerHTML;
                 } else {
                     addMessage('bot', `<p class="text-red-400">Error: ${data.error}</p>`);
                 }
@@ -325,7 +356,10 @@ async def read_root(request: Request):
         }
 
         function newChat() {
+            chatHistory = [];
+            saveHistory();
             currentWorkflowJson = null;
+            document.getElementById('history-list').innerHTML = '';
             document.getElementById('chat-container').innerHTML = `
             <div class="message-bot border-b border-black/10 text-gray-100">
                 <div class="max-w-4xl mx-auto flex p-6 gap-6 text-base">
@@ -337,6 +371,11 @@ async def read_root(request: Request):
                 </div>
             </div>`;
         }
+
+        // Initialize on load
+        window.onload = function() {
+            loadHistory();
+        };
 
         function openSettings() {
             document.getElementById('n8n-url').value = localStorage.getItem('n8nUrl') || 'http://localhost:5678';
