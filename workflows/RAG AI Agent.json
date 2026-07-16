@@ -198,28 +198,34 @@
         "name": "RAG"
       },
       {
-        "createdAt": "2026-07-16T15:40:44.162740+00:00",
-        "updatedAt": "2026-07-16T15:40:44.162760+00:00",
-        "id": "tag_vector_storage",
-        "name": "Vector Storage"
+        "createdAt": "2026-07-16T15:55:54.281492+00:00",
+        "updatedAt": "2026-07-16T15:55:54.281509+00:00",
+        "id": "3506c721492cc987",
+        "name": "Agentic AI"
       },
       {
-        "createdAt": "2026-07-16T15:40:44.162770+00:00",
-        "updatedAt": "2026-07-16T15:40:44.162775+00:00",
-        "id": "tag_production_automation",
-        "name": "Production Automation"
-      },
-      {
-        "createdAt": "2026-07-16T15:40:44.162782+00:00",
-        "updatedAt": "2026-07-16T15:40:44.162786+00:00",
-        "id": "tag_event-driven_architecture",
+        "createdAt": "2026-07-16T15:55:54.281524+00:00",
+        "updatedAt": "2026-07-16T15:55:54.281529+00:00",
+        "id": "dac03ba206f3bfe0",
         "name": "Event-Driven Architecture"
       },
       {
-        "createdAt": "2026-07-16T15:40:44.162792+00:00",
-        "updatedAt": "2026-07-16T15:40:44.162797+00:00",
-        "id": "tag_agentic_ai",
-        "name": "Agentic AI"
+        "createdAt": "2026-07-16T15:55:54.281540+00:00",
+        "updatedAt": "2026-07-16T15:55:54.281545+00:00",
+        "id": "e3e18547adcedcfb",
+        "name": "Vector Storage"
+      },
+      {
+        "createdAt": "2026-07-16T15:55:54.281556+00:00",
+        "updatedAt": "2026-07-16T15:55:54.281561+00:00",
+        "id": "89f5bd6077773f30",
+        "name": "Production Automation"
+      },
+      {
+        "createdAt": "2026-07-16T15:58:23.819150+00:00",
+        "updatedAt": "2026-07-16T15:58:23.819163+00:00",
+        "id": "332aea2c3b181c28",
+        "name": "Event-Driven"
       }
     ],
     "shared": [

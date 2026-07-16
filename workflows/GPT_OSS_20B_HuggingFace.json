@@ -235,34 +235,40 @@
   "pinData": {},
   "tags": [
     {
-      "createdAt": "2026-07-16T15:40:41.987327+00:00",
-      "updatedAt": "2026-07-16T15:40:41.987340+00:00",
-      "id": "tag_production_automation",
-      "name": "Production Automation"
+      "createdAt": "2026-07-16T15:55:54.254120+00:00",
+      "updatedAt": "2026-07-16T15:55:54.254132+00:00",
+      "id": "558f1e5fcbd7f1ca",
+      "name": "Data Transformation"
     },
     {
-      "createdAt": "2026-07-16T15:40:41.987347+00:00",
-      "updatedAt": "2026-07-16T15:40:41.987350+00:00",
-      "id": "tag_data_pipeline",
-      "name": "Data Pipeline"
-    },
-    {
-      "createdAt": "2026-07-16T15:40:41.987354+00:00",
-      "updatedAt": "2026-07-16T15:40:41.987356+00:00",
-      "id": "tag_event-driven_architecture",
-      "name": "Event-Driven Architecture"
-    },
-    {
-      "createdAt": "2026-07-16T15:40:41.987360+00:00",
-      "updatedAt": "2026-07-16T15:40:41.987362+00:00",
-      "id": "tag_agentic_ai",
+      "createdAt": "2026-07-16T15:55:54.254140+00:00",
+      "updatedAt": "2026-07-16T15:55:54.254143+00:00",
+      "id": "3506c721492cc987",
       "name": "Agentic AI"
     },
     {
-      "createdAt": "2026-07-16T15:40:41.987365+00:00",
-      "updatedAt": "2026-07-16T15:40:41.987368+00:00",
-      "id": "tag_data_transformation",
-      "name": "Data Transformation"
+      "createdAt": "2026-07-16T15:55:54.254148+00:00",
+      "updatedAt": "2026-07-16T15:55:54.254151+00:00",
+      "id": "dac03ba206f3bfe0",
+      "name": "Event-Driven Architecture"
+    },
+    {
+      "createdAt": "2026-07-16T15:55:54.254156+00:00",
+      "updatedAt": "2026-07-16T15:55:54.254159+00:00",
+      "id": "87703e16953f8b2e",
+      "name": "Data Pipeline"
+    },
+    {
+      "createdAt": "2026-07-16T15:55:54.254164+00:00",
+      "updatedAt": "2026-07-16T15:55:54.254166+00:00",
+      "id": "89f5bd6077773f30",
+      "name": "Production Automation"
+    },
+    {
+      "createdAt": "2026-07-16T15:58:23.793245+00:00",
+      "updatedAt": "2026-07-16T15:58:23.793258+00:00",
+      "id": "332aea2c3b181c28",
+      "name": "Event-Driven"
     }
   ]
 }

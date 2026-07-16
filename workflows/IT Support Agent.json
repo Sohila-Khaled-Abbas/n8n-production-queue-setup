@@ -185,28 +185,34 @@
     "sourceWorkflowId": null,
     "tags": [
       {
-        "createdAt": "2026-07-16T15:40:43.414284+00:00",
-        "updatedAt": "2026-07-16T15:40:43.414298+00:00",
-        "id": "tag_production_automation",
+        "createdAt": "2026-07-16T15:55:54.265699+00:00",
+        "updatedAt": "2026-07-16T15:55:54.265715+00:00",
+        "id": "89f5bd6077773f30",
         "name": "Production Automation"
       },
       {
-        "createdAt": "2026-07-16T15:40:43.414304+00:00",
-        "updatedAt": "2026-07-16T15:40:43.414307+00:00",
-        "id": "tag_agentic_ai",
+        "createdAt": "2026-07-16T15:55:54.265723+00:00",
+        "updatedAt": "2026-07-16T15:55:54.265725+00:00",
+        "id": "dac03ba206f3bfe0",
+        "name": "Event-Driven Architecture"
+      },
+      {
+        "createdAt": "2026-07-16T15:55:54.265731+00:00",
+        "updatedAt": "2026-07-16T15:55:54.265734+00:00",
+        "id": "3506c721492cc987",
         "name": "Agentic AI"
       },
       {
-        "createdAt": "2026-07-16T15:40:43.414311+00:00",
-        "updatedAt": "2026-07-16T15:40:43.414313+00:00",
-        "id": "tag_data_transformation",
+        "createdAt": "2026-07-16T15:55:54.265739+00:00",
+        "updatedAt": "2026-07-16T15:55:54.265742+00:00",
+        "id": "558f1e5fcbd7f1ca",
         "name": "Data Transformation"
       },
       {
-        "createdAt": "2026-07-16T15:40:43.414316+00:00",
-        "updatedAt": "2026-07-16T15:40:43.414319+00:00",
-        "id": "tag_event-driven_architecture",
-        "name": "Event-Driven Architecture"
+        "createdAt": "2026-07-16T15:58:23.803838+00:00",
+        "updatedAt": "2026-07-16T15:58:23.803852+00:00",
+        "id": "332aea2c3b181c28",
+        "name": "Event-Driven"
       }
     ],
     "shared": [

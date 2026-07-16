@@ -316,34 +316,40 @@
     "sourceWorkflowId": null,
     "tags": [
       {
-        "createdAt": "2026-07-16T15:40:40.352515+00:00",
-        "updatedAt": "2026-07-16T15:40:40.352529+00:00",
-        "id": "tag_production_automation",
-        "name": "Production Automation"
+        "createdAt": "2026-07-16T15:55:54.227109+00:00",
+        "updatedAt": "2026-07-16T15:55:54.227118+00:00",
+        "id": "558f1e5fcbd7f1ca",
+        "name": "Data Transformation"
       },
       {
-        "createdAt": "2026-07-16T15:40:40.352536+00:00",
-        "updatedAt": "2026-07-16T15:40:40.352539+00:00",
-        "id": "tag_data_pipeline",
-        "name": "Data Pipeline"
-      },
-      {
-        "createdAt": "2026-07-16T15:40:40.352543+00:00",
-        "updatedAt": "2026-07-16T15:40:40.352545+00:00",
-        "id": "tag_event-driven_architecture",
-        "name": "Event-Driven Architecture"
-      },
-      {
-        "createdAt": "2026-07-16T15:40:40.352549+00:00",
-        "updatedAt": "2026-07-16T15:40:40.352551+00:00",
-        "id": "tag_agentic_ai",
+        "createdAt": "2026-07-16T15:55:54.227126+00:00",
+        "updatedAt": "2026-07-16T15:55:54.227128+00:00",
+        "id": "3506c721492cc987",
         "name": "Agentic AI"
       },
       {
-        "createdAt": "2026-07-16T15:40:40.352554+00:00",
-        "updatedAt": "2026-07-16T15:40:40.352557+00:00",
-        "id": "tag_data_transformation",
-        "name": "Data Transformation"
+        "createdAt": "2026-07-16T15:55:54.227134+00:00",
+        "updatedAt": "2026-07-16T15:55:54.227137+00:00",
+        "id": "dac03ba206f3bfe0",
+        "name": "Event-Driven Architecture"
+      },
+      {
+        "createdAt": "2026-07-16T15:55:54.227142+00:00",
+        "updatedAt": "2026-07-16T15:55:54.227144+00:00",
+        "id": "87703e16953f8b2e",
+        "name": "Data Pipeline"
+      },
+      {
+        "createdAt": "2026-07-16T15:55:54.227149+00:00",
+        "updatedAt": "2026-07-16T15:55:54.227152+00:00",
+        "id": "89f5bd6077773f30",
+        "name": "Production Automation"
+      },
+      {
+        "createdAt": "2026-07-16T15:58:23.767511+00:00",
+        "updatedAt": "2026-07-16T15:58:23.767524+00:00",
+        "id": "332aea2c3b181c28",
+        "name": "Event-Driven"
       }
     ],
     "shared": [

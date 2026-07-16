@@ -61,16 +61,22 @@
     "sourceWorkflowId": null,
     "tags": [
       {
-        "createdAt": "2026-07-16T15:40:43.780163+00:00",
-        "updatedAt": "2026-07-16T15:40:43.780184+00:00",
-        "id": "tag_production_automation",
+        "createdAt": "2026-07-16T15:55:54.269421+00:00",
+        "updatedAt": "2026-07-16T15:55:54.269438+00:00",
+        "id": "dac03ba206f3bfe0",
+        "name": "Event-Driven Architecture"
+      },
+      {
+        "createdAt": "2026-07-16T15:55:54.269452+00:00",
+        "updatedAt": "2026-07-16T15:55:54.269458+00:00",
+        "id": "89f5bd6077773f30",
         "name": "Production Automation"
       },
       {
-        "createdAt": "2026-07-16T15:40:43.780193+00:00",
-        "updatedAt": "2026-07-16T15:40:43.780198+00:00",
-        "id": "tag_event-driven_architecture",
-        "name": "Event-Driven Architecture"
+        "createdAt": "2026-07-16T15:58:23.806518+00:00",
+        "updatedAt": "2026-07-16T15:58:23.806532+00:00",
+        "id": "332aea2c3b181c28",
+        "name": "Event-Driven"
       }
     ],
     "shared": [

@@ -294,46 +294,52 @@
         "name": "Gourmet Bistro"
       },
       {
-        "createdAt": "2026-07-16T15:40:40.566083+00:00",
-        "updatedAt": "2026-07-16T15:40:40.566097+00:00",
-        "id": "tag_vector_storage",
-        "name": "Vector Storage"
-      },
-      {
-        "createdAt": "2026-07-16T15:40:40.566105+00:00",
-        "updatedAt": "2026-07-16T15:40:40.566109+00:00",
-        "id": "tag_rag",
+        "createdAt": "2026-07-16T15:55:54.239780+00:00",
+        "updatedAt": "2026-07-16T15:55:54.239793+00:00",
+        "id": "fb6a72bbc33faf10",
         "name": "RAG"
       },
       {
-        "createdAt": "2026-07-16T15:40:40.566115+00:00",
-        "updatedAt": "2026-07-16T15:40:40.566119+00:00",
-        "id": "tag_production_automation",
-        "name": "Production Automation"
+        "createdAt": "2026-07-16T15:55:54.239800+00:00",
+        "updatedAt": "2026-07-16T15:55:54.239803+00:00",
+        "id": "558f1e5fcbd7f1ca",
+        "name": "Data Transformation"
       },
       {
-        "createdAt": "2026-07-16T15:40:40.566124+00:00",
-        "updatedAt": "2026-07-16T15:40:40.566128+00:00",
-        "id": "tag_data_pipeline",
-        "name": "Data Pipeline"
-      },
-      {
-        "createdAt": "2026-07-16T15:40:40.566134+00:00",
-        "updatedAt": "2026-07-16T15:40:40.566139+00:00",
-        "id": "tag_event-driven_architecture",
-        "name": "Event-Driven Architecture"
-      },
-      {
-        "createdAt": "2026-07-16T15:40:40.566144+00:00",
-        "updatedAt": "2026-07-16T15:40:40.566148+00:00",
-        "id": "tag_agentic_ai",
+        "createdAt": "2026-07-16T15:55:54.239808+00:00",
+        "updatedAt": "2026-07-16T15:55:54.239811+00:00",
+        "id": "3506c721492cc987",
         "name": "Agentic AI"
       },
       {
-        "createdAt": "2026-07-16T15:40:40.566153+00:00",
-        "updatedAt": "2026-07-16T15:40:40.566156+00:00",
-        "id": "tag_data_transformation",
-        "name": "Data Transformation"
+        "createdAt": "2026-07-16T15:55:54.239816+00:00",
+        "updatedAt": "2026-07-16T15:55:54.239818+00:00",
+        "id": "dac03ba206f3bfe0",
+        "name": "Event-Driven Architecture"
+      },
+      {
+        "createdAt": "2026-07-16T15:55:54.239823+00:00",
+        "updatedAt": "2026-07-16T15:55:54.239826+00:00",
+        "id": "e3e18547adcedcfb",
+        "name": "Vector Storage"
+      },
+      {
+        "createdAt": "2026-07-16T15:55:54.239830+00:00",
+        "updatedAt": "2026-07-16T15:55:54.239833+00:00",
+        "id": "87703e16953f8b2e",
+        "name": "Data Pipeline"
+      },
+      {
+        "createdAt": "2026-07-16T15:55:54.239837+00:00",
+        "updatedAt": "2026-07-16T15:55:54.239840+00:00",
+        "id": "89f5bd6077773f30",
+        "name": "Production Automation"
+      },
+      {
+        "createdAt": "2026-07-16T15:58:23.780538+00:00",
+        "updatedAt": "2026-07-16T15:58:23.780551+00:00",
+        "id": "332aea2c3b181c28",
+        "name": "Event-Driven"
       }
     ],
     "shared": [

@@ -199,7 +199,7 @@
       {
         "parameters": {
           "method": "POST",
-          "url": "https://api.telegram.org/bot8866815723:AAFu4duJr1X3LCB6gHWwL4WDKnwmJtNKFi4/sendMessage",
+          "url": "https://api.telegram.org/botYOUR_TELEGRAM_BOT_TOKEN_HERE/sendMessage",
           "sendBody": true,
           "specifyBody": "json",
           "jsonBody": "={\n  \"chat_id\": \"{{ $('Telegram Trigger').item.json.message.chat.id }}\",\n  \"text\": \"\ud83d\udccd Perfect! To calculate delivery times and dispatch your driver, please share your live delivery location using the button below:\",\n  \"reply_markup\": {\n    \"keyboard\": [\n      [\n        {\n          \"text\": \"\ud83d\udccd Share My Current Location\",\n          \"request_location\": true\n        }\n      ]\n    ],\n    \"resize_keyboard\": true,\n    \"one_time_keyboard\": true\n  }\n}",
@@ -467,28 +467,34 @@
     "sourceWorkflowId": null,
     "tags": [
       {
-        "createdAt": "2026-07-16T15:40:39.918876+00:00",
-        "updatedAt": "2026-07-16T15:40:39.918891+00:00",
-        "id": "tag_production_automation",
+        "createdAt": "2026-07-16T15:55:54.208718+00:00",
+        "updatedAt": "2026-07-16T15:55:54.208731+00:00",
+        "id": "89f5bd6077773f30",
         "name": "Production Automation"
       },
       {
-        "createdAt": "2026-07-16T15:40:39.918899+00:00",
-        "updatedAt": "2026-07-16T15:40:39.918901+00:00",
-        "id": "tag_agentic_ai",
+        "createdAt": "2026-07-16T15:55:54.208738+00:00",
+        "updatedAt": "2026-07-16T15:55:54.208741+00:00",
+        "id": "dac03ba206f3bfe0",
+        "name": "Event-Driven Architecture"
+      },
+      {
+        "createdAt": "2026-07-16T15:55:54.208747+00:00",
+        "updatedAt": "2026-07-16T15:55:54.208749+00:00",
+        "id": "3506c721492cc987",
         "name": "Agentic AI"
       },
       {
-        "createdAt": "2026-07-16T15:40:39.918905+00:00",
-        "updatedAt": "2026-07-16T15:40:39.918908+00:00",
-        "id": "tag_data_transformation",
+        "createdAt": "2026-07-16T15:55:54.208754+00:00",
+        "updatedAt": "2026-07-16T15:55:54.208757+00:00",
+        "id": "558f1e5fcbd7f1ca",
         "name": "Data Transformation"
       },
       {
-        "createdAt": "2026-07-16T15:40:39.918912+00:00",
-        "updatedAt": "2026-07-16T15:40:39.918914+00:00",
-        "id": "tag_event-driven_architecture",
-        "name": "Event-Driven Architecture"
+        "createdAt": "2026-07-16T15:58:23.747836+00:00",
+        "updatedAt": "2026-07-16T15:58:23.747846+00:00",
+        "id": "332aea2c3b181c28",
+        "name": "Event-Driven"
       }
     ],
     "shared": [

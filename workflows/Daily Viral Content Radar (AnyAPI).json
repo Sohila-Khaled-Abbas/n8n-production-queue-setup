@@ -1225,34 +1225,40 @@
         "name": "API"
       },
       {
-        "createdAt": "2026-07-16T15:40:39.514064+00:00",
-        "updatedAt": "2026-07-16T15:40:39.514086+00:00",
-        "id": "tag_production_automation",
-        "name": "Production Automation"
+        "createdAt": "2026-07-16T15:55:54.199969+00:00",
+        "updatedAt": "2026-07-16T15:55:54.199982+00:00",
+        "id": "558f1e5fcbd7f1ca",
+        "name": "Data Transformation"
       },
       {
-        "createdAt": "2026-07-16T15:40:39.514097+00:00",
-        "updatedAt": "2026-07-16T15:40:39.514101+00:00",
-        "id": "tag_data_pipeline",
-        "name": "Data Pipeline"
-      },
-      {
-        "createdAt": "2026-07-16T15:40:39.514108+00:00",
-        "updatedAt": "2026-07-16T15:40:39.514112+00:00",
-        "id": "tag_event-driven_architecture",
-        "name": "Event-Driven Architecture"
-      },
-      {
-        "createdAt": "2026-07-16T15:40:39.514119+00:00",
-        "updatedAt": "2026-07-16T15:40:39.514124+00:00",
-        "id": "tag_agentic_ai",
+        "createdAt": "2026-07-16T15:55:54.199990+00:00",
+        "updatedAt": "2026-07-16T15:55:54.199992+00:00",
+        "id": "3506c721492cc987",
         "name": "Agentic AI"
       },
       {
-        "createdAt": "2026-07-16T15:40:39.514129+00:00",
-        "updatedAt": "2026-07-16T15:40:39.514134+00:00",
-        "id": "tag_data_transformation",
-        "name": "Data Transformation"
+        "createdAt": "2026-07-16T15:55:54.199998+00:00",
+        "updatedAt": "2026-07-16T15:55:54.200000+00:00",
+        "id": "dac03ba206f3bfe0",
+        "name": "Event-Driven Architecture"
+      },
+      {
+        "createdAt": "2026-07-16T15:55:54.200005+00:00",
+        "updatedAt": "2026-07-16T15:55:54.200008+00:00",
+        "id": "87703e16953f8b2e",
+        "name": "Data Pipeline"
+      },
+      {
+        "createdAt": "2026-07-16T15:55:54.200012+00:00",
+        "updatedAt": "2026-07-16T15:55:54.200015+00:00",
+        "id": "89f5bd6077773f30",
+        "name": "Production Automation"
+      },
+      {
+        "createdAt": "2026-07-16T15:58:23.740050+00:00",
+        "updatedAt": "2026-07-16T15:58:23.740062+00:00",
+        "id": "332aea2c3b181c28",
+        "name": "Event-Driven"
       }
     ],
     "shared": [
