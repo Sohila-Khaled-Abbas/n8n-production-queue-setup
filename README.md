@@ -43,8 +43,8 @@
 | **Production-Tuned PostgreSQL** | `shared_buffers`, `wal_buffers`, `checkpoint_completion_target` pre-configured |
 | **Health Checks** | All dependencies are health-checked before n8n starts |
 | **Centralized Log Rotation** | Configurable via `.env` — `LOG_DRIVER`, `LOG_MAX_SIZE`, `LOG_MAX_FILE` |
-| **MCP Workflow Generator** | A standalone FastMCP AI tool hosted via SSE that autonomously generates n8n JSON workflows from text prompts using HuggingFace/Ollama/OpenRouter APIs |
-| **Intelligently Tagged Portfolio** | Includes 45 production-ready workflows structurally parsed and tagged (`RAG`, `Data Pipeline`, `Orchestration`) with software engineering best practices |
+| **AI Workflow Generator Chat** | A full-stack AI chat web app hosted on port 8000 that generates workflows using LLMs and securely exports them directly to n8n via its REST API (built with FastMCP and FastAPI). |
+| **Intelligently Tagged Portfolio** | Includes 45 production-ready workflows structurally parsed and tagged (`RAG`, `Data Pipeline`, `Orchestration`) and an automatically compiled Markdown Documentation Site. |
 
 ---
 

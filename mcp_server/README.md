@@ -1,12 +1,13 @@
 # n8n MCP Workflow Generator
 
-A FastMCP-based Server-Sent Events (SSE) server that allows n8n (or any MCP client) to automatically generate workflows from natural language prompts using LLMs.
+A FastMCP-based Server-Sent Events (SSE) server and standalone **ChatGPT-style Web Application** that allows you to automatically generate n8n workflows from natural language prompts using LLMs.
 
 ## Features
 
-- **Modern UI/UX Frontend**: A sleek HTML interface provides connection instructions and server status on the root URL.
-- **Smart Routing**: Connects to the best available LLM provider (OpenRouter, HuggingFace, or Ollama).
-- **FastMCP Powered**: Uses the official `fastmcp` SDK to expose the `create_n8n_workflow` tool seamlessly.
+- **Standalone AI Chat UI**: The root URL serves a complete ChatGPT-like interface where you can chat with the AI to design your workflows.
+- **1-Click n8n Export**: The web UI connects directly to your n8n instance via the REST API (`/api/v1/workflows`) to automatically push generated workflows with a single click.
+- **Smart Routing**: Connects to the best available LLM provider (OpenRouter, HuggingFace, or Ollama) using `llm_generator.py`.
+- **FastMCP Powered**: Still exposes the `create_n8n_workflow` tool seamlessly via SSE for traditional MCP clients.
 
 ## Running the Server
 
@@ -22,20 +23,27 @@ Start the server:
 python server.py
 ```
 
-The server will be available at `http://localhost:8000`. If you visit this in your browser, you'll see a modern UI detailing how to connect.
+The server will be available at `http://localhost:8000`. If you visit this in your browser, you'll be greeted by the AI Chat Interface!
 
-## Connecting to n8n
+## Using the Chat Interface
 
-1. In n8n, navigate to **Settings** > **Model Context Protocol (MCP)**.
-2. Click **Add Server**.
-3. Set the Transport type to **SSE**.
-4. Set the URL to:
+1. Open `http://localhost:8000` in your web browser.
+2. Click **n8n Settings** in the bottom-left corner.
+3. Set your **n8n Host URL** (e.g., `http://localhost` if running locally via docker).
+4. Paste your **n8n API Key** (generate this in n8n -> Settings -> n8n API).
+5. Describe your workflow in the chat. When the AI generates the JSON, click **Export to n8n** to instantly deploy it!
+
+## Connecting to n8n via MCP (Optional)
+
+If you still want to use the MCP Server directly inside an n8n workflow using the "Model Context Protocol" Tool node:
+
+1. In the n8n workflow canvas, add an **MCP Tool** node.
+2. Set the Transport type to **SSE**.
+3. Set the URL to:
    ```
-   http://localhost:8000/sse
+   http://host.docker.internal:8000/mcp/sse
    ```
-   *(Important: Ensure you include the `/sse` path!)*
-
-Once connected, you can use the AI Agent node in n8n and enable the **`create_n8n_workflow`** tool.
+   *(Important: Ensure you include the `/mcp/sse` path!)*
 
 ## Environment Variables
 
