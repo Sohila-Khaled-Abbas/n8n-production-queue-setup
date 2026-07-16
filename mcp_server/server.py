@@ -50,8 +50,6 @@ app = FastAPI(title="n8n AI Chat UI", lifespan=lifespan)
 class GenerateRequest(BaseModel):
     session_id: str
     messages: list
-    model_id: str = None
-    provider: str = None
 
 class ExportRequest(BaseModel):
     workflow: dict
@@ -195,6 +193,13 @@ async def get_models():
         models.append({"id": "mistralai/Mistral-7B-Instruct-v0.2", "name": "HF: Mistral-7B-Instruct", "provider": "huggingface"})
         models.append({"id": "Qwen/Qwen2.5-7B-Instruct", "name": "HF: Qwen-2.5-7B", "provider": "huggingface"})
         models.append({"id": "Qwen/Qwen2.5-Coder-32B-Instruct", "name": "HF: Qwen-Coder-32B", "provider": "huggingface"})
+        
+    # Check Gemini (Antigravity Models)
+    gemini_key = os.getenv("GEMINI_API_KEY")
+    if gemini_key:
+        models.append({"id": "gemini-2.5-flash", "name": "Gemini 2.5 Flash", "provider": "gemini"})
+        models.append({"id": "gemini-exp-1206", "name": "Gemini Exp 1206", "provider": "gemini"})
+        models.append({"id": "gemini-1.5-pro", "name": "Gemini 1.5 Pro", "provider": "gemini"})
 
     return {"success": True, "models": models}
 
@@ -253,6 +258,11 @@ async def read_root(request: Request):
 
     <!-- Main Chat Area -->
     <main class="flex-1 flex flex-col relative">
+        <header class="h-14 border-b border-slate-700 flex items-center justify-end px-6 bg-[#343541]">
+            <select id="model-select" class="bg-[#202123] border border-slate-600 rounded p-1.5 text-sm text-slate-200 focus:outline-none">
+                <option value="">Loading Models...</option>
+            </select>
+        </header>
         <div id="chat-container" class="chat-container flex-1 w-full pb-8">
             
             <div class="message-bot border-b border-black/10 text-gray-100">

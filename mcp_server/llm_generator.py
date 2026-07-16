@@ -10,6 +10,8 @@ load_dotenv(env_path)
 
 def get_available_providers():
     providers = []
+    if os.getenv("GEMINI_API_KEY"):
+        providers.append("gemini")
     if os.getenv("HUGGINGFACE_API_TOKEN"):
         providers.append("huggingface")
     if os.getenv("OLLAMA_HOST"):
@@ -25,11 +27,18 @@ def get_client_and_model(prompt: str, preferred_model: str = None, preferred_pro
     """
     providers = get_available_providers()
     if not providers:
-        raise ValueError("No AI API keys found. Please set OPENROUTER_API_KEY, HUGGINGFACE_API_TOKEN, or OLLAMA_HOST in the .env file.")
+        raise ValueError("No AI API keys found. Please set GEMINI_API_KEY, OPENROUTER_API_KEY, HUGGINGFACE_API_TOKEN, or OLLAMA_HOST in the .env file.")
 
     # Override with preferences if valid
     if preferred_provider in providers:
-        if preferred_provider == "openrouter":
+        if preferred_provider == "gemini":
+            client = OpenAI(
+                base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+                api_key=os.getenv("GEMINI_API_KEY"),
+            )
+            return client, preferred_model or "gemini-2.5-flash"
+            
+        elif preferred_provider == "openrouter":
             client = OpenAI(
                 base_url="https://openrouter.ai/api/v1",
                 api_key=os.getenv("OPENROUTER_API_KEY"),
@@ -51,6 +60,13 @@ def get_client_and_model(prompt: str, preferred_model: str = None, preferred_pro
             return client, preferred_model or "meta-llama/Meta-Llama-3-8B-Instruct"
 
     # Default logic if no valid preference
+    if "gemini" in providers:
+        client = OpenAI(
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+            api_key=os.getenv("GEMINI_API_KEY"),
+        )
+        return client, "gemini-2.5-flash"
+
     if "openrouter" in providers:
         client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
