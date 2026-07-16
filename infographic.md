@@ -94,7 +94,7 @@ High-resolution PNG suitable for presentation slides and documentation:
 
 10. **Qdrant (Vector DB)**: High-performance vector database for RAG-based workflows and embedding storage. Accessible via `http://qdrant:6333` inside the network.
 
-11. **FastMCP Server**: Advanced AI-driven backend for natural language workflow generation. Connects to n8n via Server-Sent Events (SSE) and securely routes LLM API calls.
+11. **FastMCP Server (n8n AI Workflow Architect)**: Advanced AI-driven backend for natural language workflow generation. Connects to n8n via Server-Sent Events (SSE) and securely routes LLM API calls. Features Multi-Agent RAG for reading n8n docs, dynamic local model discovery, template generation, and 1-click exporting to n8n.
 
 12. **n8n-init (One-Shot)**: Runs briefly on first startup to seed credentials into PostgreSQL from `.env` and automatically install the `@devlikeapro/n8n-nodes-waha` community node, then exits. Never overwrites existing data.
 

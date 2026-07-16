@@ -61,6 +61,12 @@ Browser / External
 │  └──────────────────────────────────────────────────┘    │
 │                                                          │
 │  ┌──────────────────────────────────────────────────┐    │
+│  │  mcp_server (Port 8000)                          │    │
+│  │  • FastMCP AI Workflow Architect                 │    │
+│  │  • Multi-Agent RAG, Dynamic Model Routing        │    │
+│  └──────────────────────────────────────────────────┘    │
+│                                                          │
+│  ┌──────────────────────────────────────────────────┐    │
 │  │  waha (port 3000)                                │    │
 │  │  • WhatsApp HTTP API gateway                     │    │
 │  │  • Volume: waha_sessions                         │    │
@@ -391,3 +397,13 @@ A collection of PowerShell, Python, and SQL scripts reside in the `scripts/` dir
    - **[durations.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/durations.sql)** & **[durations_times.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/durations_times.sql)**: Reports workflow execution duration patterns to identify slow nodes or bottlenecks.
    - **[get_error.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/get_error.sql)** & **[search_errors.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/search_errors.sql)**: Pinpoints errors and exceptions recorded within execution records.
    - **[get_keys.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/get_keys.sql)**: Helper to inspect JSON properties of execution records.
+
+### mcp_server (n8n AI Workflow Architect)
+
+| Attribute | Value |
+|---|---|
+| Implementation | mcp_server/server.py & llm_generator.py |
+| Exposed port | 8000 |
+| Role | Generates workflows, reads n8n docs, discovers AI models |
+
+A FastMCP backend written in Python that provides a web-based Chat UI for AI-driven n8n workflow generation. It leverages a Multi-Agent RAG system to read n8n documentation and templates, automatically discovering available LLM models from existing workflows. It includes a built-in visual diff engine and direct 1-click exporting to the n8n REST API.
