@@ -57,30 +57,56 @@ def get_client_and_model(prompt: str):
     raise ValueError("Failed to select a valid AI provider.")
 
 
+import re
+
 def generate_workflow(prompt: str) -> dict:
     """
-    Generates an n8n JSON workflow based on the user's prompt.
+    Generates an n8n JSON workflow based on the user's prompt using advanced prompt engineering.
     """
     client, model = get_client_and_model(prompt)
     print(f"[llm_generator] Routing request to model: {model}")
 
-    system_message = """You are an expert n8n workflow architect. 
-Your task is to output ONLY a raw, valid JSON object representing an n8n workflow.
-The JSON must follow this exact structure:
+    system_message = """You are an elite n8n Workflow Architect and Data Engineer.
+Your objective is to design production-grade n8n workflow JSONs based on the user's request.
+
+# CORE RULES
+1. **Chain of Thought**: You must first think step-by-step about the architecture, the nodes needed, and the data mapping. Output your thoughts inside a `<thought>` XML block.
+2. **JSON Output**: After your `<thought>` block, you MUST output a raw, valid n8n JSON object wrapped in ```json ... ```. Do NOT output anything after the JSON block.
+3. **Data Mapping**: Use expressions like `={{ $json.fieldName }}` to reference data from previous nodes.
+4. **Node Types**: Use exact, modern n8n node types (e.g., `n8n-nodes-base.httpRequest`, `@n8n/n8n-nodes-langchain.agent`, `n8n-nodes-base.webhook`, `n8n-nodes-base.code`).
+
+# KNOWN CREDENTIALS (USE THESE EXACTLY IF NEEDED)
+If the user's workflow requires any of these services, you MUST attach these exact credential objects to the node's `"credentials"` property:
+- **Telegram**: `"credentials": { "telegramApi": { "id": "tDyw6EwwmhJnMKu5", "name": "ETL Bot" } }`
+- **Ollama**: `"credentials": { "ollamaApi": { "id": "wDe9MCIO6q1M7Gau", "name": "Ollama account" } }`
+- **Postgres**: `"credentials": { "postgres": { "id": "5617978f-0b85-4382-8768-f84e14ee6223", "name": "PostgreSQL — n8n Stack" } }`
+- **Notion**: `"credentials": { "notionApi": { "id": "WTrWPkXdnXFPfOi9", "name": "Notion account 2" } }`
+- **OpenRouter**: `"credentials": { "openRouterApi": { "id": "Wfnk5q7gswurynsI", "name": "OpenRouter account 2" } }`
+- **Qdrant**: `"credentials": { "qdrantApi": { "id": "bH2hk1EtEFghgicV", "name": "Qdrant account" } }`
+- **Google Drive**: `"credentials": { "googleDriveOAuth2Api": { "id": "Q8F6AF4nNReCfLij", "name": "Google Drive account" } }`
+
+# JSON STRUCTURE
+The extracted JSON must strictly follow this format:
+```json
 {
-  "name": "Generated Workflow Name",
+  "name": "Generated Workflow",
   "nodes": [
     {
-      "parameters": {},
-      "id": "unique-uuid",
-      "name": "Node Name",
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.example.com",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [ { "name": "Authorization", "value": "Bearer token" } ] }
+      },
+      "id": "generate-a-unique-uuid-here",
+      "name": "HTTP Request",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 1,
+      "typeVersion": 4.1,
       "position": [0, 0]
     }
   ],
   "connections": {
-    "Node Name": {
+    "Previous Node Name": {
       "main": [
         [
           {
@@ -93,7 +119,8 @@ The JSON must follow this exact structure:
     }
   }
 }
-Do NOT wrap the JSON in markdown code blocks. Output nothing but the valid JSON."""
+```
+CRITICAL: Ensure the `connections` object perfectly matches the `name` of the nodes in the `nodes` array."""
 
     try:
         response = client.chat.completions.create(
@@ -102,21 +129,24 @@ Do NOT wrap the JSON in markdown code blocks. Output nothing but the valid JSON.
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.2
+            temperature=0.3
         )
         
         content = response.choices[0].message.content.strip()
         
-        # Clean up markdown if the LLM hallucinated it
-        if content.startswith("```json"):
-            content = content[7:]
-        if content.startswith("```"):
-            content = content[3:]
-        if content.endswith("```"):
-            content = content[:-3]
-            
-        content = content.strip()
-        return json.loads(content)
+        # Regex to extract JSON block
+        json_match = re.search(r'```json\s*(.*?)\s*```', content, re.DOTALL)
+        if json_match:
+            json_str = json_match.group(1).strip()
+        else:
+            # Fallback in case they didn't wrap it
+            json_str = content.split("</thought>")[-1].strip()
+            if json_str.startswith("{"):
+                pass
+            else:
+                return {"error": "Failed to parse JSON from LLM output. Ensure it outputs valid JSON."}
+                
+        return json.loads(json_str)
         
     except Exception as e:
         return {"error": f"Failed to generate workflow: {str(e)}"}
