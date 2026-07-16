@@ -51,25 +51,12 @@ def get_client_and_model(prompt: str):
 
     raise ValueError("Failed to select a valid AI provider.")
 
-# Pre-load local n8n knowledge base to save context limits
-KNOWLEDGE_INDEX = ""
-try:
-    docs_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs", "data.json")
-    if os.path.exists(docs_path):
-        with open(docs_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            workflows = data.get("workflows", [])
-            lines = []
-            for wf in workflows:
-                name = wf.get("name", "Unknown Workflow")
-                desc = wf.get("description") or "No description"
-                tags = [t.get("name") for t in wf.get("tags", [])]
-                lines.append(f"- {name}: {desc} (Tags: {', '.join(tags)})")
-            
-            KNOWLEDGE_INDEX = "\n".join(lines[:100]) # limit to 100 to save tokens
-except Exception as e:
-    print(f"[llm_generator] Warning: Failed to load local knowledge index from docs/data.json: {e}")
+from n8n_client import build_knowledge_index, build_credential_index
 
+# Pre-load local n8n knowledge base to save context limits
+# If API fails, we fallback to empty strings
+KNOWLEDGE_INDEX = build_knowledge_index() or "(No local portfolio found from API)"
+CREDENTIAL_INDEX = build_credential_index() or "(No local credentials found from API)"
 
 def generate_workflow(messages: list) -> dict:
     """
@@ -88,7 +75,7 @@ def generate_workflow(messages: list) -> dict:
 3. **Build Workflows**: When the user explicitly or implicitly requests to build/generate a workflow, output a raw, valid n8n JSON object wrapped EXACTLY in ```json ... ``` blocks. 
 
 # USER'S EXISTING N8N PORTFOLIO (FOR KNOWLEDGE & SUGGESTIONS)
-{KNOWLEDGE_INDEX if KNOWLEDGE_INDEX else "(No local portfolio found)"}
+{KNOWLEDGE_INDEX}
 
 # WORKFLOW GENERATION RULES (ONLY IF GENERATING A WORKFLOW)
 If you decide to output a workflow:
@@ -98,14 +85,8 @@ If you decide to output a workflow:
 4. **JSON Output**: Output the JSON block wrapped in ```json ... ```.
 
 # KNOWN CREDENTIALS
-If the workflow requires any of these services, attach these EXACT credentials:
-- Telegram: `"credentials": {{ "telegramApi": {{ "id": "tDyw6EwwmhJnMKu5", "name": "ETL Bot" }} }}`
-- Ollama: `"credentials": {{ "ollamaApi": {{ "id": "wDe9MCIO6q1M7Gau", "name": "Ollama account" }} }}`
-- Postgres: `"credentials": {{ "postgres": {{ "id": "5617978f-0b85-4382-8768-f84e14ee6223", "name": "PostgreSQL — n8n Stack" }} }}`
-- Notion: `"credentials": {{ "notionApi": {{ "id": "WTrWPkXdnXFPfOi9", "name": "Notion account 2" }} }}`
-- OpenRouter: `"credentials": {{ "openRouterApi": {{ "id": "Wfnk5q7gswurynsI", "name": "OpenRouter account 2" }} }}`
-- Qdrant: `"credentials": {{ "qdrantApi": {{ "id": "bH2hk1EtEFghgicV", "name": "Qdrant account" }} }}`
-- Google Drive: `"credentials": {{ "googleDriveOAuth2Api": {{ "id": "Q8F6AF4nNReCfLij", "name": "Google Drive account" }} }}`
+If the workflow requires any of these services, attach these EXACT credentials based on the user's active n8n instance:
+{CREDENTIAL_INDEX}
 
 # JSON STRUCTURE
 ```json
@@ -138,42 +119,55 @@ If the workflow requires any of these services, attach these EXACT credentials:
 ```
 CRITICAL: Ensure `connections` perfectly matches the `name` of the nodes."""
 
-    try:
-        # Prepare history for OpenAI API
-        # Remove any internal workflowObj metadata from previous messages
-        api_messages = [{"role": "system", "content": system_message}]
-        for msg in messages:
-            api_messages.append({"role": msg["role"], "content": msg["content"]})
+    api_messages = [{"role": "system", "content": system_message}]
+    for msg in messages:
+        api_messages.append({"role": msg["role"], "content": msg["content"]})
 
-        response = client.chat.completions.create(
-            model=model,
-            messages=api_messages,
-            temperature=0.4
-        )
-        
-        content = response.choices[0].message.content.strip()
-        
-        # Regex to extract JSON block
-        workflow_json = None
-        json_match = re.search(r'```json\s*(.*?)\s*```', content, re.DOTALL)
-        if json_match:
-            try:
-                workflow_json = json.loads(json_match.group(1).strip())
-                # Remove the JSON block from the conversational content
-                content = content.replace(json_match.group(0), "").strip()
-            except Exception as e:
-                pass # If it fails to parse, workflow_json remains None
-                
-        # Format the conversational output nicely (remove raw <thought> blocks from the user's view if you want, or leave them)
-        content = re.sub(r'<thought>.*?</thought>', '', content, flags=re.DOTALL).strip()
-        
-        if not content and workflow_json:
-            content = "Here is the generated workflow based on your requirements:"
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=api_messages,
+                temperature=0.4
+            )
+            
+            content = response.choices[0].message.content.strip()
+            workflow_json = None
+            json_match = re.search(r'```json\s*(.*?)\s*```', content, re.DOTALL)
+            
+            if json_match:
+                try:
+                    workflow_json = json.loads(json_match.group(1).strip())
+                    
+                    # Validate JSON structure
+                    if "nodes" not in workflow_json or "connections" not in workflow_json:
+                        error_msg = f"Your JSON is missing required 'nodes' or 'connections' arrays. Please fix it."
+                        api_messages.append({"role": "assistant", "content": content})
+                        api_messages.append({"role": "user", "content": error_msg})
+                        print(f"[llm_generator] Validation failed on attempt {attempt+1}: {error_msg}")
+                        continue # Retry
 
-        return {"success": True, "message": content, "workflow": workflow_json}
-        
-    except Exception as e:
-        return {"error": f"Failed to process request: {str(e)}"}
+                    # If successful, clean the content
+                    content = content.replace(json_match.group(0), "").strip()
+                except Exception as e:
+                    error_msg = f"Invalid JSON generated: {e}. Please ensure you output valid JSON."
+                    api_messages.append({"role": "assistant", "content": content})
+                    api_messages.append({"role": "user", "content": error_msg})
+                    print(f"[llm_generator] JSON parse failed on attempt {attempt+1}: {e}")
+                    continue # Retry
+
+            # Format the conversational output nicely
+            content = re.sub(r'<thought>.*?</thought>', '', content, flags=re.DOTALL).strip()
+            if not content and workflow_json:
+                content = "Here is the generated workflow based on your requirements:"
+
+            return {"success": True, "message": content, "workflow": workflow_json}
+
+        except Exception as e:
+            return {"error": f"Failed to process request: {str(e)}"}
+            
+    return {"error": "Failed to generate valid n8n JSON after 3 attempts. The model may be struggling with complex structures."}
 
 if __name__ == "__main__":
     # Test script locally

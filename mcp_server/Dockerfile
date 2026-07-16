@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -6,11 +6,11 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy server code
-COPY server.py llm_generator.py ./
+# Copy application files
+COPY . .
 
-# Expose the port
+# Expose the API and Web UI port
 EXPOSE 8000
 
-# Run the FastMCP SSE Server
+# Start the FastAPI server
 CMD ["python", "server.py"]

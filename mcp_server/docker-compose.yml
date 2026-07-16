@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  n8n-ai-assistant:
+    build: .
+    container_name: n8n-ai-assistant
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../.env
+    volumes:
+      - ./chat_history.db:/app/chat_history.db
+    restart: unless-stopped

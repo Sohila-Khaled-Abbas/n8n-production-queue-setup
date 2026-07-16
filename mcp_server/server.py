@@ -6,7 +6,10 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from fastmcp import FastMCP
+from fastapi import Depends
+from sqlalchemy.orm import Session
 from llm_generator import generate_workflow
+from database import init_db, get_db, ChatSession, ChatMessage
 
 # Create the MCP Server
 mcp = FastMCP("n8n-workflow-generator")
@@ -34,10 +37,18 @@ async def create_n8n_workflow(prompt: str) -> str:
     except Exception as e:
         return f"Unexpected error during workflow generation: {str(e)}"
 
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+
 # Create a FastAPI app to wrap the MCP server and provide the Chat UI
-app = FastAPI(title="n8n AI Chat UI")
+app = FastAPI(title="n8n AI Chat UI", lifespan=lifespan)
 
 class GenerateRequest(BaseModel):
+    session_id: str
     messages: list
 
 class ExportRequest(BaseModel):
@@ -46,11 +57,37 @@ class ExportRequest(BaseModel):
     api_key: str
 
 @app.post("/api/generate")
-async def api_generate(req: GenerateRequest):
+async def api_generate(req: GenerateRequest, db: Session = Depends(get_db)):
     try:
+        # Save user message
+        if not req.messages:
+            return {"success": False, "error": "No messages provided"}
+            
+        last_user_msg = req.messages[-1]
+        
+        # Create session if not exists
+        db_session = db.query(ChatSession).filter(ChatSession.id == req.session_id).first()
+        if not db_session:
+            db_session = ChatSession(id=req.session_id)
+            db.add(db_session)
+            db.commit()
+
+        user_db_msg = ChatMessage(session_id=req.session_id, role="user", content=last_user_msg["content"])
+        db.add(user_db_msg)
+        db.commit()
+
+        # Generate response
         response = generate_workflow(req.messages)
+        
         if "error" in response:
             return {"success": False, "error": response["error"]}
+            
+        # Save bot message
+        workflow_str = json.dumps(response.get("workflow")) if response.get("workflow") else None
+        bot_db_msg = ChatMessage(session_id=req.session_id, role="bot", content=response.get("message", ""), workflow_json=workflow_str)
+        db.add(bot_db_msg)
+        db.commit()
+
         return response
     except Exception as e:
         return {"success": False, "error": str(e)}
@@ -78,6 +115,27 @@ async def api_export(req: ExportRequest):
     except urllib.error.HTTPError as e:
         error_body = e.read().decode()
         return {"success": False, "error": f"HTTP {e.code}: {error_body}"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.get("/api/history/{session_id}")
+async def api_get_history(session_id: str, db: Session = Depends(get_db)):
+    try:
+        messages = db.query(ChatMessage).filter(ChatMessage.session_id == session_id).order_by(ChatMessage.created_at).all()
+        history = []
+        for msg in messages:
+            workflow = None
+            if msg.workflow_json:
+                try:
+                    workflow = json.loads(msg.workflow_json)
+                except:
+                    pass
+            history.append({
+                "role": msg.role,
+                "content": msg.content,
+                "workflowObj": workflow
+            })
+        return {"success": True, "history": history}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
@@ -216,15 +274,23 @@ async def read_root(request: Request):
             container.scrollTop = container.scrollHeight;
         }
 
-        function saveHistory() {
-            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+        let sessionId = localStorage.getItem('chatSessionId');
+        if (!sessionId) {
+            sessionId = 'sess_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('chatSessionId', sessionId);
         }
 
-        function loadHistory() {
-            const saved = localStorage.getItem('chatHistory');
-            if (saved) {
-                try {
-                    chatHistory = JSON.parse(saved);
+        function saveHistory() {
+            // History is saved on the server now during /api/generate
+            // We just keep the local array for fast UI rendering
+        }
+
+        async function loadHistory() {
+            try {
+                const res = await fetch(`/api/history/${sessionId}`);
+                const data = await res.json();
+                if (data.success && data.history.length > 0) {
+                    chatHistory = data.history;
                     // Clear default welcome message
                     document.getElementById('chat-container').innerHTML = '';
                     
@@ -238,9 +304,10 @@ async def read_root(request: Request):
                             histList.innerHTML = `<div class="p-2 text-sm text-slate-300 hover:bg-slate-700 rounded cursor-pointer truncate">${msg.content}</div>` + histList.innerHTML;
                         }
                     });
-                } catch (e) {
-                    console.error('Failed to parse history', e);
+                    scrollToBottom();
                 }
+            } catch (e) {
+                console.error('Failed to load history from server', e);
             }
         }
 
@@ -335,7 +402,7 @@ async def read_root(request: Request):
                 const res = await fetch('/api/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: chatHistory })
+                    body: JSON.stringify({ session_id: sessionId, messages: chatHistory })
                 });
                 const data = await res.json();
                 

@@ -5,10 +5,11 @@ A FastMCP-based Server-Sent Events (SSE) server and standalone **ChatGPT-style W
 ## Features
 
 - **Conversational AI Agent**: The root URL serves a complete ChatGPT-like interface where you can chat interactively to design, discuss, and refine your workflows.
-- **Portfolio Knowledge Injection**: The AI automatically indexes your existing workflows (from `docs/data.json`) to suggest ideas based on your own n8n portfolio!
-- **Persistent Chat History**: Your chat history is saved directly in your browser (`localStorage`) so your conversations persist across reloads.
-- **1-Click n8n Export**: The web UI connects directly to your n8n instance via the REST API (`/api/v1/workflows`) to automatically push generated workflows with a single click.
-- **Smart Routing & Prompt Enhancing**: Connects to the best available LLM provider and automatically enhances short prompts with professional n8n architectures before generating the code.
+- **Dynamic n8n Integration**: The AI automatically fetches your live workflows and credentials directly from your n8n instance to accurately suggest ideas and build context!
+- **Persistent SQLite Database**: Your chat sessions, messages, and generated JSON workflows are securely stored in a local SQLite database (`chat_history.db`).
+- **Self-Healing AI Loop**: The backend validates the generated n8n JSON schema. If the AI makes a syntax error, the backend automatically triggers a hidden retry loop to force the AI to fix its mistake.
+- **1-Click n8n Export**: The web UI connects directly to your n8n instance via the REST API to automatically push generated workflows.
+- **Dockerized Ready**: Comes with a `Dockerfile` and `docker-compose.yml` for instant production deployment alongside your n8n stack.
 
 ## Running the Server
 
