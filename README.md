@@ -321,6 +321,17 @@ docker compose up -d --scale n8n-worker=3 --scale n8n-worker-runner=3
 
 ---
 
+## 🤖 MCP Workflow Generator
+
+The `mcp_server` directory contains a standalone **Model Context Protocol (MCP)** server built with `FastMCP` that generates n8n JSON workflows autonomously from text prompts. It connects to HuggingFace, Ollama, or OpenRouter based on your `.env` configuration.
+
+- **Modern UI**: Visit the server URL in your browser for a sleek status dashboard and connection instructions.
+- **Connection**: To connect n8n to this server, use the Server-Sent Events (SSE) transport and specify the `/sse` endpoint in n8n (e.g., `http://mcp-server:8000/sse` or `http://localhost:8000/sse`).
+
+For more details on running the server and configuring your LLM API keys, see the [MCP Server README](mcp_server/README.md).
+
+---
+
 ## 🌐 Puppeteer & Playwright
 
 The `n8n-worker-runner` image includes full Chromium browser automation support:
