@@ -43,7 +43,7 @@ def get_client_and_model(prompt: str, preferred_model: str = None, preferred_pro
                 base_url="https://openrouter.ai/api/v1",
                 api_key=os.getenv("OPENROUTER_API_KEY"),
             )
-            return client, preferred_model or "anthropic/claude-3.5-sonnet:beta"
+            return client, preferred_model or "openrouter/free"
         
         elif preferred_provider == "ollama":
             ollama_host = os.getenv("OLLAMA_HOST").replace("host.docker.internal", "127.0.0.1")
@@ -98,7 +98,7 @@ def get_client_and_model(prompt: str, preferred_model: str = None, preferred_pro
             base_url="https://openrouter.ai/api/v1",
             api_key=os.getenv("OPENROUTER_API_KEY"),
         )
-        return client, "anthropic/claude-3.5-sonnet:beta"
+        return client, "openai/gpt-4o-mini"
 
     if "ollama" in providers:
         ollama_host = os.getenv("OLLAMA_HOST").replace("host.docker.internal", "127.0.0.1")

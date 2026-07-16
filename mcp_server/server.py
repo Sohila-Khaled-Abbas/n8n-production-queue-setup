@@ -185,15 +185,16 @@ async def get_models():
     if openrouter_key:
         try:
             res = requests.get("https://openrouter.ai/api/v1/models", headers={"Authorization": f"Bearer {openrouter_key}"}, timeout=5)
-            res = requests.get("https://openrouter.ai/api/v1/models", timeout=3)
             if res.status_code == 200:
                 or_models = res.json().get("data", [])
                 for m in or_models:
-                    models.append({
-                        "id": m["id"],
-                        "name": f"OpenRouter: {m.get('name', m['id'])}",
-                        "provider": "openrouter"
-                    })
+                    pricing = m.get('pricing', {})
+                    if ":free" in m["id"].lower() or pricing.get('prompt') == "0" or pricing.get('prompt') == 0:
+                        models.append({
+                            "id": m["id"],
+                            "name": f"OpenRouter: {m.get('name', m['id'])}",
+                            "provider": "openrouter"
+                        })
         except Exception as e:
             print(f"Error fetching OpenRouter models: {e}")
 
