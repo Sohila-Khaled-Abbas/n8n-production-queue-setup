@@ -346,7 +346,7 @@ async def read_root(request: Request):
                 <option value="">Loading Models...</option>
             </select>
         </header>
-        <div id="chat-container" class="chat-container flex-1 w-full pb-8">
+        <div id="chat-container" class="chat-container flex-1 w-full pb-36">
             
             <div class="message-bot border-b border-black/10 text-gray-100">
                 <div class="max-w-4xl mx-auto flex p-6 gap-6 text-base">
