@@ -165,23 +165,49 @@ async def get_models():
     models = []
     
     # Check Ollama
-    ollama_host = os.getenv("OLLAMA_HOST")
-    if ollama_host:
-        ollama_host = ollama_host.replace("host.docker.internal", "127.0.0.1")
-        if not ollama_host.startswith("http"):
-            ollama_host = f"http://{ollama_host}"
-        try:
-            res = requests.get(f"{ollama_host}/api/tags", timeout=2)
-            if res.status_code == 200:
-                ollama_models = res.json().get("models", [])
-                for m in ollama_models:
-                    models.append({
-                        "id": m["name"],
-                        "name": f"Ollama: {m['name']}",
-                        "provider": "ollama"
-                    })
-        except Exception as e:
-            print(f"Error fetching Ollama models: {e}")
+    ollama_host = os.getenv("OLLAMA_HOST", "127.0.0.1:11434")
+    if ollama_host == "0.0.0.0" or "host.docker.internal" in ollama_host:
+        ollama_host = "127.0.0.1:11434"
+    if not ollama_host.startswith("http"):
+        ollama_host = f"http://{ollama_host}"
+    try:
+        res = requests.get(f"{ollama_host}/api/tags", timeout=2)
+        if res.status_code == 200:
+            ollama_models = res.json().get("models", [])
+            for m in ollama_models:
+                models.append({
+                    "id": m["name"],
+                    "name": f"Ollama: {m['name']}",
+                    "provider": "ollama"
+                })
+    except Exception as e:
+        print(f"Error fetching Ollama models: {e}")
+
+    # Fetch models used in local n8n workflows
+    try:
+        import glob, json
+        workflow_models = set()
+        for path in glob.glob('d:/courses/Data Science/Data Engineering/n8n/workflows/*.json'):
+            with open(path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                for node in data.get('nodes', []):
+                    params = node.get('parameters', {})
+                    if params.get('model'): workflow_models.add(params['model'])
+                    for k, v in params.items():
+                        if 'model' in k.lower() and isinstance(v, str):
+                            workflow_models.add(v)
+        
+        # Add workflow models if not already in the list
+        existing_ids = [m['id'] for m in models]
+        for wm in workflow_models:
+            if wm not in existing_ids:
+                models.append({
+                    "id": wm,
+                    "name": f"Workflow Extracted: {wm}",
+                    "provider": "ollama" if ":" in wm else "huggingface"
+                })
+    except Exception as e:
+        print(f"Error fetching workflow models: {e}")
 
     # Check OpenRouter
     openrouter_key = os.getenv("OPENROUTER_API_KEY")

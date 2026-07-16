@@ -68,8 +68,8 @@ def get_client_and_model(prompt: str, preferred_model: str = None, preferred_pro
 
         elif preferred_provider == "huggingface":
             client = OpenAI(
-                base_url="https://api-inference.huggingface.co/v1/",
-                api_key=os.getenv("HUGGINGFACE_API_TOKEN")
+                base_url="https://router.huggingface.co/v1",
+                api_key=os.getenv("HUGGINGFACE_API_TOKEN") or os.getenv("HF_ROUTER_API_KEY")
             )
             # Map the fictional model requested by the user to a highly capable real HF model
             actual_model = preferred_model or "Qwen/Qwen2.5-Coder-32B-Instruct"
