@@ -1,8 +1,11 @@
 import os
+from dotenv import load_dotenv
+load_dotenv()
 import json
 import uvicorn
 import urllib.request
 import urllib.error
+import requests
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
@@ -182,17 +185,53 @@ async def get_models():
     if openrouter_key:
         try:
             res = requests.get("https://openrouter.ai/api/v1/models", headers={"Authorization": f"Bearer {openrouter_key}"}, timeout=5)
+            res = requests.get("https://openrouter.ai/api/v1/models", timeout=3)
             if res.status_code == 200:
-                # To prevent overloading the UI, let's just grab the popular/free ones or the first 50
                 or_models = res.json().get("data", [])
-                for m in or_models[:100]: # limit to 100
-                    models.append({"id": m["id"], "name": f"OpenRouter: {m['name']}", "provider": "openrouter"})
-            else:
-                models.append({"id": "anthropic/claude-3.5-sonnet:beta", "name": "OpenRouter: Claude 3.5 Sonnet", "provider": "openrouter"})
-        except:
-            models.append({"id": "anthropic/claude-3.5-sonnet:beta", "name": "OpenRouter: Claude 3.5 Sonnet", "provider": "openrouter"})
+                for m in or_models:
+                    models.append({
+                        "id": m["id"],
+                        "name": f"OpenRouter: {m.get('name', m['id'])}",
+                        "provider": "openrouter"
+                    })
+        except Exception as e:
+            print(f"Error fetching OpenRouter models: {e}")
 
-    # Check HuggingFace
+    # Check AgentRouter (OpenAI Compatible)
+    agentrouter_key = os.getenv("AGENTROUTER_API_KEY")
+    agentrouter_url = os.getenv("AGENTROUTER_URL")
+    if agentrouter_key and agentrouter_url:
+        try:
+            res = requests.get(f"{agentrouter_url}/models", headers={"Authorization": f"Bearer {agentrouter_key}"}, timeout=3)
+            if res.status_code == 200:
+                ar_models = res.json().get("data", [])
+                for m in ar_models:
+                    models.append({
+                        "id": m["id"],
+                        "name": f"AgentRouter: {m.get('id')}",
+                        "provider": "agentrouter"
+                    })
+        except Exception as e:
+            print(f"Error fetching AgentRouter models: {e}")
+
+    # Check HF Router (OpenAI Compatible)
+    hf_router_key = os.getenv("HF_ROUTER_API_KEY")
+    hf_router_url = os.getenv("HF_ROUTER_URL")
+    if hf_router_key and hf_router_url:
+        try:
+            res = requests.get(f"{hf_router_url}/models", headers={"Authorization": f"Bearer {hf_router_key}"}, timeout=3)
+            if res.status_code == 200:
+                hfr_models = res.json().get("data", [])
+                for m in hfr_models:
+                    models.append({
+                        "id": m["id"],
+                        "name": f"HF Router: {m.get('id')}",
+                        "provider": "hf_router"
+                    })
+        except Exception as e:
+            print(f"Error fetching HF Router models: {e}")
+
+    # Check HuggingFace Serverless API (Fallback static models)
     hf_key = os.getenv("HUGGINGFACE_API_TOKEN")
     if hf_key:
         models.append({"id": "openai/gpt-oss-120b", "name": "HF: openai/gpt-oss-120b", "provider": "huggingface"})
@@ -609,7 +648,39 @@ ${JSON.stringify(template.workflow || {})}
         // Initialize on load
         window.onload = function() {
             loadHistory();
+            loadModels();
         };
+
+        let availableModels = [];
+        async function loadModels() {
+            try {
+                const select = document.getElementById('model-select');
+                const res = await fetch('/api/models');
+                const data = await res.json();
+                if (data.success && data.models.length > 0) {
+                    availableModels = data.models;
+                    select.innerHTML = '';
+                    let foundMain = -1;
+                    data.models.forEach((m, idx) => {
+                        const opt = document.createElement('option');
+                        opt.value = idx;
+                        opt.textContent = m.name;
+                        select.appendChild(opt);
+                        if (m.id === 'openai/gpt-oss-120b') {
+                            foundMain = idx;
+                        }
+                    });
+                    if (foundMain !== -1) {
+                        select.value = foundMain;
+                    }
+                } else {
+                    select.innerHTML = '<option value="">No models available</option>';
+                }
+            } catch (e) {
+                console.error('Failed to load models', e);
+                document.getElementById('model-select').innerHTML = '<option value="">Error loading models</option>';
+            }
+        }
 
         function openSettings() {
             document.getElementById('n8n-url').value = localStorage.getItem('n8nUrl') || 'http://localhost:5678';

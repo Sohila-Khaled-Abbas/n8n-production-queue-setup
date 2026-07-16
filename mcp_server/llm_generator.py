@@ -70,6 +70,20 @@ def get_client_and_model(prompt: str, preferred_model: str = None, preferred_pro
                 api_key=os.getenv("HUGGINGFACE_API_TOKEN")
             )
             return client, preferred_model or "openai/gpt-oss-120b"
+            
+        elif preferred_provider == "agentrouter":
+            client = OpenAI(
+                base_url=os.getenv("AGENTROUTER_URL", "https://agentrouter.org/v1"),
+                api_key=os.getenv("AGENTROUTER_API_KEY"),
+            )
+            return client, preferred_model or "gpt-3.5-turbo"
+            
+        elif preferred_provider == "hf_router":
+            client = OpenAI(
+                base_url=os.getenv("HF_ROUTER_URL", "https://router.huggingface.co/v1"),
+                api_key=os.getenv("HF_ROUTER_API_KEY"),
+            )
+            return client, preferred_model or "meta-llama/Meta-Llama-3-8B-Instruct"
 
     # Default logic if no valid preference
     if "gemini" in providers:
@@ -87,12 +101,12 @@ def get_client_and_model(prompt: str, preferred_model: str = None, preferred_pro
         return client, "anthropic/claude-3.5-sonnet:beta"
 
     if "ollama" in providers:
-        ollama_host = os.getenv("OLLAMA_HOST").replace("host.docker.internal", "localhost")
+        ollama_host = os.getenv("OLLAMA_HOST").replace("host.docker.internal", "127.0.0.1")
         if not ollama_host.startswith("http"):
             ollama_host = f"http://{ollama_host}"
         
         # Try to find an available model dynamically
-        model_name = "llama3" # default fallback
+        model_name = "llama3.2:3b" # default fallback
         import requests
         try:
             res = requests.get(f"{ollama_host}/api/tags", timeout=2)
@@ -115,7 +129,7 @@ def get_client_and_model(prompt: str, preferred_model: str = None, preferred_pro
             base_url="https://api-inference.huggingface.co/v1/",
             api_key=os.getenv("HUGGINGFACE_API_TOKEN")
         )
-        return client, "meta-llama/Meta-Llama-3-8B-Instruct"
+        return client, "openai/gpt-oss-120b"
 
     raise ValueError("Failed to select a valid AI provider.")
 
