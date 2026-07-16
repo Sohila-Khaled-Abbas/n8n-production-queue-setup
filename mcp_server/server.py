@@ -1,3 +1,4 @@
+import os
 import json
 import uvicorn
 import urllib.request
@@ -158,18 +159,23 @@ async def get_models():
     models = []
     
     # Check Ollama
-    ollama_host = os.getenv("OLLAMA_HOST", "")
+    ollama_host = os.getenv("OLLAMA_HOST")
     if ollama_host:
-        ollama_host = ollama_host.replace("host.docker.internal", "localhost")
+        ollama_host = ollama_host.replace("host.docker.internal", "127.0.0.1")
         if not ollama_host.startswith("http"):
             ollama_host = f"http://{ollama_host}"
         try:
             res = requests.get(f"{ollama_host}/api/tags", timeout=2)
             if res.status_code == 200:
-                for m in res.json().get("models", []):
-                    models.append({"id": m["name"], "name": f"Ollama: {m['name']}", "provider": "ollama"})
+                ollama_models = res.json().get("models", [])
+                for m in ollama_models:
+                    models.append({
+                        "id": m["name"],
+                        "name": f"Ollama: {m['name']}",
+                        "provider": "ollama"
+                    })
         except Exception as e:
-            print(f"[models] Failed to fetch from Ollama: {e}")
+            print(f"Error fetching Ollama models: {e}")
 
     # Check OpenRouter
     openrouter_key = os.getenv("OPENROUTER_API_KEY")
@@ -189,6 +195,7 @@ async def get_models():
     # Check HuggingFace
     hf_key = os.getenv("HUGGINGFACE_API_TOKEN")
     if hf_key:
+        models.append({"id": "openai/gpt-oss-120b", "name": "HF: openai/gpt-oss-120b", "provider": "huggingface"})
         models.append({"id": "meta-llama/Meta-Llama-3-8B-Instruct", "name": "HF: Llama-3-8B-Instruct", "provider": "huggingface"})
         models.append({"id": "mistralai/Mistral-7B-Instruct-v0.2", "name": "HF: Mistral-7B-Instruct", "provider": "huggingface"})
         models.append({"id": "Qwen/Qwen2.5-7B-Instruct", "name": "HF: Qwen-2.5-7B", "provider": "huggingface"})

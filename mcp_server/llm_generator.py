@@ -46,18 +46,30 @@ def get_client_and_model(prompt: str, preferred_model: str = None, preferred_pro
             return client, preferred_model or "anthropic/claude-3.5-sonnet:beta"
         
         elif preferred_provider == "ollama":
-            ollama_host = os.getenv("OLLAMA_HOST").replace("host.docker.internal", "localhost")
+            ollama_host = os.getenv("OLLAMA_HOST").replace("host.docker.internal", "127.0.0.1")
             if not ollama_host.startswith("http"):
                 ollama_host = f"http://{ollama_host}"
             client = OpenAI(base_url=f"{ollama_host}/v1", api_key="ollama")
-            return client, preferred_model or "llama3"
+            
+            # If no model is preferred, fetch available models dynamically
+            if not preferred_model:
+                import requests
+                try:
+                    res = requests.get(f"{ollama_host}/api/tags", timeout=2)
+                    if res.status_code == 200:
+                        models = res.json().get("models", [])
+                        if models:
+                            preferred_model = models[0]["name"]
+                except Exception:
+                    pass
+            return client, preferred_model or "llama3.2:3b"
 
         elif preferred_provider == "huggingface":
             client = OpenAI(
                 base_url="https://api-inference.huggingface.co/v1/",
                 api_key=os.getenv("HUGGINGFACE_API_TOKEN")
             )
-            return client, preferred_model or "meta-llama/Meta-Llama-3-8B-Instruct"
+            return client, preferred_model or "openai/gpt-oss-120b"
 
     # Default logic if no valid preference
     if "gemini" in providers:
