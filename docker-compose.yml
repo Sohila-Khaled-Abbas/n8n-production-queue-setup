@@ -143,7 +143,7 @@ services:
         -c checkpoint_completion_target=0.9
         -c wal_buffers=8MB
         -c default_statistics_target=100
-        -c max_connections=40
+        -c max_connections=100
         -c wal_level=replica
         -c max_wal_size=512MB
         -c min_wal_size=80MB
