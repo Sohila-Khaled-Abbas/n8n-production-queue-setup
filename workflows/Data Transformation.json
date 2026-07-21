@@ -1,0 +1,311 @@
+[
+  {
+    "updatedAt": "2026-07-18T13:17:55.663Z",
+    "createdAt": "2026-07-18T13:17:13.295Z",
+    "id": "qCFSsQNPBJLW8vtQ",
+    "name": "Data Transformation",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "{\n  \"orders\": [\n    { \"orderID\": 1, \"region\": \"Americas\", \"price\": 120 },\n    { \"orderID\": 2, \"region\": \"EMEA\", \"price\": 80 },\n    { \"orderID\": 3, \"region\": \"Americas\", \"price\": 200 }\n  ]\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          0,
+          0
+        ],
+        "id": "d98c6f94-a63a-4666-9b4b-fd8190c707db",
+        "name": "Sample Order Data",
+        "notesInFlow": true,
+        "notes": "Creates a sample dataset with 3 orders across Americas and EMEA regions"
+      },
+      {
+        "parameters": {
+          "fieldToSplitOut": "orders",
+          "include": "allOtherFields",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitOut",
+        "typeVersion": 1,
+        "position": [
+          224,
+          0
+        ],
+        "id": "86de1710-27d9-47e3-998f-c614f6a437f9",
+        "name": "Split Out",
+        "notesInFlow": true,
+        "notes": "Converts the orders array into 3 individual items"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "f1e2d3c4-0001-4000-8000-000000000001",
+                "leftValue": "={{ $json.region }}",
+                "rightValue": "Americas",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.3,
+        "position": [
+          448,
+          0
+        ],
+        "id": "b47bc664-e267-4f09-b758-993c378a2388",
+        "name": "Filter Americas",
+        "notesInFlow": true,
+        "notes": "Keeps only orders where region = Americas (2 of 3 pass)"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "f1e2d3c4-0002-4000-8000-000000000002",
+                "name": "price_with_tax",
+                "value": "={{ $json.price * 1.1 }}",
+                "type": "number"
+              }
+            ]
+          },
+          "includeOtherFields": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          672,
+          0
+        ],
+        "id": "bd7d98bb-39fe-448b-9b0c-82a454499d53",
+        "name": "Add 10% Tax",
+        "notesInFlow": true,
+        "notes": "Adds price_with_tax field using the expression: price * 1.1"
+      },
+      {
+        "parameters": {
+          "fieldsToSummarize": {
+            "values": [
+              {
+                "aggregation": "sum",
+                "field": "price_with_tax"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.summarize",
+        "typeVersion": 1.1,
+        "position": [
+          896,
+          0
+        ],
+        "id": "cae8d580-aaef-48c2-876f-b8ab35c673e8",
+        "name": "Total Price",
+        "notesInFlow": true,
+        "notes": "Sums price_with_tax across all remaining items = 352"
+      }
+    ],
+    "connections": {
+      "Sample Order Data": {
+        "main": [
+          [
+            {
+              "node": "Split Out",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Split Out": {
+        "main": [
+          [
+            {
+              "node": "Filter Americas",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter Americas": {
+        "main": [
+          [
+            {
+              "node": "Add 10% Tax",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Add 10% Tax": {
+        "main": [
+          [
+            {
+              "node": "Total Price",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {
+      "Sample Order Data": [
+        {
+          "json": {
+            "orders": [
+              {
+                "orderID": 1,
+                "region": "Americas",
+                "price": 120
+              },
+              {
+                "orderID": 2,
+                "region": "EMEA",
+                "price": 80
+              },
+              {
+                "orderID": 3,
+                "region": "Americas",
+                "price": 200
+              }
+            ]
+          }
+        }
+      ],
+      "Split Out": [
+        {
+          "json": {
+            "orderID": 1,
+            "region": "Americas",
+            "price": 120
+          }
+        },
+        {
+          "json": {
+            "orderID": 2,
+            "region": "EMEA",
+            "price": 80
+          }
+        },
+        {
+          "json": {
+            "orderID": 3,
+            "region": "Americas",
+            "price": 200
+          }
+        }
+      ],
+      "Filter Americas": [
+        {
+          "json": {
+            "orderID": 1,
+            "region": "Americas",
+            "price": 120
+          }
+        },
+        {
+          "json": {
+            "orderID": 3,
+            "region": "Americas",
+            "price": 200
+          }
+        }
+      ],
+      "Add 10% Tax": [
+        {
+          "json": {
+            "orderID": 1,
+            "region": "Americas",
+            "price": 120,
+            "price_with_tax": 132
+          }
+        },
+        {
+          "json": {
+            "orderID": 3,
+            "region": "Americas",
+            "price": 200,
+            "price_with_tax": 220
+          }
+        }
+      ],
+      "Total Price": [
+        {
+          "json": {
+            "price_with_tax": 352
+          }
+        }
+      ]
+    },
+    "versionId": "c13d3d25-cfcc-441f-bbc2-cb28175b398c",
+    "activeVersionId": null,
+    "versionCounter": 4,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-18T12:53:55.244Z",
+        "createdAt": "2026-07-18T12:53:55.244Z",
+        "id": "y3z1vK2zuYwrqB4x",
+        "name": "n8n101"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-18T13:17:13.295Z",
+        "createdAt": "2026-07-18T13:17:13.295Z",
+        "role": "workflow:owner",
+        "workflowId": "qCFSsQNPBJLW8vtQ",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

@@ -1,6 +1,6 @@
 [
   {
-    "updatedAt": "2026-07-01T12:30:43.290Z",
+    "updatedAt": "2026-07-18T12:13:54.608Z",
     "createdAt": "2026-06-09T16:38:56.181Z",
     "id": "FGVYz1cmDHCBdiHr",
     "name": "Section 2 - Interface Tour",
@@ -110,7 +110,7 @@
     "settings": {
       "executionOrder": "v1",
       "binaryMode": "separate",
-      "availableInMCP": false
+      "availableInMCP": true
     },
     "staticData": null,
     "meta": {
@@ -120,32 +120,26 @@
     "pinData": {},
     "versionId": "84c2ea90-31b4-4eb8-ab12-e546deccc631",
     "activeVersionId": "f74f9b20-0366-4b48-93b2-5b8e6e186042",
-    "versionCounter": 32,
+    "versionCounter": 33,
     "triggerCount": 1,
     "sourceWorkflowId": null,
     "tags": [
       {
-        "createdAt": "2026-07-16T15:55:54.291324+00:00",
-        "updatedAt": "2026-07-16T15:55:54.291338+00:00",
-        "id": "89f5bd6077773f30",
-        "name": "Production Automation"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:54.291346+00:00",
-        "updatedAt": "2026-07-16T15:55:54.291349+00:00",
-        "id": "dac03ba206f3bfe0",
-        "name": "Event-Driven Architecture"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:54.291354+00:00",
-        "updatedAt": "2026-07-16T15:55:54.291357+00:00",
-        "id": "3506c721492cc987",
+        "updatedAt": "2026-07-16T16:03:29.217Z",
+        "createdAt": "2026-07-16T16:03:29.217Z",
+        "id": "08f43634238e406b",
         "name": "Agentic AI"
       },
       {
-        "createdAt": "2026-07-16T15:58:23.825724+00:00",
-        "updatedAt": "2026-07-16T15:58:23.825738+00:00",
-        "id": "332aea2c3b181c28",
+        "updatedAt": "2026-07-16T16:03:29.020Z",
+        "createdAt": "2026-07-16T16:03:29.020Z",
+        "id": "9a8d1d753df54ed1",
+        "name": "Production Automation"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.540Z",
+        "createdAt": "2026-07-16T16:03:28.540Z",
+        "id": "90acb56ef2f84a89",
         "name": "Event-Driven"
       }
     ],

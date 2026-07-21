@@ -1,0 +1,624 @@
+[
+  {
+    "updatedAt": "2026-07-20T21:16:05.101Z",
+    "createdAt": "2026-07-20T19:25:05.537Z",
+    "id": "HeAxGH8iiBbSQGY0",
+    "name": "Section 2 - Process Order (Sub-workflow)",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "order_id"
+              },
+              {
+                "name": "customer_id"
+              },
+              {
+                "name": "total",
+                "type": "number"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "38f8adc5-c091-4c73-84a6-7b6ad8dde944",
+        "name": "TriggerFromParent"
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "value": "6pUKbN5mulMSfDnL",
+            "mode": "list",
+            "cachedResultName": "n8n102_course_orders",
+            "cachedResultUrl": "/projects/7Kuw5RaGwePDWMtJ/datatables/6pUKbN5mulMSfDnL"
+          },
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "order_id",
+                "keyValue": "={{ $json.order_id }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          224,
+          0
+        ],
+        "id": "314301c3-9e0b-4c4d-a24b-0f1600018e15",
+        "name": "CheckOrderExists",
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "2ccaf8e4-12b7-4ace-a41c-965fdd0843be",
+                "leftValue": "={{ $json.id }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "empty",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "looseTypeValidation": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          448,
+          0
+        ],
+        "id": "9d85f7b1-d240-40e8-9519-8a0d092fb13d",
+        "name": "OrderExists"
+      },
+      {
+        "parameters": {
+          "dataTableId": {
+            "__rl": true,
+            "value": "6pUKbN5mulMSfDnL",
+            "mode": "list",
+            "cachedResultName": "n8n102_course_orders",
+            "cachedResultUrl": "/projects/7Kuw5RaGwePDWMtJ/datatables/6pUKbN5mulMSfDnL"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "order_id": "={{ $('TriggerFromParent').item.json.order_id }}",
+              "customer_id": "={{ $('TriggerFromParent').item.json.customer_id }}",
+              "total": "={{ $('TriggerFromParent').item.json.total }}",
+              "status": "received",
+              "received_at": "={{ $now }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "order_id",
+                "displayName": "order_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "customer_id",
+                "displayName": "customer_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "total",
+                "displayName": "total",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "received_at",
+                "displayName": "received_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "processed_at",
+                "displayName": "processed_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "readOnly": false,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          672,
+          -96
+        ],
+        "id": "3b491bbf-c890-4a8d-bb1e-7a24155b88ca",
+        "name": "InsertOrder"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://learn.app.n8n.cloud/webhook/course/n8n102/process-order",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "X-Assessment-ID",
+                "value": "e8bce3d38b15ef6ce378bde696e04474"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "order_id",
+                "value": "={{ $('TriggerFromParent').item.json.order_id }}"
+              },
+              {
+                "name": "customer_id",
+                "value": "={{ $('TriggerFromParent').item.json.customer_id }}"
+              },
+              {
+                "name": "total",
+                "value": "={{ $('TriggerFromParent').item.json.total }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          896,
+          -96
+        ],
+        "id": "141c90a5-60a3-44af-ad9f-626b34f5d741",
+        "name": "CallProcessingAPI",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "w3U4dzsUvxPM8hzu",
+            "name": "n8n Academy API Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "dataTableId": {
+            "__rl": true,
+            "value": "6pUKbN5mulMSfDnL",
+            "mode": "list",
+            "cachedResultName": "n8n102_course_orders",
+            "cachedResultUrl": "/projects/7Kuw5RaGwePDWMtJ/datatables/6pUKbN5mulMSfDnL"
+          },
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "order_id",
+                "keyValue": "={{ $('TriggerFromParent').item.json.order_id }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "processed_at": "={{ $json.processed_at }}",
+              "status": "={{ $json.result }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "order_id",
+                "displayName": "order_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "customer_id",
+                "displayName": "customer_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "total",
+                "displayName": "total",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "received_at",
+                "displayName": "received_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "processed_at",
+                "displayName": "processed_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "readOnly": false,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1120,
+          -96
+        ],
+        "id": "48239d8f-00b2-4dfb-8244-0c6717f3d5c8",
+        "name": "UpdateOrderStatus"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "ffa0fdce-6a94-40d1-a742-9e4384285402",
+                "name": "order_id",
+                "value": "={{ $json.order_id }}",
+                "type": "string"
+              },
+              {
+                "id": "9706a36a-d530-4a7f-8066-2c8d15b7b6e7",
+                "name": "customer_id",
+                "value": "={{ $json.customer_id }}",
+                "type": "string"
+              },
+              {
+                "id": "fa7f030b-1875-4b32-943a-257f5a38ab3b",
+                "name": "total",
+                "value": "={{ $json.total }}",
+                "type": "number"
+              },
+              {
+                "id": "a5e87705-695d-4e2d-a7cf-250df5750bc5",
+                "name": "status",
+                "value": "skipped",
+                "type": "string"
+              },
+              {
+                "id": "a60ab352-c473-493a-8463-03e173002dd4",
+                "name": "received_at",
+                "value": "={{ $json.received_at }}",
+                "type": "string"
+              },
+              {
+                "id": "c8e0ff0c-e518-41a6-b2e2-44b953ad0d4e",
+                "name": "processed_at",
+                "value": "={{ $json.processed_at }}",
+                "type": "string"
+              },
+              {
+                "id": "08211362-923c-4df6-991e-3366411657c7",
+                "name": "id",
+                "value": "={{ $json.id }}",
+                "type": "number"
+              },
+              {
+                "id": "0a75c679-a870-4354-a64f-792e6993b11e",
+                "name": "createdAt",
+                "value": "={{ $json.createdAt }}",
+                "type": "string"
+              },
+              {
+                "id": "27076872-d967-4c54-b20d-74c7e850ab02",
+                "name": "updatedAt",
+                "value": "={{ $json.updatedAt }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1120,
+          96
+        ],
+        "id": "bbae68c5-e1e7-4fc1-a1f6-eb9e58c1ff9d",
+        "name": "SetSkipped"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "c3045ac5-2c1e-4040-b45b-6e3cd0b5ad58",
+                "name": "order_id",
+                "value": "={{ $json.order_id }}",
+                "type": "string"
+              },
+              {
+                "id": "efeb3927-d0c9-4a6e-9fb3-af546e5025cf",
+                "name": "processing_result",
+                "value": "={{ $json.status }}",
+                "type": "string"
+              },
+              {
+                "id": "218e0383-0be9-459a-9494-903037500820",
+                "name": "processed_at",
+                "value": "={{ $json.processed_at }}",
+                "type": "string"
+              },
+              {
+                "id": "696bec36-f1e3-4ef2-a550-1b3d69d74682",
+                "name": "stored",
+                "value": "={{ $json.id ? true : false }}",
+                "type": "boolean"
+              },
+              {
+                "id": "39946a52-9597-4970-af39-e39e99909772",
+                "name": "stored_order",
+                "value": "={{ $json.toJsonString() }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1344,
+          0
+        ],
+        "id": "2e1b13e1-91f2-4f55-adb9-dac80bff9c4c",
+        "name": "SetProcessingResult"
+      },
+      {
+        "parameters": {
+          "content": "# Process Order Sub-Workflow\n\nOwned By: Sohila Khaled\nLast Updated: 21.07.2026\n\nCalled by: Order Webhook Processor\n\n## What it does\n1. Checks if order already exists (prevents duplicates)\n2. Inserts new orders into Data Table\n3. Calls processing API\n4. Updates order status in Order table\n5. Returns processing result to parent\n\n## Inputs\n- order_id (string)\n- customer_id (string)\n- total (number)\n\n## Returns\n- order_id\n- stored (boolean)\n- processing_result\n- processed_at\n\nPart of: n8n Foundations Program N8N102 Course, Section 2",
+          "height": 736,
+          "width": 528,
+          "color": 3
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -592,
+          -208
+        ],
+        "id": "5896eb29-f09c-471b-a23a-69e5d81133cf",
+        "name": "Sticky Note"
+      }
+    ],
+    "connections": {
+      "TriggerFromParent": {
+        "main": [
+          [
+            {
+              "node": "CheckOrderExists",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CheckOrderExists": {
+        "main": [
+          [
+            {
+              "node": "OrderExists",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OrderExists": {
+        "main": [
+          [
+            {
+              "node": "InsertOrder",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "SetSkipped",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "InsertOrder": {
+        "main": [
+          [
+            {
+              "node": "CallProcessingAPI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CallProcessingAPI": {
+        "main": [
+          [
+            {
+              "node": "UpdateOrderStatus",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "SetSkipped": {
+        "main": [
+          [
+            {
+              "node": "SetProcessingResult",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "UpdateOrderStatus": {
+        "main": [
+          [
+            {
+              "node": "SetProcessingResult",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {
+      "TriggerFromParent": [
+        {
+          "json": {
+            "order_id": "ORD-005",
+            "customer_id": "CUST-004",
+            "total": 299
+          }
+        }
+      ]
+    },
+    "versionId": "ebefb431-6ceb-4da5-8661-ea601c08fafe",
+    "activeVersionId": "ebefb431-6ceb-4da5-8661-ea601c08fafe",
+    "versionCounter": 126,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-20T15:40:57.075Z",
+        "createdAt": "2026-07-20T15:40:57.075Z",
+        "id": "zQ7LFRu16ERSjipX",
+        "name": "n8n102-course"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-20T19:25:05.537Z",
+        "createdAt": "2026-07-20T19:25:05.537Z",
+        "role": "workflow:owner",
+        "workflowId": "HeAxGH8iiBbSQGY0",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version ebefb431",
+      "description": ""
+    }
+  }
+]

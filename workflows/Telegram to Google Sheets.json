@@ -1,0 +1,84 @@
+[
+  {
+    "updatedAt": "2026-07-16T16:34:32.424Z",
+    "createdAt": "2026-07-16T16:34:12.697Z",
+    "id": "dcIBGxHYwoI6ES9y",
+    "name": "Telegram to Google Sheets",
+    "description": null,
+    "active": false,
+    "isArchived": true,
+    "nodes": [
+      {
+        "parameters": {},
+        "id": "b1a2c3d4-5678-90ab-cdef-1234567890ab",
+        "name": "Telegram Trigger",
+        "type": "n8n-nodes-base.telegramTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "webhookId": "7374f2d6-fe5e-4f55-8d20-a9351bb08775"
+      },
+      {
+        "parameters": {},
+        "id": "c1d2e3f4-5678-90ab-cdef-1234567890cd",
+        "name": "Google Sheets",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 1,
+        "position": [
+          300,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "Telegram Trigger": {
+        "main": [
+          [
+            {
+              "node": "Google Sheets",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {},
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": null,
+    "versionId": "a407b29e-4bfd-4647-a380-eb55dbf1e1d1",
+    "activeVersionId": null,
+    "versionCounter": 1,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-07-16T16:34:12.697Z",
+        "createdAt": "2026-07-16T16:34:12.697Z",
+        "role": "workflow:owner",
+        "workflowId": "dcIBGxHYwoI6ES9y",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

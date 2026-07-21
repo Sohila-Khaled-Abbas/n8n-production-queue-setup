@@ -1,6 +1,6 @@
 [
   {
-    "updatedAt": "2026-06-19T18:36:10.443Z",
+    "updatedAt": "2026-07-18T12:10:37.229Z",
     "createdAt": "2026-06-18T21:15:17.710Z",
     "id": "NMO6CYxZtRXOisiB",
     "name": "IT Support Agent",
@@ -170,7 +170,7 @@
     },
     "staticData": {
       "node:Airtable Trigger": {
-        "lastTimeChecked": "2026-07-15T12:04:39Z"
+        "lastTimeChecked": "2026-07-21T14:53:20Z"
       }
     },
     "meta": {
@@ -185,34 +185,28 @@
     "sourceWorkflowId": null,
     "tags": [
       {
-        "createdAt": "2026-07-16T15:55:54.265699+00:00",
-        "updatedAt": "2026-07-16T15:55:54.265715+00:00",
-        "id": "89f5bd6077773f30",
-        "name": "Production Automation"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:54.265723+00:00",
-        "updatedAt": "2026-07-16T15:55:54.265725+00:00",
-        "id": "dac03ba206f3bfe0",
-        "name": "Event-Driven Architecture"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:54.265731+00:00",
-        "updatedAt": "2026-07-16T15:55:54.265734+00:00",
-        "id": "3506c721492cc987",
+        "updatedAt": "2026-07-16T16:03:29.217Z",
+        "createdAt": "2026-07-16T16:03:29.217Z",
+        "id": "08f43634238e406b",
         "name": "Agentic AI"
       },
       {
-        "createdAt": "2026-07-16T15:55:54.265739+00:00",
-        "updatedAt": "2026-07-16T15:55:54.265742+00:00",
-        "id": "558f1e5fcbd7f1ca",
+        "updatedAt": "2026-07-16T16:03:28.284Z",
+        "createdAt": "2026-07-16T16:03:28.284Z",
+        "id": "e1c954be4bee474d",
         "name": "Data Transformation"
       },
       {
-        "createdAt": "2026-07-16T15:58:23.803838+00:00",
-        "updatedAt": "2026-07-16T15:58:23.803852+00:00",
-        "id": "332aea2c3b181c28",
+        "updatedAt": "2026-07-16T16:03:28.540Z",
+        "createdAt": "2026-07-16T16:03:28.540Z",
+        "id": "90acb56ef2f84a89",
         "name": "Event-Driven"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:29.020Z",
+        "createdAt": "2026-07-16T16:03:29.020Z",
+        "id": "9a8d1d753df54ed1",
+        "name": "Production Automation"
       }
     ],
     "shared": [

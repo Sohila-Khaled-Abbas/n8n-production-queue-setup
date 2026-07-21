@@ -1,0 +1,297 @@
+[
+  {
+    "updatedAt": "2026-07-17T11:39:07.456Z",
+    "createdAt": "2026-07-16T21:03:15.840Z",
+    "id": "p9ahNPZOZDRB4mas",
+    "name": "LinkedIn Content Creation for Egyptian Audience",
+    "description": null,
+    "active": false,
+    "isArchived": true,
+    "nodes": [
+      {
+        "parameters": {
+          "url": "https://techcrunch.com/feed/",
+          "options": {}
+        },
+        "id": "1",
+        "name": "Fetch Tech News",
+        "type": "n8n-nodes-base.rss",
+        "typeVersion": 1,
+        "position": [
+          250,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $json.title.toLowerCase() }}",
+                "operation": "contains",
+                "value2": "data analysis, ai, automation"
+              }
+            ]
+          },
+          "combineOperation": "or"
+        },
+        "id": "2",
+        "name": "Filter Articles",
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 1,
+        "position": [
+          500,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "sourceLanguageCode": "en",
+          "targetLanguageCode": "ar",
+          "text": "={{ $json.title }}",
+          "additionalFields": {}
+        },
+        "id": "3",
+        "name": "Translate Title",
+        "type": "n8n-nodes-base.googleTranslate",
+        "typeVersion": 1,
+        "position": [
+          750,
+          200
+        ]
+      },
+      {
+        "parameters": {
+          "sourceLanguageCode": "en",
+          "targetLanguageCode": "ar",
+          "text": "={{ $json.summary }}",
+          "additionalFields": {}
+        },
+        "id": "4",
+        "name": "Translate Summary",
+        "type": "n8n-nodes-base.googleTranslate",
+        "typeVersion": 1,
+        "position": [
+          750,
+          400
+        ]
+      },
+      {
+        "parameters": {
+          "messages": [
+            {
+              "text": "\u062a\u0631\u062c\u0645\u0629 \u0639\u0646\u0648\u0627\u0646 \u0627\u0644\u0645\u0642\u0627\u0644: {{ $json[\"Translate Title\"].translatedText }}\n\u062a\u0631\u062c\u0645\u0629 \u0645\u0644\u062e\u0635 \u0627\u0644\u0645\u0642\u0627\u0644: {{ $json[\"Translate Summary\"].translatedText }}\n\n\u0627\u0644\u0645\u0642\u0627\u0644 \u0627\u0644\u0623\u0635\u0644\u064a \u0628\u0627\u0644\u0625\u0646\u062c\u0644\u064a\u0632\u064a\u0629:\n\u0639\u0646\u0648\u0627\u0646: {{ $json.title }}\n\u0645\u0644\u062e\u0635: {{ $json.summary }}\n\n\u0627\u0644\u062a\u0641\u0627\u0635\u064a\u0644 \u0627\u0644\u0625\u0636\u0627\u0641\u064a\u0629 \u0639\u0646 \u0627\u0644\u0645\u0642\u0627\u0644:"
+            }
+          ],
+          "temperature": 0.5,
+          "maxTokens": 150,
+          "topP": 1,
+          "frequencyPenalty": 0,
+          "presencePenalty": 0,
+          "stopSequences": [],
+          "additionalFields": {}
+        },
+        "id": "5",
+        "name": "Generate Content",
+        "type": "n8n-nodes-base.openAiChatCompletion",
+        "typeVersion": 1,
+        "position": [
+          1000,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "insert",
+          "tableName": "linkedin_content",
+          "schema": "public",
+          "columnsUi": {
+            "columnValues": [
+              {
+                "name": "original_title",
+                "parameter": "={{ $json.title }}"
+              },
+              {
+                "name": "translated_title",
+                "parameter": "={{ $json[\"Translate Title\"].translatedText }}"
+              },
+              {
+                "name": "original_summary",
+                "parameter": "={{ $json.summary }}"
+              },
+              {
+                "name": "translated_summary",
+                "parameter": "={{ $json[\"Translate Summary\"].translatedText }}"
+              },
+              {
+                "name": "generated_content_ar",
+                "parameter": "={{ $json.choices[0].message.content }}"
+              },
+              {
+                "name": "generated_content_en",
+                "parameter": "={{ $json.messages[0].text }}"
+              }
+            ]
+          },
+          "additionalFields": {}
+        },
+        "id": "6",
+        "name": "Store Content",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 1,
+        "position": [
+          1250,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "catchAll",
+          "message": "\u062d\u062f\u062b \u062e\u0637\u0623 \u0623\u062b\u0646\u0627\u0621 \u062a\u0646\u0641\u064a\u0630 \u0627\u0644\u0639\u0645\u0644\u064a\u0629"
+        },
+        "id": "7",
+        "name": "Error Handling",
+        "type": "n8n-nodes-base.errorHandling",
+        "typeVersion": 1,
+        "position": [
+          1250,
+          500
+        ]
+      },
+      {
+        "parameters": {
+          "cronExpression": "0 9 * * *"
+        },
+        "id": "8",
+        "name": "Schedule Workflow",
+        "type": "n8n-nodes-base.cron",
+        "typeVersion": 1,
+        "position": [
+          0,
+          300
+        ]
+      }
+    ],
+    "connections": {
+      "Schedule Workflow": {
+        "main": [
+          [
+            {
+              "node": "Fetch Tech News",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Tech News": {
+        "main": [
+          [
+            {
+              "node": "Filter Articles",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter Articles": {
+        "main": [
+          [
+            {
+              "node": "Translate Title",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Translate Summary",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Translate Title": {
+        "main": [
+          [
+            {
+              "node": "Generate Content",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Translate Summary": {
+        "main": [
+          [
+            {
+              "node": "Generate Content",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Content": {
+        "main": [
+          [
+            {
+              "node": "Store Content",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Store Content": {
+        "main": [
+          [
+            {
+              "node": "Error Handling",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {},
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": null,
+    "versionId": "e9acbd3c-48af-4f78-90f8-ce68aa92e3ad",
+    "activeVersionId": null,
+    "versionCounter": 1,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-07-16T21:03:15.840Z",
+        "createdAt": "2026-07-16T21:03:15.840Z",
+        "role": "workflow:owner",
+        "workflowId": "p9ahNPZOZDRB4mas",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

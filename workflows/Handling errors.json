@@ -1,0 +1,146 @@
+[
+  {
+    "updatedAt": "2026-07-18T12:13:54.608Z",
+    "createdAt": "2026-07-17T18:14:33.325Z",
+    "id": "YOOYVyHQSpKBZwuO",
+    "name": "Handling errors",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "d42163f4-ef0c-4671-8391-e2349994fce9",
+        "name": "ManualTrigger"
+      },
+      {
+        "parameters": {
+          "url": "https://httpstat.us/500",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          224,
+          0
+        ],
+        "id": "b8df71c5-9582-410c-a398-9c5bdf0849ca",
+        "name": "BadRequest",
+        "retryOnFail": true,
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          448,
+          -96
+        ],
+        "id": "e23e57e1-27a7-4245-910c-a565d5865b83",
+        "name": "Success"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "453bec88-7d84-44bc-94c4-a1b3deddd6f7",
+                "name": "error.message",
+                "value": "={{ $json.error.message }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          448,
+          96
+        ],
+        "id": "bc49bc6e-726e-4b47-bd79-49a927353c27",
+        "name": "HandleError"
+      }
+    ],
+    "connections": {
+      "ManualTrigger": {
+        "main": [
+          [
+            {
+              "node": "BadRequest",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "BadRequest": {
+        "main": [
+          [
+            {
+              "node": "Success",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "HandleError",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": true
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "479fb503-7d28-4174-9287-bffe26df9fa4",
+    "activeVersionId": null,
+    "versionCounter": 16,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-07-17T18:14:33.325Z",
+        "createdAt": "2026-07-17T18:14:33.325Z",
+        "role": "workflow:owner",
+        "workflowId": "YOOYVyHQSpKBZwuO",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

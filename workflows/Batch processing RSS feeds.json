@@ -1,0 +1,150 @@
+[
+  {
+    "updatedAt": "2026-07-18T12:13:54.608Z",
+    "createdAt": "2026-07-17T18:09:31.147Z",
+    "id": "NvmipdgoZhisTYYa",
+    "name": "Batch processing RSS feeds",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          -32
+        ],
+        "id": "2cff0b26-0ab4-453f-b5fb-4f4491cf5bd0",
+        "name": "ManualTrigger"
+      },
+      {
+        "parameters": {
+          "jsCode": "return [\n  {\n    json: {\n      url: 'https://medium.com/feed/n8n-io'\n    }\n  },\n  {\n    json: {\n      url: 'https://dev.to/feed/n8n'\n    }\n  }\n];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          224,
+          -32
+        ],
+        "id": "3e3e780c-5a5f-41a0-9788-d2f73a52e375",
+        "name": "FeedURLs"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          448,
+          -32
+        ],
+        "id": "e89d6f21-5531-4131-9c54-0301771c9d08",
+        "name": "BatchFeeds"
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.url }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.rssFeedRead",
+        "typeVersion": 1.2,
+        "position": [
+          672,
+          -32
+        ],
+        "id": "e860c10d-d1d9-46e5-819f-e6531c938ad2",
+        "name": "ReadFeed"
+      }
+    ],
+    "connections": {
+      "ManualTrigger": {
+        "main": [
+          [
+            {
+              "node": "FeedURLs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FeedURLs": {
+        "main": [
+          [
+            {
+              "node": "BatchFeeds",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "BatchFeeds": {
+        "main": [
+          [],
+          [
+            {
+              "node": "ReadFeed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "ReadFeed": {
+        "main": [
+          [
+            {
+              "node": "BatchFeeds",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": true
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "75bb567c-7d03-4ae9-b026-10ce19bbd456",
+    "activeVersionId": null,
+    "versionCounter": 16,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-07-17T18:09:31.147Z",
+        "createdAt": "2026-07-17T18:09:31.147Z",
+        "role": "workflow:owner",
+        "workflowId": "NvmipdgoZhisTYYa",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

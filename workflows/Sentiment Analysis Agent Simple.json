@@ -1,6 +1,6 @@
 [
   {
-    "updatedAt": "2026-06-26T19:30:03.417Z",
+    "updatedAt": "2026-07-18T12:13:54.608Z",
     "createdAt": "2026-06-26T18:35:51.436Z",
     "id": "QWJwznptYNNtn7nm",
     "name": "Sentiment Analysis Agent Simple",
@@ -603,7 +603,7 @@
     "settings": {
       "executionOrder": "v1",
       "binaryMode": "separate",
-      "availableInMCP": false,
+      "availableInMCP": true,
       "timeSavedMode": "dynamic",
       "timezone": "Asia/Kuwait",
       "saveDataErrorExecution": "all",
@@ -638,32 +638,26 @@
     },
     "versionId": "e2e0db7c-46e5-4772-93ba-e256409dc1f7",
     "activeVersionId": "a321ce0c-990b-4643-8d47-881ace8b56c7",
-    "versionCounter": 22,
+    "versionCounter": 23,
     "triggerCount": 1,
     "sourceWorkflowId": null,
     "tags": [
       {
-        "createdAt": "2026-07-16T15:55:54.309679+00:00",
-        "updatedAt": "2026-07-16T15:55:54.309694+00:00",
-        "id": "89f5bd6077773f30",
-        "name": "Production Automation"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:54.309707+00:00",
-        "updatedAt": "2026-07-16T15:55:54.309712+00:00",
-        "id": "dac03ba206f3bfe0",
-        "name": "Event-Driven Architecture"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:54.309722+00:00",
-        "updatedAt": "2026-07-16T15:55:54.309726+00:00",
-        "id": "3506c721492cc987",
+        "updatedAt": "2026-07-16T16:03:29.217Z",
+        "createdAt": "2026-07-16T16:03:29.217Z",
+        "id": "08f43634238e406b",
         "name": "Agentic AI"
       },
       {
-        "createdAt": "2026-07-16T15:58:23.840034+00:00",
-        "updatedAt": "2026-07-16T15:58:23.840046+00:00",
-        "id": "332aea2c3b181c28",
+        "updatedAt": "2026-07-16T16:03:29.020Z",
+        "createdAt": "2026-07-16T16:03:29.020Z",
+        "id": "9a8d1d753df54ed1",
+        "name": "Production Automation"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.540Z",
+        "createdAt": "2026-07-16T16:03:28.540Z",
+        "id": "90acb56ef2f84a89",
         "name": "Event-Driven"
       }
     ],

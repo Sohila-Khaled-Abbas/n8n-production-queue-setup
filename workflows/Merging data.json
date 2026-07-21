@@ -1,0 +1,384 @@
+[
+  {
+    "updatedAt": "2026-07-18T13:12:52.932Z",
+    "createdAt": "2026-07-18T13:12:20.524Z",
+    "id": "7gaNs1xS3vpsA5FG",
+    "name": "Merging Data",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          -240,
+          96
+        ],
+        "id": "1aceef79-37b5-4d3e-ba5b-7bc43f486e0e",
+        "name": "When clicking Execute workflow"
+      },
+      {
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "{\n  \"orders\": [\n    { \"orderID\": 101, \"customer\": \"Alice\", \"total\": 85, \"source\": \"web\" },\n    { \"orderID\": 102, \"customer\": \"Bob\", \"total\": 120, \"source\": \"web\" }\n  ]\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -16,
+          0
+        ],
+        "id": "171337d6-80cf-405f-bdaa-cd73149feca2",
+        "name": "Online Form Orders",
+        "notesInFlow": true,
+        "notes": "Simulates orders received from an online form"
+      },
+      {
+        "parameters": {
+          "fieldToSplitOut": "orders",
+          "include": "allOtherFields",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitOut",
+        "typeVersion": 1,
+        "position": [
+          208,
+          0
+        ],
+        "id": "64730800-da9b-45f7-91b2-ab2b09c5ec2e",
+        "name": "Split Online Orders",
+        "notesInFlow": true,
+        "notes": "1 item with array to 2 individual items"
+      },
+      {
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "{\n  \"orders\": [\n    { \"orderID\": 201, \"customer\": \"Charlie\", \"total\": 200, \"source\": \"api\" },\n    { \"orderID\": 202, \"customer\": \"David\", \"total\": 65, \"source\": \"api\" }\n  ]\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -16,
+          192
+        ],
+        "id": "0a8156e6-41ce-4f06-a133-102c26ae0833",
+        "name": "API Orders",
+        "notesInFlow": true,
+        "notes": "Simulates orders received from an external API"
+      },
+      {
+        "parameters": {
+          "fieldToSplitOut": "orders",
+          "include": "allOtherFields",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitOut",
+        "typeVersion": 1,
+        "position": [
+          208,
+          192
+        ],
+        "id": "4a3bc3ab-f10d-44a3-a3db-9b36a10b6c91",
+        "name": "Split API Orders",
+        "notesInFlow": true,
+        "notes": "1 item with array to 2 individual items"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          432,
+          96
+        ],
+        "id": "47733977-935e-4dbe-a066-09b93882ef76",
+        "name": "Merge All Orders",
+        "notesInFlow": true,
+        "notes": "Appends both streams into a single list of 4 orders"
+      },
+      {
+        "parameters": {
+          "aggregate": "aggregateAllItemData",
+          "destinationFieldName": "allOrders",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.aggregate",
+        "typeVersion": 1,
+        "position": [
+          656,
+          96
+        ],
+        "id": "8a0a9ad5-d20f-4974-8506-03faf37e3cc7",
+        "name": "Collect Into Array",
+        "notesInFlow": true,
+        "notes": "4 separate items into 1 item containing all orders in a single array"
+      }
+    ],
+    "connections": {
+      "When clicking Execute workflow": {
+        "main": [
+          [
+            {
+              "node": "Online Form Orders",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "API Orders",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Online Form Orders": {
+        "main": [
+          [
+            {
+              "node": "Split Online Orders",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Split Online Orders": {
+        "main": [
+          [
+            {
+              "node": "Merge All Orders",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "API Orders": {
+        "main": [
+          [
+            {
+              "node": "Split API Orders",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Split API Orders": {
+        "main": [
+          [
+            {
+              "node": "Merge All Orders",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Merge All Orders": {
+        "main": [
+          [
+            {
+              "node": "Collect Into Array",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {
+      "Online Form Orders": [
+        {
+          "json": {
+            "orders": [
+              {
+                "orderID": 101,
+                "customer": "Alice",
+                "total": 85,
+                "source": "web"
+              },
+              {
+                "orderID": 102,
+                "customer": "Bob",
+                "total": 120,
+                "source": "web"
+              }
+            ]
+          }
+        }
+      ],
+      "Split Online Orders": [
+        {
+          "json": {
+            "orderID": 101,
+            "customer": "Alice",
+            "total": 85,
+            "source": "web"
+          }
+        },
+        {
+          "json": {
+            "orderID": 102,
+            "customer": "Bob",
+            "total": 120,
+            "source": "web"
+          }
+        }
+      ],
+      "API Orders": [
+        {
+          "json": {
+            "orders": [
+              {
+                "orderID": 201,
+                "customer": "Charlie",
+                "total": 200,
+                "source": "api"
+              },
+              {
+                "orderID": 202,
+                "customer": "David",
+                "total": 65,
+                "source": "api"
+              }
+            ]
+          }
+        }
+      ],
+      "Split API Orders": [
+        {
+          "json": {
+            "orderID": 201,
+            "customer": "Charlie",
+            "total": 200,
+            "source": "api"
+          }
+        },
+        {
+          "json": {
+            "orderID": 202,
+            "customer": "David",
+            "total": 65,
+            "source": "api"
+          }
+        }
+      ],
+      "Merge All Orders": [
+        {
+          "json": {
+            "orderID": 101,
+            "customer": "Alice",
+            "total": 85,
+            "source": "web"
+          }
+        },
+        {
+          "json": {
+            "orderID": 102,
+            "customer": "Bob",
+            "total": 120,
+            "source": "web"
+          }
+        },
+        {
+          "json": {
+            "orderID": 201,
+            "customer": "Charlie",
+            "total": 200,
+            "source": "api"
+          }
+        },
+        {
+          "json": {
+            "orderID": 202,
+            "customer": "David",
+            "total": 65,
+            "source": "api"
+          }
+        }
+      ],
+      "Collect Into Array": [
+        {
+          "json": {
+            "allOrders": [
+              {
+                "orderID": 101,
+                "customer": "Alice",
+                "total": 85,
+                "source": "web"
+              },
+              {
+                "orderID": 102,
+                "customer": "Bob",
+                "total": 120,
+                "source": "web"
+              },
+              {
+                "orderID": 201,
+                "customer": "Charlie",
+                "total": 200,
+                "source": "api"
+              },
+              {
+                "orderID": 202,
+                "customer": "David",
+                "total": 65,
+                "source": "api"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "versionId": "e235a75a-7eec-48f7-989c-64d56171ecc8",
+    "activeVersionId": null,
+    "versionCounter": 2,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-18T12:53:55.244Z",
+        "createdAt": "2026-07-18T12:53:55.244Z",
+        "id": "y3z1vK2zuYwrqB4x",
+        "name": "n8n101"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-18T13:12:20.524Z",
+        "createdAt": "2026-07-18T13:12:20.524Z",
+        "role": "workflow:owner",
+        "workflowId": "7gaNs1xS3vpsA5FG",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

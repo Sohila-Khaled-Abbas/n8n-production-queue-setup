@@ -1,0 +1,224 @@
+[
+  {
+    "updatedAt": "2026-07-18T12:13:54.608Z",
+    "createdAt": "2026-07-17T17:05:32.596Z",
+    "id": "GHp9wjmGXdCg9y4m",
+    "name": "Working with dates",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          -112
+        ],
+        "id": "e1ab57e2-a5b8-4953-ae95-6f65cdec5f0c",
+        "name": "When clicking \u2018Execute workflow\u2019"
+      },
+      {
+        "parameters": {
+          "operation": "getAllPeople",
+          "returnAll": true
+        },
+        "type": "n8n-nodes-base.n8nTrainingCustomerDatastore",
+        "typeVersion": 1,
+        "position": [
+          224,
+          -112
+        ],
+        "id": "8ad622f0-07fe-4466-9376-d8b27e3afef3",
+        "name": "GetCustomerData"
+      },
+      {
+        "parameters": {
+          "operation": "roundDate",
+          "date": "={{ $json.created }}",
+          "outputFieldName": "newDate ",
+          "options": {
+            "includeInputFields": true
+          }
+        },
+        "type": "n8n-nodes-base.dateTime",
+        "typeVersion": 2,
+        "position": [
+          448,
+          -112
+        ],
+        "id": "5ebb5cf3-9f07-4a7c-8cd2-5a6e40a27bd1",
+        "name": "RoundDate"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "d788c79d-edb0-4356-bae0-7ba709546bce",
+                "leftValue": "={{ $json['newDate '] }}",
+                "rightValue": "1960-01-01T00:00:00",
+                "operator": {
+                  "type": "dateTime",
+                  "operation": "after"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          672,
+          -112
+        ],
+        "id": "ec3fe3b8-4d55-4aef-bb0a-2fe544d55fdc",
+        "name": "CheckAfter1960"
+      },
+      {
+        "parameters": {
+          "operation": "addToDate",
+          "magnitude": "={{ $json['newDate '] }}",
+          "duration": 5,
+          "outputFieldName": "plus5Days",
+          "options": {
+            "includeInputFields": true
+          }
+        },
+        "type": "n8n-nodes-base.dateTime",
+        "typeVersion": 2,
+        "position": [
+          896,
+          -208
+        ],
+        "id": "4334c6da-a99c-48c9-9bd5-9391e949715f",
+        "name": "Add5days"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "29b62085-6ee3-47c5-9491-02603969a8de",
+                "name": "newYear",
+                "value": "={{ $json['newDate '].toDateTime().plus(20, 'years') }}",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          896,
+          -16
+        ],
+        "id": "62b2fc95-fb6b-489e-aae1-fcaa0642cca9",
+        "name": "Add20Years"
+      }
+    ],
+    "connections": {
+      "When clicking \u2018Execute workflow\u2019": {
+        "main": [
+          [
+            {
+              "node": "GetCustomerData",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GetCustomerData": {
+        "main": [
+          [
+            {
+              "node": "RoundDate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "RoundDate": {
+        "main": [
+          [
+            {
+              "node": "CheckAfter1960",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CheckAfter1960": {
+        "main": [
+          [
+            {
+              "node": "Add5days",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Add20Years",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": true
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "5f0aa629-723a-456c-a968-5bd75a7ec58d",
+    "activeVersionId": null,
+    "versionCounter": 45,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-07-17T17:05:32.596Z",
+        "createdAt": "2026-07-17T17:05:32.596Z",
+        "role": "workflow:owner",
+        "workflowId": "GHp9wjmGXdCg9y4m",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

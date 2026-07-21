@@ -1,0 +1,116 @@
+[
+  {
+    "updatedAt": "2026-07-18T12:13:54.608Z",
+    "createdAt": "2026-07-17T16:50:11.934Z",
+    "id": "gyvH0onD8ZVENn7K",
+    "name": "n8n XML exercise",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "e8cfdb62-c91e-4c42-9d84-fc6286671c3a",
+        "name": "When clicking \u2018Execute workflow\u2019"
+      },
+      {
+        "parameters": {
+          "url": "https://pokeapi.co/api/v2/pokemon",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          224,
+          0
+        ],
+        "id": "db9687c7-cf66-43c6-b300-0f9883c30ecc",
+        "name": "HTTP Request"
+      },
+      {
+        "parameters": {
+          "mode": "jsonToxml",
+          "dataPropertyName": "results",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.xml",
+        "typeVersion": 1,
+        "position": [
+          448,
+          0
+        ],
+        "id": "bc61a291-6ae9-481c-854e-cf109ee25f22",
+        "name": "XML"
+      }
+    ],
+    "connections": {
+      "When clicking \u2018Execute workflow\u2019": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request": {
+        "main": [
+          [
+            {
+              "node": "XML",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": true
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "480fb4db-f968-40d0-9e9c-25592e7e2546",
+    "activeVersionId": null,
+    "versionCounter": 11,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-07-17T16:50:11.934Z",
+        "createdAt": "2026-07-17T16:50:11.934Z",
+        "role": "workflow:owner",
+        "workflowId": "gyvH0onD8ZVENn7K",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

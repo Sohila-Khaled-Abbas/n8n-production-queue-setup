@@ -1,9 +1,27 @@
 # 💼 Production n8n Workflow Portfolio
 
-This portfolio contains **45 production-grade automation workflows**. These workflows solve real-world problems by integrating LLMs, vector databases (Qdrant, Supabase PgVector), relational databases (MSSQL, PostgreSQL), CRM platforms, and interactive interfaces (Telegram, Gmail, Google Sheets).
+This portfolio contains **74 production-grade automation workflows**. These workflows solve real-world problems by integrating LLMs, vector databases (Qdrant, Supabase PgVector), relational databases (MSSQL, PostgreSQL), CRM platforms, and interactive interfaces (Telegram, Gmail, Google Sheets).
 
 > [!TIP]
 > **Intelligent Tagging System:** All workflows in this repository have been programmatically tagged using a "software engineering mentality". When you import these workflows into n8n, you'll see advanced architectural tags like **`Data Pipeline`**, **`Event-Driven Architecture`**, **`RAG`**, **`Agentic AI`**, and **`Orchestration`** automatically applied to them based on their internal node structure.
+
+---
+
+## 🎓 n8n Academy Certifications
+
+This portfolio is backed by official certifications from the n8n Academy:
+
+<div align="center">
+  <img src="docs/certificates/quickstart.jpg" alt="n8n Quickstart" width="30%" />
+  <img src="docs/certificates/essentials.jpg" alt="Essentials: Your First Workflows" width="30%" />
+  <img src="docs/certificates/integrations.jpg" alt="Integrations: APIs & Connected Workflows" width="30%" />
+</div>
+
+- **n8n Quickstart** (Completed July 17, 2026)
+- **Essentials: Your First Workflows** (Completed July 20, 2026)
+- **Integrations: APIs & Connected Workflows** (Completed July 20, 2026)
+
+*(Certificates are available in the `docs/certificates/` directory.)*
 
 ---
 

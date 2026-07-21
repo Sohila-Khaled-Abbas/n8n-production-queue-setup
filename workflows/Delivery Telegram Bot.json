@@ -1,6 +1,6 @@
 [
   {
-    "updatedAt": "2026-07-02T19:32:59.507Z",
+    "updatedAt": "2026-07-18T12:06:59.816Z",
     "createdAt": "2026-07-01T21:34:06.764Z",
     "id": "aQau7RvyP2jshTn9",
     "name": "Delivery Telegram Bot",
@@ -199,7 +199,7 @@
       {
         "parameters": {
           "method": "POST",
-          "url": "https://api.telegram.org/botYOUR_TELEGRAM_BOT_TOKEN_HERE/sendMessage",
+          "url": "https://api.telegram.org/bot8866815723:AAFu4duJr1X3LCB6gHWwL4WDKnwmJtNKFi4/sendMessage",
           "sendBody": true,
           "specifyBody": "json",
           "jsonBody": "={\n  \"chat_id\": \"{{ $('Telegram Trigger').item.json.message.chat.id }}\",\n  \"text\": \"\ud83d\udccd Perfect! To calculate delivery times and dispatch your driver, please share your live delivery location using the button below:\",\n  \"reply_markup\": {\n    \"keyboard\": [\n      [\n        {\n          \"text\": \"\ud83d\udccd Share My Current Location\",\n          \"request_location\": true\n        }\n      ]\n    ],\n    \"resize_keyboard\": true,\n    \"one_time_keyboard\": true\n  }\n}",
@@ -467,34 +467,28 @@
     "sourceWorkflowId": null,
     "tags": [
       {
-        "createdAt": "2026-07-16T15:55:54.208718+00:00",
-        "updatedAt": "2026-07-16T15:55:54.208731+00:00",
-        "id": "89f5bd6077773f30",
-        "name": "Production Automation"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:54.208738+00:00",
-        "updatedAt": "2026-07-16T15:55:54.208741+00:00",
-        "id": "dac03ba206f3bfe0",
-        "name": "Event-Driven Architecture"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:54.208747+00:00",
-        "updatedAt": "2026-07-16T15:55:54.208749+00:00",
-        "id": "3506c721492cc987",
+        "updatedAt": "2026-07-16T16:03:29.217Z",
+        "createdAt": "2026-07-16T16:03:29.217Z",
+        "id": "08f43634238e406b",
         "name": "Agentic AI"
       },
       {
-        "createdAt": "2026-07-16T15:55:54.208754+00:00",
-        "updatedAt": "2026-07-16T15:55:54.208757+00:00",
-        "id": "558f1e5fcbd7f1ca",
+        "updatedAt": "2026-07-16T16:03:28.284Z",
+        "createdAt": "2026-07-16T16:03:28.284Z",
+        "id": "e1c954be4bee474d",
         "name": "Data Transformation"
       },
       {
-        "createdAt": "2026-07-16T15:58:23.747836+00:00",
-        "updatedAt": "2026-07-16T15:58:23.747846+00:00",
-        "id": "332aea2c3b181c28",
+        "updatedAt": "2026-07-16T16:03:28.540Z",
+        "createdAt": "2026-07-16T16:03:28.540Z",
+        "id": "90acb56ef2f84a89",
         "name": "Event-Driven"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:29.020Z",
+        "createdAt": "2026-07-16T16:03:29.020Z",
+        "id": "9a8d1d753df54ed1",
+        "name": "Production Automation"
       }
     ],
     "shared": [

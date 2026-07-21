@@ -14,6 +14,7 @@
 [![Qdrant](https://img.shields.io/badge/Qdrant-Vector_DB-ff1b44?logo=qdrant&logoColor=white)](https://qdrant.tech/)
 [![Docker Compose](https://img.shields.io/badge/Docker_Compose-v2-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg)](LICENSE)
+[![n8n Academy Certified](https://img.shields.io/badge/n8n_Academy-Certified-FF6D5A?logo=n8n&logoColor=white)](PORTFOLIO.md#🎓-n8n-academy-certifications)
 
 [Quick Start](#-quick-start) · [Architecture](#-architecture) · [Configuration](#-configuration) · [Autoscaling](#-autoscaling) · [Puppeteer & Playwright](#-puppeteer--playwright) · [Troubleshooting](#-troubleshooting) · [Operations Guide](docs/production_guide.md) · [SE Standards](docs/software_engineering_standards.md) · [Scripts Reference](docs/scripts.md) · [Portfolio Showcase](PORTFOLIO.md) · [Changelog](CHANGELOG.md) · [Contributing Guide](CONTRIBUTING.md)
 
@@ -44,7 +45,7 @@
 | **Health Checks** | All dependencies are health-checked before n8n starts |
 | **Centralized Log Rotation** | Configurable via `.env` — `LOG_DRIVER`, `LOG_MAX_SIZE`, `LOG_MAX_FILE` |
 | **Enterprise AI Assistant** | A Dockerized AI chat application (SQLite database) with conversational memory, dynamic real-time ingestion of your n8n workflows/credentials via API, self-healing JSON validation, and 1-click exporting to n8n. |
-| **Intelligently Tagged Portfolio** | Includes 45 production-ready workflows structurally parsed and tagged (`RAG`, `Data Pipeline`, `Orchestration`) and an automatically compiled Markdown Documentation Site. |
+| **Intelligently Tagged Portfolio** | Includes 74 production-ready workflows structurally parsed and tagged (`RAG`, `Data Pipeline`, `Orchestration`) and an automatically compiled Markdown Documentation Site. |
 
 ---
 
@@ -656,7 +657,11 @@ docker compose exec redis redis-cli LLEN bull:jobs:wait
 
 The `scripts/` directory contains automation and database diagnostic scripts to maintain and troubleshoot the n8n production stack:
 
-### Workflow Export Automation
+### Workflow Export & Repository Auto-Sync
+- **[auto_sync.ps1](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/auto_sync.ps1)**: An automated PowerShell script that exports all n8n workflows, compiles `docs/data.json`, and commits & pushes changes to GitHub in one command:
+  ```powershell
+  .\scripts\auto_sync.ps1
+  ```
 - **[export_workflows.py](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/export_workflows.py)**: A Windows/Unix-compatible Python script that automates exporting all workflows from the n8n container database and splitting them into separate formatted JSON files inside the `workflows/` directory. Run this whenever you create new workflows or edit existing ones to sync them to the git repository:
   ```bash
   python scripts/export_workflows.py
@@ -730,7 +735,7 @@ Run these queries inside the PostgreSQL database to troubleshoot workflow perfor
 │   └── modify_workflow.py          # Batch configures Ollama nodes (model & context)
 ├── workflows/
 │   ├── GPT_OSS_20B_HuggingFace.json  # HuggingFace Inference API workflow (openai/gpt-oss-20b)
-│   └── ...                         # 35+ production workflow JSON files
+│   └── ...                         # 70+ production workflow JSON files
 ├── n8n-data/                       # n8n user data (git-ignored)
 ├── backups/                        # Local backup output (git-ignored)
 ```

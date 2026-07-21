@@ -102,4 +102,4 @@ High-resolution PNG suitable for presentation slides and documentation:
 
 14. **n8n-backup (Optional)**: Profile-gated backup service (`docker compose --profile backup up -d`). Runs scheduled `pg_dump` + Redis RDB + volume archive → GPG encryption → rclone cloud upload.
 
-15. **Diagnostics & Maintenance Scripts**: A collection of helper tools (located in the `scripts/` directory) for database pruning and space reclamation (`cleanup.sql`), performance and error diagnostics (`durations.sql`, `get_error.sql`), and workflow configuration automation (`modify_workflow.py`).
+15. **Diagnostics & Maintenance Scripts**: A collection of helper tools (located in the `scripts/` directory) for automated workflow/docs sync (`auto_sync.ps1`), database pruning and space reclamation (`cleanup.sql`), performance and error diagnostics (`durations.sql`, `get_error.sql`), and workflow configuration automation (`modify_workflow.py`).

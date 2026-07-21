@@ -1,0 +1,200 @@
+[
+  {
+    "updatedAt": "2026-07-16T16:24:35.592Z",
+    "createdAt": "2026-07-16T16:16:08.403Z",
+    "id": "FPK6JQLqJvVFmqOy",
+    "name": "N8N Workflow Builder",
+    "description": null,
+    "active": false,
+    "isArchived": true,
+    "nodes": [
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          0
+        ],
+        "id": "fbcb6754-7f62-4fb0-8909-a275aa2814d7",
+        "name": "When chat message received",
+        "webhookId": "aa6d3720-f59f-4998-b373-fcef9c9d5ad7"
+      },
+      {
+        "parameters": {
+          "options": {
+            "systemMessage": "You are an expert n8n workflow builder. When the user asks you to build a workflow, use your tools to generate it."
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          288,
+          0
+        ],
+        "id": "abe284c2-c37f-4303-82fa-a81e50018739",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "openai/gpt-oss-120b",
+            "mode": "list",
+            "cachedResultName": "openai/gpt-oss-120b"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          224,
+          224
+        ],
+        "id": "7d85cebb-ec39-4bc3-9386-c1a5f69e481e",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "doxpsivmFLpAY4By",
+            "name": "Hugging Face"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+        "typeVersion": 1.4,
+        "position": [
+          352,
+          224
+        ],
+        "id": "ac4cbbca-c6a1-47f4-8771-c92d5af8332d",
+        "name": "Postgres Chat Memory",
+        "credentials": {
+          "postgres": {
+            "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+            "name": "PostgreSQL \u2014 n8n Stack"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "endpointUrl": "http://host.docker.internal:8000/sse",
+          "serverTransport": "sse",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+        "typeVersion": 1.3,
+        "position": [
+          480,
+          224
+        ],
+        "id": "248c8b5b-7d8f-4601-85a2-b576f8854a16",
+        "name": "MCP Client"
+      }
+    ],
+    "connections": {
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Postgres Chat Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "MCP Client": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "26fa57a4-fd99-4b67-a428-a30412689fb7",
+    "activeVersionId": null,
+    "versionCounter": 16,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-16T16:03:29.020Z",
+        "createdAt": "2026-07-16T16:03:29.020Z",
+        "id": "9a8d1d753df54ed1",
+        "name": "Production Automation"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:29.217Z",
+        "createdAt": "2026-07-16T16:03:29.217Z",
+        "id": "08f43634238e406b",
+        "name": "Agentic AI"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-16T16:16:08.403Z",
+        "createdAt": "2026-07-16T16:16:08.403Z",
+        "role": "workflow:owner",
+        "workflowId": "FPK6JQLqJvVFmqOy",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

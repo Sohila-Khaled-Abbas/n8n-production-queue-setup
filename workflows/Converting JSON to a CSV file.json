@@ -1,0 +1,114 @@
+[
+  {
+    "updatedAt": "2026-07-18T12:13:54.608Z",
+    "createdAt": "2026-07-17T17:54:20.210Z",
+    "id": "9WBRRr49BODa2dz5",
+    "name": "Converting JSON to a CSV file",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "aa16b985-8f10-46ef-8551-d0bfef7b2109",
+        "name": "ManualTrigger"
+      },
+      {
+        "parameters": {
+          "url": "https://learn.app.n8n.cloud/webhook/countries",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          224,
+          0
+        ],
+        "id": "86524bb0-83ac-4a83-9134-64dda4e9a295",
+        "name": "GetCountries"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.convertToFile",
+        "typeVersion": 1.1,
+        "position": [
+          448,
+          0
+        ],
+        "id": "5e7aedef-9459-40ba-aa3b-33af5b51f3d8",
+        "name": "ConvertToCSV"
+      }
+    ],
+    "connections": {
+      "ManualTrigger": {
+        "main": [
+          [
+            {
+              "node": "GetCountries",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GetCountries": {
+        "main": [
+          [
+            {
+              "node": "ConvertToCSV",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": true
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "2c34a67b-5284-4e7a-a71f-ab6a4d387805",
+    "activeVersionId": null,
+    "versionCounter": 12,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-07-17T17:54:20.210Z",
+        "createdAt": "2026-07-17T17:54:20.210Z",
+        "role": "workflow:owner",
+        "workflowId": "9WBRRr49BODa2dz5",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

@@ -1,0 +1,141 @@
+[
+  {
+    "updatedAt": "2026-07-18T12:13:54.608Z",
+    "createdAt": "2026-07-17T17:26:22.387Z",
+    "id": "AJcbtjUE8Q0nekqO",
+    "name": "Downloading and editing an image",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "227a7516-ba52-4356-81f1-7e06ad899af9",
+        "name": "ManualTrigger"
+      },
+      {
+        "parameters": {
+          "url": "https://learn.app.n8n.cloud/webhook/apis/dog-images",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          224,
+          0
+        ],
+        "id": "c461d0cd-51f8-46cb-a5ab-497573c59c75",
+        "name": "GetDogURL"
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.message }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          448,
+          0
+        ],
+        "id": "8cd777d4-5433-4e6f-b9dc-914f7bf90178",
+        "name": "GetDogImage"
+      },
+      {
+        "parameters": {
+          "operation": "rotate",
+          "rotate": 180,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.editImage",
+        "typeVersion": 1,
+        "position": [
+          672,
+          0
+        ],
+        "id": "db7a5e1d-e4fa-4658-ac0e-6a38365fef86",
+        "name": "Rotate180"
+      }
+    ],
+    "connections": {
+      "ManualTrigger": {
+        "main": [
+          [
+            {
+              "node": "GetDogURL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GetDogURL": {
+        "main": [
+          [
+            {
+              "node": "GetDogImage",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GetDogImage": {
+        "main": [
+          [
+            {
+              "node": "Rotate180",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": true
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "ff9b5e52-6978-4c04-90cf-f66146432481",
+    "activeVersionId": null,
+    "versionCounter": 14,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-07-17T17:26:22.387Z",
+        "createdAt": "2026-07-17T17:26:22.387Z",
+        "role": "workflow:owner",
+        "workflowId": "AJcbtjUE8Q0nekqO",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

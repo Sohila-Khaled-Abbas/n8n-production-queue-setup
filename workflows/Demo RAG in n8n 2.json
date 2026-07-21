@@ -1,6 +1,6 @@
 [
   {
-    "updatedAt": "2026-07-02T19:35:55.272Z",
+    "updatedAt": "2026-07-18T12:13:54.608Z",
     "createdAt": "2026-07-02T19:34:28.551Z",
     "id": "jhbCgPtn28VY6biZ",
     "name": "Demo: RAG in n8n 2",
@@ -293,7 +293,7 @@
     "settings": {
       "executionOrder": "v1",
       "binaryMode": "separate",
-      "availableInMCP": false
+      "availableInMCP": true
     },
     "staticData": null,
     "meta": {
@@ -304,51 +304,45 @@
     "pinData": {},
     "versionId": "fb7dda6a-f7a2-4bdb-a3f1-cf2fef73e5b6",
     "activeVersionId": null,
-    "versionCounter": 11,
+    "versionCounter": 12,
     "triggerCount": 0,
     "sourceWorkflowId": null,
     "tags": [
       {
-        "createdAt": "2026-07-16T15:55:54.212212+00:00",
-        "updatedAt": "2026-07-16T15:55:54.212224+00:00",
-        "id": "fb6a72bbc33faf10",
+        "updatedAt": "2026-07-05T20:54:10.312Z",
+        "createdAt": "2026-07-05T20:54:10.312Z",
+        "id": "YPOBiRLmef0fLiKM",
         "name": "RAG"
       },
       {
-        "createdAt": "2026-07-16T15:55:54.212231+00:00",
-        "updatedAt": "2026-07-16T15:55:54.212234+00:00",
-        "id": "3506c721492cc987",
-        "name": "Agentic AI"
+        "updatedAt": "2026-07-16T16:03:28.540Z",
+        "createdAt": "2026-07-16T16:03:28.540Z",
+        "id": "90acb56ef2f84a89",
+        "name": "Event-Driven"
       },
       {
-        "createdAt": "2026-07-16T15:55:54.212240+00:00",
-        "updatedAt": "2026-07-16T15:55:54.212242+00:00",
-        "id": "dac03ba206f3bfe0",
-        "name": "Event-Driven Architecture"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:54.212247+00:00",
-        "updatedAt": "2026-07-16T15:55:54.212250+00:00",
-        "id": "e3e18547adcedcfb",
-        "name": "Vector Storage"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:54.212254+00:00",
-        "updatedAt": "2026-07-16T15:55:54.212257+00:00",
-        "id": "87703e16953f8b2e",
+        "updatedAt": "2026-07-16T16:03:28.786Z",
+        "createdAt": "2026-07-16T16:03:28.786Z",
+        "id": "6e30f4ffb71d4b65",
         "name": "Data Pipeline"
       },
       {
-        "createdAt": "2026-07-16T15:55:54.212262+00:00",
-        "updatedAt": "2026-07-16T15:55:54.212264+00:00",
-        "id": "89f5bd6077773f30",
+        "updatedAt": "2026-07-16T16:03:29.020Z",
+        "createdAt": "2026-07-16T16:03:29.020Z",
+        "id": "9a8d1d753df54ed1",
         "name": "Production Automation"
       },
       {
-        "createdAt": "2026-07-16T15:58:23.750878+00:00",
-        "updatedAt": "2026-07-16T15:58:23.750891+00:00",
-        "id": "332aea2c3b181c28",
-        "name": "Event-Driven"
+        "updatedAt": "2026-07-16T16:03:29.217Z",
+        "createdAt": "2026-07-16T16:03:29.217Z",
+        "id": "08f43634238e406b",
+        "name": "Agentic AI"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.033Z",
+        "createdAt": "2026-07-16T16:03:28.033Z",
+        "id": "07e54c18d20c43bb",
+        "name": "Vector Storage"
       }
     ],
     "shared": [

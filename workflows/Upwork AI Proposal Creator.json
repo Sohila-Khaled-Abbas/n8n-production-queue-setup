@@ -1,6 +1,6 @@
 [
   {
-    "updatedAt": "2026-06-26T19:38:59.306Z",
+    "updatedAt": "2026-07-18T12:13:54.608Z",
     "createdAt": "2026-06-21T18:22:07.359Z",
     "id": "O8HhI5YHmotFVHpW",
     "name": "Upwork AI Proposal Creator",
@@ -826,7 +826,7 @@
     "settings": {
       "executionOrder": "v1",
       "binaryMode": "separate",
-      "availableInMCP": false,
+      "availableInMCP": true,
       "timeSavedMode": "fixed",
       "timezone": "Africa/Cairo",
       "callerPolicy": "workflowsFromSameOwner"
@@ -26959,45 +26959,39 @@
     },
     "versionId": "3e21287c-a797-4ceb-8ed9-a8997c6f08e3",
     "activeVersionId": "3e21287c-a797-4ceb-8ed9-a8997c6f08e3",
-    "versionCounter": 661,
+    "versionCounter": 662,
     "triggerCount": 1,
     "sourceWorkflowId": null,
     "tags": [
       {
-        "createdAt": "2026-07-16T15:55:55.177193+00:00",
-        "updatedAt": "2026-07-16T15:55:55.177218+00:00",
-        "id": "558f1e5fcbd7f1ca",
-        "name": "Data Transformation"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:55.177232+00:00",
-        "updatedAt": "2026-07-16T15:55:55.177237+00:00",
-        "id": "3506c721492cc987",
+        "updatedAt": "2026-07-16T16:03:29.217Z",
+        "createdAt": "2026-07-16T16:03:29.217Z",
+        "id": "08f43634238e406b",
         "name": "Agentic AI"
       },
       {
-        "createdAt": "2026-07-16T15:55:55.177246+00:00",
-        "updatedAt": "2026-07-16T15:55:55.177251+00:00",
-        "id": "dac03ba206f3bfe0",
-        "name": "Event-Driven Architecture"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:55.177259+00:00",
-        "updatedAt": "2026-07-16T15:55:55.177264+00:00",
-        "id": "87703e16953f8b2e",
-        "name": "Data Pipeline"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:55.177273+00:00",
-        "updatedAt": "2026-07-16T15:55:55.177277+00:00",
-        "id": "89f5bd6077773f30",
+        "updatedAt": "2026-07-16T16:03:29.020Z",
+        "createdAt": "2026-07-16T16:03:29.020Z",
+        "id": "9a8d1d753df54ed1",
         "name": "Production Automation"
       },
       {
-        "createdAt": "2026-07-16T15:58:23.965402+00:00",
-        "updatedAt": "2026-07-16T15:58:23.965421+00:00",
-        "id": "332aea2c3b181c28",
+        "updatedAt": "2026-07-16T16:03:28.786Z",
+        "createdAt": "2026-07-16T16:03:28.786Z",
+        "id": "6e30f4ffb71d4b65",
+        "name": "Data Pipeline"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.540Z",
+        "createdAt": "2026-07-16T16:03:28.540Z",
+        "id": "90acb56ef2f84a89",
         "name": "Event-Driven"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.284Z",
+        "createdAt": "2026-07-16T16:03:28.284Z",
+        "id": "e1c954be4bee474d",
+        "name": "Data Transformation"
       }
     ],
     "shared": [

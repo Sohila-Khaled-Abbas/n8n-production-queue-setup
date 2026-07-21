@@ -1,0 +1,272 @@
+[
+  {
+    "updatedAt": "2026-07-18T12:13:54.608Z",
+    "createdAt": "2026-07-15T13:21:11.950Z",
+    "id": "K9dDUnjWr4q9wbY0",
+    "name": "Sentiment Analysis GPT-OSS",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "openai/gpt-oss-20b:groq",
+            "mode": "id"
+          },
+          "responsesApiEnabled": false,
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          2448,
+          352
+        ],
+        "id": "11de3f82-50ae-43c9-8298-791be1d18a5e",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "doxpsivmFLpAY4By",
+            "name": "openai/gpt-oss-20b"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "updates": [
+            "message"
+          ],
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.telegramTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          2208,
+          128
+        ],
+        "id": "566538ba-bcc0-4d7f-b2c2-ab8ee61c836b",
+        "name": "Telegram Trigger",
+        "webhookId": "286c06fd-dce8-4e58-b890-e73291d6fd97",
+        "credentials": {
+          "telegramApi": {
+            "id": "4yrF6LiWqoTJCbT8",
+            "name": "GPT-OSS Sentiment Analysis"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "1FlmHysulrvMmpD2IFPrIqRMdJ8fEqqONCGnnRMhRn0E",
+            "mode": "list",
+            "cachedResultName": "GPT-OSS Sentiment Analysis",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FlmHysulrvMmpD2IFPrIqRMdJ8fEqqONCGnnRMhRn0E/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Sheet1",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GNIyh7GRA_vcr38GqnKNQ4t04uavKjFyonzu3W643Fg/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "ID": "={{ $json.output.userId }}",
+              "Review": "={{ $json.output.sentiment }}"
+            },
+            "matchingColumns": [
+              "ID"
+            ],
+            "schema": [
+              {
+                "id": "ID",
+                "displayName": "ID",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "Review",
+                "displayName": "Review",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.6,
+        "position": [
+          2784,
+          128
+        ],
+        "id": "cccf760e-8cd7-4d00-b4e7-40ac90e03816",
+        "name": "Append row in sheet",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "LKFLSWDFvv6fE63D",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsonSchemaExample": "{\n  \"userId\": \"123444\",\n  \"review\": \"this food is bad\",\n  \"sentiment\": \"Positive\"\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.3,
+        "position": [
+          2576,
+          352
+        ],
+        "id": "2b0dd2a2-46cf-478a-8901-4bf2d820fe8b",
+        "name": "Structured Output Parser"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.message.text }}",
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "=# Sentiment Analysis Agent\n\nYou are **SentimentAnalysisBot** and your task is to **analyze user reviews from Telegram messages** and categorize each review as **Positive**, **Neutral**, or **Negative**, then output the result in a strict JSON format.\n\n---\n\n## Context & Background\n- **Input Source:** Telegram Trigger node passes in `userId` and the message text as the review.  \n- **Destination:** The JSON output will be appended as a row in Google Sheets.\n\n---\n\n## Primary Responsibilities\n- **Extract** the original review text from the incoming message.  \n- **Classify** the sentiment into one of three labels: `Positive`, `Neutral`, or `Negative`.  \n- **Output** exactly valid JSON with no extra fields or commentary.\n-Extract user ID from this {{ $json.message.chat.id }}\n\n---\n\n## Available Tools\n- *No external tools* are connected for this task.\n\n---\n\n## Output Format\nYour **only** output must be a JSON object matching this schema **exactly** (no code fences, no extra text):\n\n```json\n{\n  \"userId\": \"123444\",\n  \"review\": \"this food is bad\",\n  \"sentiment\": \"Positive\"\n}"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.1,
+        "position": [
+          2432,
+          128
+        ],
+        "id": "80737615-f9f4-44c1-80cf-84a8d15d3eff",
+        "name": "Sentiment Analysis Agent"
+      }
+    ],
+    "connections": {
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Sentiment Analysis Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telegram Trigger": {
+        "main": [
+          [
+            {
+              "node": "Sentiment Analysis Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Structured Output Parser": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "Sentiment Analysis Agent",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Sentiment Analysis Agent": {
+        "main": [
+          [
+            {
+              "node": "Append row in sheet",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": true
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "c0f8515f-49fe-4351-9330-edfaf446352a",
+    "activeVersionId": "c0f8515f-49fe-4351-9330-edfaf446352a",
+    "versionCounter": 47,
+    "triggerCount": 1,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-16T16:03:29.217Z",
+        "createdAt": "2026-07-16T16:03:29.217Z",
+        "id": "08f43634238e406b",
+        "name": "Agentic AI"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.786Z",
+        "createdAt": "2026-07-16T16:03:28.786Z",
+        "id": "6e30f4ffb71d4b65",
+        "name": "Data Pipeline"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:29.020Z",
+        "createdAt": "2026-07-16T16:03:29.020Z",
+        "id": "9a8d1d753df54ed1",
+        "name": "Production Automation"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.540Z",
+        "createdAt": "2026-07-16T16:03:28.540Z",
+        "id": "90acb56ef2f84a89",
+        "name": "Event-Driven"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-15T13:21:11.950Z",
+        "createdAt": "2026-07-15T13:21:11.950Z",
+        "role": "workflow:owner",
+        "workflowId": "K9dDUnjWr4q9wbY0",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version c0f8515f",
+      "description": ""
+    }
+  }
+]

@@ -1,0 +1,101 @@
+[
+  {
+    "updatedAt": "2026-07-18T12:13:54.608Z",
+    "createdAt": "2026-07-17T18:13:10.084Z",
+    "id": "h35tVm0TqAVVgRwI",
+    "name": "Error Workflow",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.errorTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "3c7c0bdf-5200-4534-acd7-abc057500787",
+        "name": "Error Trigger"
+      },
+      {
+        "parameters": {
+          "sendTo": "sohila.k.data@gmail.com",
+          "subject": "Error in Workflow",
+          "message": "={{ $json.execution.error.message }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          224,
+          0
+        ],
+        "id": "cae002db-4ba6-4172-9ac0-a506460ae573",
+        "name": "Send a message",
+        "webhookId": "c407777b-1b94-466b-a367-5dbbdf459b1f",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "lnIdGq9BGx5bYyLm",
+            "name": "Gmail account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Error Trigger": {
+        "main": [
+          [
+            {
+              "node": "Send a message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": true
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "c0df2ed3-4fbe-43b3-909b-85a0c16a7445",
+    "activeVersionId": null,
+    "versionCounter": 9,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-07-17T18:13:10.084Z",
+        "createdAt": "2026-07-17T18:13:10.084Z",
+        "role": "workflow:owner",
+        "workflowId": "h35tVm0TqAVVgRwI",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

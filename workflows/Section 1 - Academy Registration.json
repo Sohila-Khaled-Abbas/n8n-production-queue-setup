@@ -1,0 +1,138 @@
+[
+  {
+    "updatedAt": "2026-07-18T13:02:20.987Z",
+    "createdAt": "2026-07-18T12:16:56.635Z",
+    "id": "7zLwZkBA0JjON9tl",
+    "name": "Section 1 - Academy Registration",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          -144,
+          176
+        ],
+        "id": "3c2d7873-8b94-4a99-a626-33c75926444c",
+        "name": "TriggerManual"
+      },
+      {
+        "parameters": {
+          "url": "https://learn.app.n8n.cloud/webhook/course/foundations/register",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "assessment_id",
+                "value": "e8bce3d38b15ef6ce378bde696e04474"
+              },
+              {
+                "name": "workflow_name",
+                "value": "Section 1 - Academy Registration"
+              },
+              {
+                "name": "tag",
+                "value": "foundations-course"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          80,
+          176
+        ],
+        "id": "af2b12a7-143a-41ca-8e6f-27d6ad373b14",
+        "name": "SubmitRegistration",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "xmoScfojHOCFoL24",
+            "name": "n8n Academy API Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "# Section 1 Exercise - Academy Registration Workflow\nCreated by: Sohila Khaled\nDate: 18-07-2026\n\nThis workflow registers my n8n instance with the n8n Academy training system. It sends my assessment ID and workflow info to the Academy API.\n\nPart of: N8N101 Course, Section 1\n\n",
+          "height": 240,
+          "width": 688,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -288,
+          -96
+        ],
+        "id": "0f8114cf-49ea-4e05-9222-4350be8d8d59",
+        "name": "Sticky Note"
+      }
+    ],
+    "connections": {
+      "TriggerManual": {
+        "main": [
+          [
+            {
+              "node": "SubmitRegistration",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "5bfe87cf-9cd9-4b10-82e0-9c0465753e89",
+    "activeVersionId": null,
+    "versionCounter": 41,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-18T12:53:55.244Z",
+        "createdAt": "2026-07-18T12:53:55.244Z",
+        "id": "y3z1vK2zuYwrqB4x",
+        "name": "n8n101"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-18T12:16:56.635Z",
+        "createdAt": "2026-07-18T12:16:56.635Z",
+        "role": "workflow:owner",
+        "workflowId": "7zLwZkBA0JjON9tl",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

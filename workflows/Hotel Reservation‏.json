@@ -1,11 +1,11 @@
 [
   {
-    "updatedAt": "2026-06-17T23:20:07.100Z",
+    "updatedAt": "2026-07-18T12:13:54.608Z",
     "createdAt": "2026-06-17T17:45:50.182Z",
     "id": "vsUT3G8zRWz530xO",
     "name": "Hotel Reservation\u200f",
     "description": null,
-    "active": true,
+    "active": false,
     "isArchived": false,
     "nodes": [
       {
@@ -148,7 +148,7 @@
     "settings": {
       "executionOrder": "v1",
       "binaryMode": "separate",
-      "availableInMCP": false
+      "availableInMCP": true
     },
     "staticData": null,
     "meta": {
@@ -157,27 +157,21 @@
     "nodeGroups": [],
     "pinData": {},
     "versionId": "b3ce650a-9653-4ec5-b1a7-f8d53c3d0e1f",
-    "activeVersionId": "b3ce650a-9653-4ec5-b1a7-f8d53c3d0e1f",
-    "versionCounter": 61,
+    "activeVersionId": null,
+    "versionCounter": 62,
     "triggerCount": 1,
     "sourceWorkflowId": null,
     "tags": [
       {
-        "createdAt": "2026-07-16T15:55:54.263229+00:00",
-        "updatedAt": "2026-07-16T15:55:54.263242+00:00",
-        "id": "dac03ba206f3bfe0",
-        "name": "Event-Driven Architecture"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:54.263250+00:00",
-        "updatedAt": "2026-07-16T15:55:54.263254+00:00",
-        "id": "89f5bd6077773f30",
+        "updatedAt": "2026-07-16T16:03:29.020Z",
+        "createdAt": "2026-07-16T16:03:29.020Z",
+        "id": "9a8d1d753df54ed1",
         "name": "Production Automation"
       },
       {
-        "createdAt": "2026-07-16T15:58:23.800779+00:00",
-        "updatedAt": "2026-07-16T15:58:23.800791+00:00",
-        "id": "332aea2c3b181c28",
+        "updatedAt": "2026-07-16T16:03:28.540Z",
+        "createdAt": "2026-07-16T16:03:28.540Z",
+        "id": "90acb56ef2f84a89",
         "name": "Event-Driven"
       }
     ],

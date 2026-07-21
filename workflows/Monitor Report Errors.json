@@ -1,0 +1,134 @@
+[
+  {
+    "updatedAt": "2026-07-18T12:13:54.608Z",
+    "createdAt": "2026-07-17T18:59:50.343Z",
+    "id": "qkmYj5EodKRpNiIj",
+    "name": "Monitor Report Errors",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.errorTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "5085624c-debd-4912-8475-e158cac970f2",
+        "name": "Error Trigger"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "554ec0f3-970c-4f92-9346-f1dcbd69448d",
+                "name": "content ",
+                "value": "=[e8bce3d38b15ef6ce378bde696e04474] Workflow Error Alert - Workflow: {{ $json.workflow.name }} | Error: {{ $json.execution.error.message }} | Last node: {{ $json.execution.lastNodeExecuted }} | Execution URL: {{ $json.execution.url }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          224,
+          0
+        ],
+        "id": "67643027-eaf0-4607-a0b5-0e86ba7a4b92",
+        "name": "BuildErrorMessage"
+      },
+      {
+        "parameters": {
+          "authentication": "webhook",
+          "content": "={{ $json['content '] }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          448,
+          0
+        ],
+        "id": "d32838ae-5a58-4102-962d-4299fc59e37d",
+        "name": "NotifyDiscord",
+        "webhookId": "079389bb-07db-490e-9e01-b4700c65dcb7",
+        "credentials": {
+          "discordWebhookApi": {
+            "id": "Twps2V6Oh7kMct3J",
+            "name": "n8n Quickstart S2 Discord Webhook account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Error Trigger": {
+        "main": [
+          [
+            {
+              "node": "BuildErrorMessage",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "BuildErrorMessage": {
+        "main": [
+          [
+            {
+              "node": "NotifyDiscord",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": true
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "37d648b7-99c4-451e-b1c5-d05ffe8f73a6",
+    "activeVersionId": "37d648b7-99c4-451e-b1c5-d05ffe8f73a6",
+    "versionCounter": 13,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-07-17T18:59:50.343Z",
+        "createdAt": "2026-07-17T18:59:50.343Z",
+        "role": "workflow:owner",
+        "workflowId": "qkmYj5EodKRpNiIj",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version 37d648b7",
+      "description": ""
+    }
+  }
+]

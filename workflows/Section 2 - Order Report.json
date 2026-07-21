@@ -1,0 +1,183 @@
+[
+  {
+    "updatedAt": "2026-07-20T21:12:47.665Z",
+    "createdAt": "2026-07-20T21:03:54.255Z",
+    "id": "CU1CcXI3XX0YUFNr",
+    "name": "Section 2 - Order Report",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "41681d48-e1e7-4e0b-8604-ca11579bcb30",
+        "name": "TriggerManual"
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "value": "6pUKbN5mulMSfDnL",
+            "mode": "list",
+            "cachedResultName": "n8n102_course_orders",
+            "cachedResultUrl": "/projects/7Kuw5RaGwePDWMtJ/datatables/6pUKbN5mulMSfDnL"
+          },
+          "returnAll": true
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          224,
+          0
+        ],
+        "id": "d728ee11-a6d0-47b4-9297-e62a44f0b0b1",
+        "name": "GetAllOrders"
+      },
+      {
+        "parameters": {
+          "fieldsToSummarize": {
+            "values": [
+              {
+                "aggregation": "sum",
+                "field": "total"
+              },
+              {
+                "field": "order_id "
+              }
+            ]
+          },
+          "fieldsToSplitBy": "status",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.summarize",
+        "typeVersion": 1.1,
+        "position": [
+          448,
+          0
+        ],
+        "id": "27e54d2b-f91d-48a1-bef2-9e52d49400ab",
+        "name": "SummarizeByStatus"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "fc7e9405-2d0b-44e6-970e-87998084a54f",
+                "name": "total_revenue",
+                "value": "={{ $json.sum_total }}",
+                "type": "number"
+              },
+              {
+                "id": "863199ad-59a2-436d-a56a-4f04196e6b90",
+                "name": "order_count",
+                "value": "={{ $json.count_order_id_ }}",
+                "type": "number"
+              }
+            ]
+          },
+          "includeOtherFields": true,
+          "include": "selected",
+          "includeFields": "status",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          672,
+          0
+        ],
+        "id": "965d0e03-4a0e-4fdc-b078-4d294e87e0d5",
+        "name": "Summarization"
+      }
+    ],
+    "connections": {
+      "TriggerManual": {
+        "main": [
+          [
+            {
+              "node": "GetAllOrders",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GetAllOrders": {
+        "main": [
+          [
+            {
+              "node": "SummarizeByStatus",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "SummarizeByStatus": {
+        "main": [
+          [
+            {
+              "node": "Summarization",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "f12ba8a6-fe6b-49fc-a2b7-b928c69f8b23",
+    "activeVersionId": null,
+    "versionCounter": 34,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-20T15:40:57.075Z",
+        "createdAt": "2026-07-20T15:40:57.075Z",
+        "id": "zQ7LFRu16ERSjipX",
+        "name": "n8n102-course"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-20T21:03:54.255Z",
+        "createdAt": "2026-07-20T21:03:54.255Z",
+        "role": "workflow:owner",
+        "workflowId": "CU1CcXI3XX0YUFNr",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

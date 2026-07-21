@@ -1,6 +1,6 @@
 [
   {
-    "updatedAt": "2026-07-08T15:48:49.458Z",
+    "updatedAt": "2026-07-18T12:13:54.608Z",
     "createdAt": "2026-07-07T21:54:29.213Z",
     "id": "rVutc20jMrDscvvZ",
     "name": "Daily Viral Content Radar (AnyAPI)",
@@ -482,7 +482,7 @@
     "settings": {
       "executionOrder": "v1",
       "binaryMode": "separate",
-      "availableInMCP": false
+      "availableInMCP": true
     },
     "staticData": {
       "node:Every Morning 8AM": {
@@ -1214,51 +1214,39 @@
     },
     "versionId": "ed366055-23c0-40ff-8a48-cec574978d23",
     "activeVersionId": "ed366055-23c0-40ff-8a48-cec574978d23",
-    "versionCounter": 62,
+    "versionCounter": 63,
     "triggerCount": 1,
     "sourceWorkflowId": null,
     "tags": [
       {
-        "updatedAt": "2026-07-07T22:04:11.368Z",
-        "createdAt": "2026-07-07T22:04:11.368Z",
-        "id": "7oGNlQUzjXpkaBkv",
-        "name": "API"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:54.199969+00:00",
-        "updatedAt": "2026-07-16T15:55:54.199982+00:00",
-        "id": "558f1e5fcbd7f1ca",
-        "name": "Data Transformation"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:54.199990+00:00",
-        "updatedAt": "2026-07-16T15:55:54.199992+00:00",
-        "id": "3506c721492cc987",
+        "updatedAt": "2026-07-16T16:03:29.217Z",
+        "createdAt": "2026-07-16T16:03:29.217Z",
+        "id": "08f43634238e406b",
         "name": "Agentic AI"
       },
       {
-        "createdAt": "2026-07-16T15:55:54.199998+00:00",
-        "updatedAt": "2026-07-16T15:55:54.200000+00:00",
-        "id": "dac03ba206f3bfe0",
-        "name": "Event-Driven Architecture"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:54.200005+00:00",
-        "updatedAt": "2026-07-16T15:55:54.200008+00:00",
-        "id": "87703e16953f8b2e",
-        "name": "Data Pipeline"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:54.200012+00:00",
-        "updatedAt": "2026-07-16T15:55:54.200015+00:00",
-        "id": "89f5bd6077773f30",
+        "updatedAt": "2026-07-16T16:03:29.020Z",
+        "createdAt": "2026-07-16T16:03:29.020Z",
+        "id": "9a8d1d753df54ed1",
         "name": "Production Automation"
       },
       {
-        "createdAt": "2026-07-16T15:58:23.740050+00:00",
-        "updatedAt": "2026-07-16T15:58:23.740062+00:00",
-        "id": "332aea2c3b181c28",
+        "updatedAt": "2026-07-16T16:03:28.786Z",
+        "createdAt": "2026-07-16T16:03:28.786Z",
+        "id": "6e30f4ffb71d4b65",
+        "name": "Data Pipeline"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.540Z",
+        "createdAt": "2026-07-16T16:03:28.540Z",
+        "id": "90acb56ef2f84a89",
         "name": "Event-Driven"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.284Z",
+        "createdAt": "2026-07-16T16:03:28.284Z",
+        "id": "e1c954be4bee474d",
+        "name": "Data Transformation"
       }
     ],
     "shared": [

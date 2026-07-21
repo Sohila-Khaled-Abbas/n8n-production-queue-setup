@@ -1,0 +1,115 @@
+[
+  {
+    "updatedAt": "2026-07-18T12:13:54.608Z",
+    "createdAt": "2026-07-17T18:03:47.486Z",
+    "id": "maIe3sO4dBAlu13d",
+    "name": "Splitting API results",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "75e1e345-5ff1-4377-bdf6-95730669f5f9",
+        "name": "ManualTrigger"
+      },
+      {
+        "parameters": {
+          "url": "https://pokeapi.co/api/v2/pokemon?limit=5",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          224,
+          0
+        ],
+        "id": "846fc3d0-9850-4dc7-8590-6d7185af5e65",
+        "name": "GetPokemon"
+      },
+      {
+        "parameters": {
+          "fieldToSplitOut": "results",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitOut",
+        "typeVersion": 1,
+        "position": [
+          448,
+          0
+        ],
+        "id": "2c7eb38d-ef25-4d9b-b6a0-3ecda70e10b6",
+        "name": "SplitPokemon"
+      }
+    ],
+    "connections": {
+      "ManualTrigger": {
+        "main": [
+          [
+            {
+              "node": "GetPokemon",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GetPokemon": {
+        "main": [
+          [
+            {
+              "node": "SplitPokemon",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": true
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "8b03c974-863b-497b-b192-a829be48bd64",
+    "activeVersionId": null,
+    "versionCounter": 11,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-07-17T18:03:47.486Z",
+        "createdAt": "2026-07-17T18:03:47.486Z",
+        "role": "workflow:owner",
+        "workflowId": "maIe3sO4dBAlu13d",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

@@ -1,6 +1,6 @@
 [
   {
-    "updatedAt": "2026-07-06T13:15:53.891Z",
+    "updatedAt": "2026-07-18T12:06:15.027Z",
     "createdAt": "2026-07-05T21:48:59.386Z",
     "id": "ZVYSLdXFOmGYfJdP",
     "name": "Apple RAG ChatBot",
@@ -563,46 +563,40 @@
     "sourceWorkflowId": null,
     "tags": [
       {
+        "updatedAt": "2026-07-16T16:03:29.217Z",
+        "createdAt": "2026-07-16T16:03:29.217Z",
+        "id": "08f43634238e406b",
+        "name": "Agentic AI"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.540Z",
+        "createdAt": "2026-07-16T16:03:28.540Z",
+        "id": "90acb56ef2f84a89",
+        "name": "Event-Driven"
+      },
+      {
         "updatedAt": "2026-07-05T20:54:10.312Z",
         "createdAt": "2026-07-05T20:54:10.312Z",
         "id": "YPOBiRLmef0fLiKM",
         "name": "RAG"
       },
       {
-        "createdAt": "2026-07-16T15:55:54.188286+00:00",
-        "updatedAt": "2026-07-16T15:55:54.188300+00:00",
-        "id": "3506c721492cc987",
-        "name": "Agentic AI"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:54.188308+00:00",
-        "updatedAt": "2026-07-16T15:55:54.188311+00:00",
-        "id": "dac03ba206f3bfe0",
-        "name": "Event-Driven Architecture"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:54.188317+00:00",
-        "updatedAt": "2026-07-16T15:55:54.188319+00:00",
-        "id": "e3e18547adcedcfb",
-        "name": "Vector Storage"
-      },
-      {
-        "createdAt": "2026-07-16T15:55:54.188324+00:00",
-        "updatedAt": "2026-07-16T15:55:54.188327+00:00",
-        "id": "87703e16953f8b2e",
+        "updatedAt": "2026-07-16T16:03:28.786Z",
+        "createdAt": "2026-07-16T16:03:28.786Z",
+        "id": "6e30f4ffb71d4b65",
         "name": "Data Pipeline"
       },
       {
-        "createdAt": "2026-07-16T15:55:54.188332+00:00",
-        "updatedAt": "2026-07-16T15:55:54.188334+00:00",
-        "id": "89f5bd6077773f30",
+        "updatedAt": "2026-07-16T16:03:29.020Z",
+        "createdAt": "2026-07-16T16:03:29.020Z",
+        "id": "9a8d1d753df54ed1",
         "name": "Production Automation"
       },
       {
-        "createdAt": "2026-07-16T15:58:23.727912+00:00",
-        "updatedAt": "2026-07-16T15:58:23.727926+00:00",
-        "id": "332aea2c3b181c28",
-        "name": "Event-Driven"
+        "updatedAt": "2026-07-16T16:03:28.033Z",
+        "createdAt": "2026-07-16T16:03:28.033Z",
+        "id": "07e54c18d20c43bb",
+        "name": "Vector Storage"
       }
     ],
     "shared": [

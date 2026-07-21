@@ -1,0 +1,132 @@
+[
+  {
+    "updatedAt": "2026-07-18T12:13:54.608Z",
+    "createdAt": "2026-07-17T16:38:50.377Z",
+    "id": "qL747hlmIypfBHMD",
+    "name": "n8n webscarping",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          -272
+        ],
+        "id": "daa16a7e-53e3-4cbe-9fc1-cdfada8c8c6a",
+        "name": "When clicking \u2018Execute workflow\u2019"
+      },
+      {
+        "parameters": {
+          "url": "https://blog.n8n.io/",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          224,
+          -272
+        ],
+        "id": "2c3003b1-569b-4914-b04d-bf31aa80c4b8",
+        "name": "HTTP Request"
+      },
+      {
+        "parameters": {
+          "operation": "extractHtmlContent",
+          "extractionValues": {
+            "values": [
+              {
+                "key": "title",
+                "cssSelector": ".post .item-title a",
+                "returnValue": "html",
+                "returnArray": true
+              },
+              {
+                "key": "url",
+                "cssSelector": ".item-title a",
+                "returnValue": "attribute",
+                "attribute": "href",
+                "returnArray": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.html",
+        "typeVersion": 1.2,
+        "position": [
+          448,
+          -272
+        ],
+        "id": "c6cc8364-a741-40da-bccb-cb3961ff8c2c",
+        "name": "HTML"
+      }
+    ],
+    "connections": {
+      "When clicking \u2018Execute workflow\u2019": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request": {
+        "main": [
+          [
+            {
+              "node": "HTML",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": true
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "c9111d40-367a-4844-951e-65a57b7a3067",
+    "activeVersionId": null,
+    "versionCounter": 19,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-07-17T16:38:50.377Z",
+        "createdAt": "2026-07-17T16:38:50.377Z",
+        "role": "workflow:owner",
+        "workflowId": "qL747hlmIypfBHMD",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]
