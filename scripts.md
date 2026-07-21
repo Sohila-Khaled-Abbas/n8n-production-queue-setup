@@ -8,6 +8,7 @@ This document lists, describes, and provides usage instructions for the automati
 
 | Script File | Language | Purpose | Environment |
 | :--- | :--- | :--- | :--- |
+| **[auto_sync.ps1](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/auto_sync.ps1)** | PowerShell | Automates exporting workflows, updating docs data, and git push. | Host Machine |
 | **[configure_sql_server.ps1](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/configure_sql_server.ps1)** | PowerShell | Configures SQL Server host auth & creates logins. | Host Machine (Admin) |
 | **[provision.js](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/provision.js)** | Node.js | Seeds default stack credentials & installs WAHA node. | `n8n-init` Container |
 | **[cleanup.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/cleanup.sql)** | PostgreSQL | Prunes execution history and runs table compression. | `postgres` Database |
@@ -19,6 +20,18 @@ This document lists, describes, and provides usage instructions for the automati
 | **[get_error.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/get_error.sql)** | PostgreSQL | Extracts raw error messages from specific execution data. | `postgres` Database |
 | **[get_keys.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/get_keys.sql)** | PostgreSQL | Lists top-level keys in execution logs JSON structure. | `postgres` Database |
 | **[count_chat.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/count_chat.sql)** | PostgreSQL | Aggregates and counts chat logs grouped by session ID. | `postgres` Database |
+
+## 🛠️ Workflow & Repo Synchronization
+
+### 1. `auto_sync.ps1`
+- **Purpose**: Runs a complete automated sync workflow:
+  1. Exports all n8n workflows from the running container into standard formatted `.json` files under `workflows/`.
+  2. Runs `generate_docs_data.py` to refresh `docs/data.json`.
+  3. Stages all changes, creates a timestamped git commit, and pushes to remote.
+- **Execution**:
+  ```powershell
+  .\scripts\auto_sync.ps1
+  ```
 
 ---
 
