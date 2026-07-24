@@ -212,9 +212,9 @@ services:
           memory: 1024M
     volumes:
       # ⚠️ ./n8n-data is your existing bind-mount — data preserved here
-      - ${N8N_DATA_DIR:-./n8n-data}:/home/node/.n8n
+      - ${N8N_DATA_DIR:-${HOST_PWD:-.}/n8n-data}:/home/node/.n8n
       # DOMMatrix polyfill: fixes pdfjs-dist PDF parsing in Node.js
-      - ./polyfills:/polyfills:ro
+      - ${HOST_PWD:-.}/polyfills:/polyfills:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -268,8 +268,8 @@ services:
         limits:
           memory: 512M
     volumes:
-      - ${N8N_DATA_DIR:-./n8n-data}:/home/node/.n8n
-      - ./polyfills:/polyfills:ro
+      - ${N8N_DATA_DIR:-${HOST_PWD:-.}/n8n-data}:/home/node/.n8n
+      - ${HOST_PWD:-.}/polyfills:/polyfills:ro
     depends_on:
       n8n:
         condition: service_healthy
@@ -297,8 +297,8 @@ services:
         limits:
           memory: 1024M
     volumes:
-      - ${N8N_DATA_DIR:-./n8n-data}:/home/node/.n8n
-      - ./polyfills:/polyfills:ro
+      - ${N8N_DATA_DIR:-${HOST_PWD:-.}/n8n-data}:/home/node/.n8n
+      - ${HOST_PWD:-.}/polyfills:/polyfills:ro
     depends_on:
       n8n:
         condition: service_healthy
@@ -353,6 +353,7 @@ services:
     restart: unless-stopped
     logging: *default-logging
     environment:
+      - HOST_PWD=${PWD}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}
@@ -425,7 +426,7 @@ services:
     entrypoint: ["node", "/scripts/provision.js"]
     volumes:
       - ./scripts:/scripts:ro
-      - ${N8N_DATA_DIR:-./n8n-data}:/home/node/.n8n
+      - ${N8N_DATA_DIR:-${HOST_PWD:-.}/n8n-data}:/home/node/.n8n
     depends_on:
       n8n:
         condition: service_healthy
@@ -445,7 +446,7 @@ services:
     networks:
       - n8n-net
     volumes:
-      - ${N8N_DATA_DIR:-./n8n-data}:/data/n8n:ro
+      - ${N8N_DATA_DIR:-${HOST_PWD:-.}/n8n-data}:/data/n8n:ro
       - redis_data:/data/redis:ro
       - backup_data:/backups
       # Uncomment after creating backup/rclone.conf from backup/rclone.conf.example:
