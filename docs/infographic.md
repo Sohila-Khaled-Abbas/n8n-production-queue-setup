@@ -84,7 +84,7 @@ High-resolution PNG suitable for presentation slides and documentation:
 
 5. **n8n-worker (Autoscaled)**: Stateless replicas that pull jobs from Redis, execute workflow logic, and write results to PostgreSQL. No static container name — dynamically scaled by the autoscaler.
 
-6. **n8n-worker-runner (Autoscaled 1:1)**: External task runner sidecar for each worker (n8n 2.0 requirement). Executes JavaScript (with Puppeteer, Playwright, stealth) and Python (pandas, numpy, pillow) code in an isolated container. Chromium browser built-in.
+6. **n8n-worker-runner (Autoscaled 1:1)**: External task runner sidecar for each worker (n8n 2.0 requirement). Executes JavaScript (with Puppeteer, Playwright, stealth) and Python (pandas, numpy, pytz, dateutil, etc) code in an isolated container. Chromium browser built-in.
 
 7. **n8n-autoscaler**: Python service that polls `bull:jobs:wait` in Redis and issues `docker compose up --scale` commands to scale workers and runners up or down together. Configurable thresholds, cooldown, and min/max limits.
 

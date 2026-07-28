@@ -58,7 +58,9 @@ RUN /usr/local/bin/uv pip install --python /opt/runners/task-runner-python/.venv
     requests \
     pillow \
     pandas \
-    numpy
+    numpy \
+    pytz \
+    python-dateutil
 
 # Copy custom task runner config that:
 # - Removes --disable-proto=delete flag (allows puppeteer/playwright to work)

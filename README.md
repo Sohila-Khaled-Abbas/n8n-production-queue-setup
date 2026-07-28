@@ -39,7 +39,7 @@
 | **Scheduled Backups** | Optional backup service: pg_dump + Redis + n8n volume → cloud via rclone |
 | **WhatsApp HTTP API** | Local WAHA gateway integrated + `@devlikeapro/n8n-nodes-waha` node auto-installed |
 | **HuggingFace & OpenRouter APIs** | Auto-provisioned auth for calling HF/OpenRouter models (e.g. `openai/gpt-oss-20b`) via standard and OpenAI-compatible v1 router endpoints, with built-in retry logic. |
-| **Data-Engineering Ready** | `pandas`, `numpy`, `pillow`, `requests` pre-installed in Python runner |
+| **Data-Engineering Ready** | `pandas`, `numpy`, `pillow`, `requests`, `pytz`, `dateutil` pre-installed in Python runner |
 | **Qdrant Vector DB** | Included for high-performance RAG and embeddings |
 | **Production-Tuned PostgreSQL** | `shared_buffers`, `wal_buffers`, `checkpoint_completion_target` pre-configured |
 | **Health Checks** | All dependencies are health-checked before n8n starts |
@@ -68,7 +68,7 @@
                            │                                                      │
                            │  n8n-worker-runner (autoscaled 1:1 with worker) ───│
                            │    ├── JS runner  (Puppeteer, Playwright, AJV)      │
-                           │    └── Python runner (pandas, numpy, pillow)        │
+                           │    └── Python runner (pandas, numpy, pytz, etc)     │
                            │                                                      │
                            │  n8n-autoscaler ─────────────────────────────────── │
                            │    └── Polls Redis → scales worker + runner         │

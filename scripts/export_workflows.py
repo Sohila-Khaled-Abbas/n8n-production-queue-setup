@@ -23,7 +23,7 @@ def sanitize_filename(name):
 def main():
     print("Step 1: Exporting all workflows inside n8n container...")
     # Export all workflows to a temporary file inside the n8n container
-    export_cmd = ["docker", "compose", "exec", "n8n", "n8n", "export:workflow", "--all", "--output=/home/node/all_workflows_temp.json"]
+    export_cmd = ["docker", "compose", "exec", "-T", "n8n", "n8n", "export:workflow", "--all", "--output=/home/node/all_workflows_temp.json"]
     result = subprocess.run(export_cmd, capture_output=True, text=True)
     if result.returncode != 0:
         print(f"Error executing n8n export command: {result.stderr or result.stdout}")
@@ -67,7 +67,7 @@ def main():
             os.remove(temp_path)
         
         # Cleanup the temp file inside n8n container
-        cleanup_cmd = ["docker", "compose", "exec", "n8n", "rm", "/home/node/all_workflows_temp.json"]
+        cleanup_cmd = ["docker", "compose", "exec", "-T", "n8n", "rm", "/home/node/all_workflows_temp.json"]
         subprocess.run(cleanup_cmd, capture_output=True)
 
     print("\nSuccess! All workflows successfully exported and split.")

@@ -35,3 +35,7 @@ EXPOSE 5679
 
 USER node
 
+# Copy polyfills into the image so they are available without bind mounting
+COPY --chown=node:node polyfills /polyfills
+
+
