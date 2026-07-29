@@ -39,7 +39,7 @@ Browser / External
 │  ┌───────────────────────▼──────────────────────────┐    │
 │  │  n8n-worker-runner (autoscaled 1:1 with worker)  │    │
 │  │  • JavaScript runner (Puppeteer, Playwright, AJV)│    │
-│  │  • Python runner (pandas, numpy, pillow)         │    │
+│  │  • Python runner (pandas, numpy, pytz, etc)      │    │
 │  │  • Chromium browser (headless)                   │    │
 │  └──────────────────────────────────────────────────┘    │
 │                                                          │
