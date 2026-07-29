@@ -104,8 +104,9 @@ x-task-runner: &service-task-runner
   deploy:
     resources:
       limits:
-        memory: 768M
+        memory: 1280M
   environment:
+    - N8N_RUNNERS_MAX_OLD_SPACE_SIZE=1024
     - N8N_RUNNERS_AUTH_TOKEN=${N8N_RUNNERS_AUTH_TOKEN}
     - N8N_RUNNERS_GRANT_TOKEN_TTL=${N8N_RUNNERS_GRANT_TOKEN_TTL:-600}
     - N8N_RUNNERS_MAX_CONCURRENCY=${N8N_RUNNERS_MAX_CONCURRENCY:-5}
@@ -206,6 +207,7 @@ services:
     stop_grace_period: 30s
     ports:
       - "80:5678"
+      - "5679:5679"
     deploy:
       resources:
         limits:

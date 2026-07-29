@@ -15,8 +15,8 @@ status: Active
 
 > [!info] Portfolio Indexing 74 workflows isn't a curriculum until it's tagged. Tag each source workflow with `#n8n/fundamentals`, `#n8n/data-engineering`, `#n8n/ai-agents`, or `#n8n/architecture` as you go, and log it in a companion [[Workflow Portfolio Index]] note. Right now Phases 1–3 each have a clean match in the existing portfolio (ETL, scraping/CRM, multi-agent chatbots). Phase 4 doesn't — see the warning there.
 
-![[AI_Automation_Mastery_Roadmap.png]]
-![[Blueprint_for_Building_AI_Agents.png]]
+![AI Automation Mastery Roadmap](./AI_Automation_Mastery_Roadmap.png)
+![Blueprint for Building AI Agents](./Blueprint_for_Building_AI_Agents.png)
 ## At a Glance
 
 |Phase|Focus|Capstone|
@@ -307,4 +307,4 @@ _Verified July 2026 — n8n ships fast; re-check version-specific claims before 
 - [n8n-autoscaling v2.0 update — community.n8n.io](https://community.n8n.io/t/n8n-autoscaling-updated-for-v2-0-includes-queue-mode-worker-scaling-runner-scaling-cloudflare-etc/245688) _(community forum)_ — third-party project handling worker + runner autoscaling
 
 ---
-![[NotebookLM Mind Map.png]]
+![NotebookLM Mind Map](./NotebookLM_Mind_Map.png)
