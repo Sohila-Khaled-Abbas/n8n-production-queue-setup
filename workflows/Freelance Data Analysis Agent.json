@@ -1,0 +1,456 @@
+[
+  {
+    "updatedAt": "2026-07-26T16:47:45.121Z",
+    "createdAt": "2026-07-26T16:11:21.829Z",
+    "id": "FJ3fcHq77Mh83SBV",
+    "name": "Freelance Data Analysis Agent",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "243cb769-0c61-4760-aa66-fd6b4181af66",
+        "name": "When chat message received",
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          -976,
+          0
+        ],
+        "webhookId": "freelance-data-agent"
+      },
+      {
+        "parameters": {
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "You are a freelance data analyst's working agent. You operate across four lifecycle stages of a single client engagement inside one conversation: (1) INTAKE - confirm client name, project name, and data source (file URL or description); (2) PROFILE/CLEAN - use profile_dataset and analyze_dataset to understand shape, types, nulls, and quality issues before drawing conclusions; (3) ANALYZE - use analyze_dataset for the specific operation requested (value_counts, groupby_agg, correlation, missing_report) and generate_chart when a visual would clarify a finding; (4) REPORT - only after the user confirms findings are correct, produce a report.\n\nHard rules:\n- Never fabricate a statistic. Every number in your reply must come from a tool result in this conversation, not from general knowledge or estimation.\n- Never claim deliverable_ready=true unless the user has explicitly confirmed the findings are ready to write up. Do not decide this yourself.\n- If profile_dataset reveals significant nulls, duplicates, or type mismatches, surface this to the user before running further analysis - do not silently proceed.\n- Use recall_project_context at the start of a new client/project mention to check for prior work on it. Use save_insight after the user confirms a finding is correct, tagged with client_id and project_name.\n- Always state which tool produced a number when you report it.",
+            "returnIntermediateSteps": false
+          }
+        },
+        "id": "7bde43e2-01d5-4ddf-a2d5-7ce4bb4cee9e",
+        "name": "Data Analysis Agent",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 1.7,
+        "position": [
+          -368,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "40b1414d-dad9-4db5-9326-c30b7da34abc",
+        "name": "Gemini Model",
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          -752,
+          224
+        ],
+        "credentials": {
+          "googlePalmApi": {
+            "id": "Yff8MkVUocFViBI3",
+            "name": "Google Gemini(PaLM) Api account 3"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "tableName": "freelance_agent_chat_history",
+          "contextWindowLength": 20
+        },
+        "id": "066937c7-bc74-44fb-89ef-255a5262dd52",
+        "name": "Project Memory (Postgres)",
+        "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+        "typeVersion": 1.3,
+        "position": [
+          -624,
+          224
+        ],
+        "credentials": {
+          "postgres": {
+            "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+            "name": "PostgreSQL \u2014 n8n Stack"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsonSchemaExample": "{\n  \"reply\": \"conversational text to show the freelancer\",\n  \"stage\": \"intake | profile | analyze | report\",\n  \"deliverable_ready\": false,\n  \"client_id\": \"\",\n  \"project_name\": \"\",\n  \"report_markdown\": null\n}"
+        },
+        "id": "341b3629-36e4-43e4-89e3-9d04925623ce",
+        "name": "Structured Reply Parser",
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.2,
+        "position": [
+          144,
+          224
+        ]
+      },
+      {
+        "parameters": {
+          "description": "Loads a CSV or Excel file from a URL and returns its shape, column dtypes, null percentage per column, basic describe() stats, and the first 5 rows as JSON. Call this before any other analysis on a new file. Input: file_url (string, direct link to a .csv or .xlsx file).",
+          "language": "python",
+          "pythonCode": "import pandas as pd\nimport json\n\nfile_url = query.get('file_url') if isinstance(query, dict) else query\n\nif str(file_url).lower().endswith('.xlsx') or str(file_url).lower().endswith('.xls'):\n    df = pd.read_excel(file_url)\nelse:\n    df = pd.read_csv(file_url)\n\nresult = {\n    'shape': {'rows': df.shape[0], 'columns': df.shape[1]},\n    'dtypes': {c: str(t) for c, t in df.dtypes.items()},\n    'null_pct': {c: round(float(df[c].isna().mean()) * 100, 2) for c in df.columns},\n    'describe': json.loads(df.describe(include='all').to_json()),\n    'head': json.loads(df.head(5).to_json(orient='records'))\n}\n\nreturn json.dumps(result)"
+        },
+        "id": "21739c26-6fed-4f1d-9aa7-e4ced266659c",
+        "name": "profile_dataset",
+        "type": "@n8n/n8n-nodes-langchain.toolCode",
+        "typeVersion": 1.3,
+        "position": [
+          -496,
+          224
+        ]
+      },
+      {
+        "parameters": {
+          "description": "Runs one predefined analysis operation on a dataset loaded from file_url. Does NOT accept arbitrary code - operation must be one of: value_counts, groupby_agg, correlation, missing_report. Input: file_url (string), operation (string), columns (array of column names, meaning depends on operation), agg (string, only for groupby_agg: sum|mean|count|max|min).",
+          "language": "python",
+          "pythonCode": "import pandas as pd\nimport json\n\nfile_url = query['file_url']\noperation = query['operation']\ncolumns = query.get('columns', [])\nagg = query.get('agg', 'mean')\n\nif str(file_url).lower().endswith('.xlsx') or str(file_url).lower().endswith('.xls'):\n    df = pd.read_excel(file_url)\nelse:\n    df = pd.read_csv(file_url)\n\nALLOWED = {'value_counts', 'groupby_agg', 'correlation', 'missing_report'}\nif operation not in ALLOWED:\n    return json.dumps({'error': f'operation must be one of {sorted(ALLOWED)}'})\n\nif operation == 'value_counts':\n    col = columns[0]\n    out = df[col].value_counts(dropna=False).head(50).to_dict()\n    result = {str(k): int(v) for k, v in out.items()}\n\nelif operation == 'groupby_agg':\n    group_cols = columns[:-1]\n    metric_col = columns[-1]\n    grouped = df.groupby(group_cols)[metric_col].agg(agg).reset_index()\n    result = json.loads(grouped.to_json(orient='records'))\n\nelif operation == 'correlation':\n    subset = df[columns] if columns else df.select_dtypes(include='number')\n    result = json.loads(subset.corr(numeric_only=True).round(4).to_json())\n\nelif operation == 'missing_report':\n    result = {\n        'total_rows': int(df.shape[0]),\n        'duplicate_rows': int(df.duplicated().sum()),\n        'null_counts': {c: int(df[c].isna().sum()) for c in df.columns}\n    }\n\nreturn json.dumps(result)"
+        },
+        "id": "47f8e509-b029-4474-9bd4-8de1cf00652f",
+        "name": "analyze_dataset",
+        "type": "@n8n/n8n-nodes-langchain.toolCode",
+        "typeVersion": 1.3,
+        "position": [
+          -368,
+          224
+        ]
+      },
+      {
+        "parameters": {
+          "toolDescription": "Generates a chart image and returns its URL. Input: chart_config (a valid Chart.js config object as JSON, e.g. {\"type\":\"bar\",\"data\":{...}}).",
+          "method": "POST",
+          "url": "https://quickchart.io/chart/create",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ { \"chart\": $fromAI('chart_config') } }}"
+        },
+        "id": "bf36017e-3ad4-4077-a02f-f9ef328393e3",
+        "name": "generate_chart",
+        "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+        "typeVersion": 1.1,
+        "position": [
+          -240,
+          224
+        ]
+      },
+      {
+        "parameters": {
+          "description": "Searches prior saved insights for a given client/project so earlier lifecycle stages aren't repeated or contradicted. Input: client_id (string), project_name (string), query_text (string describing what you're looking for).",
+          "language": "python",
+          "pythonCode": "import requests\n\nclient_id = query['client_id']\nproject_name = query['project_name']\nquery_text = query['query_text']\n\nemb = requests.post('http://ollama:11434/api/embeddings', json={\n    'model': 'nomic-embed-text',\n    'prompt': query_text\n}).json()['embedding']\n\nsearch = requests.post('http://qdrant:6333/collections/freelance_project_insights/points/search', json={\n    'vector': emb,\n    'limit': 5,\n    'filter': {\n        'must': [\n            {'key': 'client_id', 'match': {'value': client_id}},\n            {'key': 'project_name', 'match': {'value': project_name}}\n        ]\n    },\n    'with_payload': True\n}).json()\n\nimport json\nhits = [r['payload'] for r in search.get('result', [])]\nreturn json.dumps(hits)"
+        },
+        "id": "68a29f1d-67ea-49df-9e61-506978a8ceca",
+        "name": "recall_project_context",
+        "type": "@n8n/n8n-nodes-langchain.toolCode",
+        "typeVersion": 1.3,
+        "position": [
+          -112,
+          224
+        ]
+      },
+      {
+        "parameters": {
+          "description": "Persists a confirmed finding for later recall on the same client/project. Only call this AFTER the user has confirmed the finding is correct. Input: client_id (string), project_name (string), stage (string), insight_text (string, the confirmed finding in plain language).",
+          "language": "python",
+          "pythonCode": "import requests, uuid, time\n\nclient_id = query['client_id']\nproject_name = query['project_name']\nstage = query['stage']\ninsight_text = query['insight_text']\n\nemb = requests.post('http://ollama:11434/api/embeddings', json={\n    'model': 'nomic-embed-text',\n    'prompt': insight_text\n}).json()['embedding']\n\npoint = {\n    'points': [{\n        'id': str(uuid.uuid4()),\n        'vector': emb,\n        'payload': {\n            'client_id': client_id,\n            'project_name': project_name,\n            'stage': stage,\n            'insight_text': insight_text,\n            'saved_at': int(time.time())\n        }\n    }]\n}\n\nresp = requests.put('http://qdrant:6333/collections/freelance_project_insights/points', json=point)\nreturn resp.text"
+        },
+        "id": "5bc894b5-fba9-420c-8e2e-685f619e6ea3",
+        "name": "save_insight",
+        "type": "@n8n/n8n-nodes-langchain.toolCode",
+        "typeVersion": 1.3,
+        "position": [
+          16,
+          224
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.output.deliverable_ready }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "d4c07935-5fbb-4768-aa5a-9335eed6a1c9",
+        "name": "Deliverable Ready?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          352,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "toText",
+          "sourceProperty": "output.report_markdown",
+          "options": {
+            "fileName": "={{ $json.output.client_id }}_{{ $json.output.project_name }}_report.md"
+          }
+        },
+        "id": "21b07afb-a350-4102-87fe-599722a5d42c",
+        "name": "Report to File",
+        "type": "n8n-nodes-base.convertToFile",
+        "typeVersion": 1.1,
+        "position": [
+          576,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "name": "={{ $('Report to File').item.json.fileName }}",
+          "driveId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "My Drive"
+          },
+          "folderId": {
+            "mode": "id",
+            "value": "REPLACE_WITH_CLIENT_FOLDER_ID"
+          },
+          "options": {}
+        },
+        "id": "0702f20b-1538-4ad2-abca-42d3fe83944c",
+        "name": "Upload to Client Drive Folder",
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          800,
+          0
+        ],
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "Q8F6AF4nNReCfLij",
+            "name": "Google Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "select": "channel",
+          "channelId": {
+            "mode": "list",
+            "value": "REPLACE_ME"
+          },
+          "text": "=Draft report ready for review \u2014 client: {{ $('Deliverable Ready?').item.json.output.client_id }}, project: {{ $('Deliverable Ready?').item.json.output.project_name }}. It has NOT been sent to the client. Uploaded file: {{ $json.webViewLink }}",
+          "otherOptions": {}
+        },
+        "id": "e12ea5be-85ec-45e2-8e00-75132808bbd7",
+        "name": "Notify Freelancer for Review",
+        "type": "n8n-nodes-base.slack",
+        "typeVersion": 2.2,
+        "position": [
+          1024,
+          0
+        ],
+        "webhookId": "a7bc3d17-486e-4175-a961-6735cd04ef0a"
+      }
+    ],
+    "connections": {
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "node": "Data Analysis Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gemini Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Data Analysis Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Project Memory (Postgres)": {
+        "ai_memory": [
+          [
+            {
+              "node": "Data Analysis Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "profile_dataset": {
+        "ai_tool": [
+          [
+            {
+              "node": "Data Analysis Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "analyze_dataset": {
+        "ai_tool": [
+          [
+            {
+              "node": "Data Analysis Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "generate_chart": {
+        "ai_tool": [
+          [
+            {
+              "node": "Data Analysis Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "recall_project_context": {
+        "ai_tool": [
+          [
+            {
+              "node": "Data Analysis Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "save_insight": {
+        "ai_tool": [
+          [
+            {
+              "node": "Data Analysis Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Data Analysis Agent": {
+        "main": [
+          [
+            {
+              "node": "Deliverable Ready?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Deliverable Ready?": {
+        "main": [
+          [
+            {
+              "node": "Report to File",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Report to File": {
+        "main": [
+          [
+            {
+              "node": "Upload to Client Drive Folder",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload to Client Drive Folder": {
+        "main": [
+          [
+            {
+              "node": "Notify Freelancer for Review",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Structured Reply Parser": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "Data Analysis Agent",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "7406584b-9713-4d72-b248-b8f0f99f6cde",
+    "activeVersionId": null,
+    "versionCounter": 9,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-07-26T16:11:21.829Z",
+        "createdAt": "2026-07-26T16:11:21.829Z",
+        "role": "workflow:owner",
+        "workflowId": "FJ3fcHq77Mh83SBV",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

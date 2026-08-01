@@ -1,0 +1,475 @@
+[
+  {
+    "updatedAt": "2026-07-29T21:38:24.038Z",
+    "createdAt": "2026-07-29T18:43:57.777Z",
+    "id": "JjJeFZDC88pVIChB",
+    "name": "Marketing-Lead-Enrichment",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "weeks",
+                "triggerAtDay": [
+                  1
+                ],
+                "triggerAtHour": 9
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          -112,
+          -496
+        ],
+        "id": "72bcc159-a02a-4834-a42f-326b59ff18a2",
+        "name": "WeeklySchedule"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          -112,
+          -304
+        ],
+        "id": "cd49cfb3-7ffa-4642-af4b-38f6447e5ebe",
+        "name": "ManualTrigger"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.extractFromFile",
+        "typeVersion": 1.1,
+        "position": [
+          112,
+          -352
+        ],
+        "id": "dfd1165e-b417-4744-9fe4-fe515edf382d",
+        "name": "ParseLeadCSV"
+      },
+      {
+        "parameters": {
+          "batchSize": 10,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          336,
+          -352
+        ],
+        "id": "19ec9438-bd3c-4a78-8d72-bbccba5bf21d",
+        "name": "BatchSegmenter"
+      },
+      {
+        "parameters": {
+          "amount": 1
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          560,
+          -304
+        ],
+        "id": "74841d58-df5f-44f2-94b8-a3dd24bcb03f",
+        "name": "WaitOneSecond",
+        "webhookId": "d3778781-b1fa-46db-98c6-dae05acf5d92"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.mockbank.io/v1/enrichment/clearbit",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "email",
+                "value": "={{ $json.email }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          560,
+          -496
+        ],
+        "id": "64d14c0e-23db-42c6-8485-a2d5255954a9",
+        "name": "EnrichClearbit"
+      },
+      {
+        "parameters": {
+          "workflowId": {
+            "__rl": true,
+            "value": "2gqpT2C7G534qUrj",
+            "mode": "list",
+            "cachedResultUrl": "/workflow/2gqpT2C7G534qUrj",
+            "cachedResultName": "CRM-Upload-Child"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": true
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.3,
+        "position": [
+          784,
+          -496
+        ],
+        "id": "ac5533e1-c519-4a44-81f5-a0eeebd87e5f",
+        "name": "Call 'CRM-Upload-Child'"
+      }
+    ],
+    "connections": {
+      "WeeklySchedule": {
+        "main": [
+          [
+            {
+              "node": "ParseLeadCSV",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "ManualTrigger": {
+        "main": [
+          [
+            {
+              "node": "ParseLeadCSV",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "ParseLeadCSV": {
+        "main": [
+          [
+            {
+              "node": "BatchSegmenter",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "BatchSegmenter": {
+        "main": [
+          [
+            {
+              "node": "EnrichClearbit",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "WaitOneSecond",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "WaitOneSecond": {
+        "main": [
+          [
+            {
+              "node": "BatchSegmenter",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "EnrichClearbit": {
+        "main": [
+          [
+            {
+              "node": "Call 'CRM-Upload-Child'",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {
+      "ParseLeadCSV": [
+        {
+          "json": {
+            "email": "lead1@microsoft.com",
+            "first_name": "John",
+            "company": "Microsoft"
+          }
+        },
+        {
+          "json": {
+            "email": "lead2@google.com",
+            "first_name": "Sarah",
+            "company": "Google"
+          }
+        },
+        {
+          "json": {
+            "email": "lead3@n8n.io",
+            "first_name": "Karim",
+            "company": "n8n"
+          }
+        },
+        {
+          "json": {
+            "email": "lead4@apple.com",
+            "first_name": "Steve",
+            "company": "Apple"
+          }
+        },
+        {
+          "json": {
+            "email": "lead5@tesla.com",
+            "first_name": "Elon",
+            "company": "Tesla"
+          }
+        },
+        {
+          "json": {
+            "email": "lead6@amazon.com",
+            "first_name": "Jeff",
+            "company": "Amazon"
+          }
+        },
+        {
+          "json": {
+            "email": "lead7@meta.com",
+            "first_name": "Mark",
+            "company": "Meta"
+          }
+        },
+        {
+          "json": {
+            "email": "lead8@netflix.com",
+            "first_name": "Reed",
+            "company": "Netflix"
+          }
+        },
+        {
+          "json": {
+            "email": "lead9@spotify.com",
+            "first_name": "Daniel",
+            "company": "Spotify"
+          }
+        },
+        {
+          "json": {
+            "email": "lead10@stripe.com",
+            "first_name": "Patrick",
+            "company": "Stripe"
+          }
+        }
+      ],
+      "EnrichClearbit": [
+        {
+          "json": {
+            "email": "lead1@microsoft.com",
+            "first_name": "John",
+            "company": "Microsoft",
+            "enriched": true,
+            "role": "Director of Data Engineering",
+            "seniority": "Director",
+            "company_size": "100,000+",
+            "location": "Redmond, WA"
+          }
+        },
+        {
+          "json": {
+            "email": "lead2@google.com",
+            "first_name": "Sarah",
+            "company": "Google",
+            "enriched": true,
+            "role": "Lead BI Analyst",
+            "seniority": "Senior",
+            "company_size": "100,000+",
+            "location": "Mountain View, CA"
+          }
+        },
+        {
+          "json": {
+            "email": "lead3@n8n.io",
+            "first_name": "Karim",
+            "company": "n8n",
+            "enriched": true,
+            "role": "AI Automation Engineer",
+            "seniority": "Mid-Level",
+            "company_size": "50-200",
+            "location": "Berlin, Germany"
+          }
+        },
+        {
+          "json": {
+            "email": "lead4@apple.com",
+            "first_name": "Steve",
+            "company": "Apple",
+            "enriched": true,
+            "role": "Hardware Product Manager",
+            "seniority": "Senior",
+            "company_size": "100,000+",
+            "location": "Cupertino, CA"
+          }
+        },
+        {
+          "json": {
+            "email": "lead5@tesla.com",
+            "first_name": "Elon",
+            "company": "Tesla",
+            "enriched": true,
+            "role": "Chief Technology Officer",
+            "seniority": "Executive",
+            "company_size": "50,000-100,000",
+            "location": "Austin, TX"
+          }
+        },
+        {
+          "json": {
+            "email": "lead6@amazon.com",
+            "first_name": "Jeff",
+            "company": "Amazon",
+            "enriched": true,
+            "role": "Solutions Architect",
+            "seniority": "Senior",
+            "company_size": "100,000+",
+            "location": "Seattle, WA"
+          }
+        },
+        {
+          "json": {
+            "email": "lead7@meta.com",
+            "first_name": "Mark",
+            "company": "Meta",
+            "enriched": true,
+            "role": "Product Designer",
+            "seniority": "Mid-Level",
+            "company_size": "50,000-100,000",
+            "location": "Menlo Park, CA"
+          }
+        },
+        {
+          "json": {
+            "email": "lead8@netflix.com",
+            "first_name": "Reed",
+            "company": "Netflix",
+            "enriched": true,
+            "role": "VP of Engineering",
+            "seniority": "VP",
+            "company_size": "5,000-10,000",
+            "location": "Los Gatos, CA"
+          }
+        },
+        {
+          "json": {
+            "email": "lead9@spotify.com",
+            "first_name": "Daniel",
+            "company": "Spotify",
+            "enriched": true,
+            "role": "Data Analyst",
+            "seniority": "Junior",
+            "company_size": "5,000-10,000",
+            "location": "Stockholm, Sweden"
+          }
+        },
+        {
+          "json": {
+            "email": "lead10@stripe.com",
+            "first_name": "Patrick",
+            "company": "Stripe",
+            "enriched": true,
+            "role": "Developer Relations Engineer",
+            "seniority": "Senior",
+            "company_size": "5,000-10,000",
+            "location": "San Francisco, CA"
+          }
+        }
+      ],
+      "Call 'CRM-Upload-Child'": [
+        {
+          "json": {
+            "success": true,
+            "crm_lead_id": "CRM_LEAD_880921",
+            "email": "lead1@microsoft.com",
+            "status": "synchronized",
+            "created_at": "2026-07-29T14:33:46-07:00"
+          }
+        }
+      ]
+    },
+    "versionId": "d5f7483c-426b-4b29-8232-b230b3f18c68",
+    "activeVersionId": null,
+    "versionCounter": 43,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-16T16:03:28.284Z",
+        "createdAt": "2026-07-16T16:03:28.284Z",
+        "id": "e1c954be4bee474d",
+        "name": "Data Transformation"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.786Z",
+        "createdAt": "2026-07-16T16:03:28.786Z",
+        "id": "6e30f4ffb71d4b65",
+        "name": "Data Pipeline"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-29T18:43:57.777Z",
+        "createdAt": "2026-07-29T18:43:57.777Z",
+        "role": "workflow:owner",
+        "workflowId": "JjJeFZDC88pVIChB",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

@@ -1,0 +1,194 @@
+[
+  {
+    "updatedAt": "2026-07-28T19:26:02.129Z",
+    "createdAt": "2026-07-28T16:41:34.538Z",
+    "id": "elh7D7banYDo3ZCQ",
+    "name": "The Automated ETL Pipeline (Financial Data)",
+    "description": null,
+    "active": false,
+    "isArchived": true,
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "finance-transactions",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "2d05caa4-cd25-48cd-9e5c-920b9d0e1693",
+        "name": "Webhook",
+        "webhookId": "74ca06e3-8624-4036-89be-96ae41f5ba68"
+      },
+      {
+        "parameters": {
+          "jsCode": "const newItems = [];\n\n// Fetch incoming items using n8n's native JavaScript accessor\nfor (const item of $input.all()) {\n    const payloadData = item.json.body?.data || [];\n    \n    for (const tx of payloadData) {\n        let rawDate = tx.date || \"\";\n        let cleanDate = rawDate;\n        \n        // Standardize date to YYYY-MM-DD using regex\n        if (rawDate.match(/^\\d{2}-\\d{2}-\\d{4}$/)) {\n            cleanDate = rawDate.replace(/(\\d{2})-(\\d{2})-(\\d{4})/, '$3-$1-$2');\n        } else if (rawDate.match(/^\\d{4}\\/\\d{2}\\/\\d{2}$/)) {\n            cleanDate = rawDate.replace(/\\//g, '-');\n        } else if (rawDate.match(/^\\d{2}-\\d{2}-\\d{2}$/)) {\n            cleanDate = rawDate.replace(/(\\d{2})-(\\d{2})-(\\d{2})/, '20$3-$1-$2');\n        }\n            \n        // Flatten the dictionary to match PostgreSQL columns\n        const flatTx = {\n            tx_id: tx.id,\n            amount: tx.amount,\n            currency: tx.details?.currency,\n            status: tx.details?.status,\n            transaction_date: cleanDate\n        };\n        \n        // Append as a new n8n item\n        newItems.push({ json: flatTx });\n    }\n}\n\nreturn newItems;\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          224,
+          0
+        ],
+        "id": "b5e834a6-f445-4930-892f-9b5ebc5294f0",
+        "name": "Code in JavaScript"
+      },
+      {
+        "parameters": {
+          "schema": {
+            "__rl": true,
+            "value": "public",
+            "mode": "list",
+            "cachedResultName": "public"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "list",
+            "value": ""
+          }
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          448,
+          0
+        ],
+        "id": "5de0b3e3-c1b4-4c86-9a9d-215c59676df3",
+        "name": "Insert rows in a table",
+        "credentials": {
+          "postgres": {
+            "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+            "name": "PostgreSQL \u2014 n8n Stack"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "Insert rows in a table",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {
+      "Webhook": [
+        {
+          "json": {
+            "body": {
+              "batch_id": "batch_9912",
+              "data": [
+                {
+                  "id": "tx_101",
+                  "amount": 1500.5,
+                  "date": "12-05-2026",
+                  "details": {
+                    "currency": "USD",
+                    "status": "cleared"
+                  }
+                },
+                {
+                  "id": "tx_102",
+                  "amount": 200,
+                  "date": "2026/05/13",
+                  "details": {
+                    "currency": "EUR",
+                    "status": "pending"
+                  }
+                },
+                {
+                  "id": "tx_103",
+                  "amount": 45.75,
+                  "date": "05-14-26",
+                  "details": {
+                    "currency": "USD",
+                    "status": "failed"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "versionId": "54119970-3435-411c-ab34-77d1e8239f21",
+    "activeVersionId": null,
+    "versionCounter": 37,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-16T16:03:29.020Z",
+        "createdAt": "2026-07-16T16:03:29.020Z",
+        "id": "9a8d1d753df54ed1",
+        "name": "Production Automation"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.786Z",
+        "createdAt": "2026-07-16T16:03:28.786Z",
+        "id": "6e30f4ffb71d4b65",
+        "name": "Data Pipeline"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.284Z",
+        "createdAt": "2026-07-16T16:03:28.284Z",
+        "id": "e1c954be4bee474d",
+        "name": "Data Transformation"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-28T16:41:34.538Z",
+        "createdAt": "2026-07-28T16:41:34.538Z",
+        "role": "workflow:owner",
+        "workflowId": "elh7D7banYDo3ZCQ",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

@@ -1,0 +1,247 @@
+[
+  {
+    "updatedAt": "2026-07-29T16:24:46.847Z",
+    "createdAt": "2026-07-29T16:06:07.792Z",
+    "id": "j4559D3lMQzP11Yd",
+    "name": "AR-Pipeline-Upsert-Child",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "transaction_id"
+              },
+              {
+                "name": "customer_name"
+              },
+              {
+                "name": "amount",
+                "type": "number"
+              },
+              {
+                "name": "nested_meta_invoice_ref"
+              },
+              {
+                "name": "nested_meta_region_code"
+              },
+              {
+                "name": "nested_meta_processor_fee",
+                "type": "number"
+              },
+              {
+                "name": "batch_id"
+              },
+              {
+                "name": "settlement_date"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "0949f5d3-4a04-4547-9fe5-4406e5048d1b",
+        "name": "When Executed by Another Workflow"
+      },
+      {
+        "parameters": {
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "value": "q5AGtFRWJJD3hKCP",
+            "mode": "list",
+            "cachedResultName": "accounts_receivable_settlements",
+            "cachedResultUrl": "/projects/7Kuw5RaGwePDWMtJ/datatables/q5AGtFRWJJD3hKCP"
+          },
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "transaction_id",
+                "condition": "isNotEmpty"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "amount": "={{ $json.amount }}",
+              "nested_meta_processor_fee": "={{ $json.nested_meta_processor_fee }}",
+              "transaction_id": "={{ $json.transaction_id }}",
+              "customer_name": "={{ $json.customer_name }}",
+              "nested_meta_invoice_ref": "={{ $json.nested_meta_invoice_ref }}",
+              "nested_meta_region_code": "={{ $json.nested_meta_region_code }}",
+              "batch_id": "={{ $json.batch_id }}",
+              "settlement_date": "={{ $json.settlement_date }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "transaction_id",
+                "displayName": "transaction_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "customer_name",
+                "displayName": "customer_name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "amount",
+                "displayName": "amount",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "nested_meta_invoice_ref",
+                "displayName": "nested_meta_invoice_ref",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "nested_meta_region_code",
+                "displayName": "nested_meta_region_code",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "nested_meta_processor_fee",
+                "displayName": "nested_meta_processor_fee",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "batch_id",
+                "displayName": "batch_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "settlement_date",
+                "displayName": "settlement_date",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "readOnly": false,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          224,
+          0
+        ],
+        "id": "0594f8d6-0e4a-45d9-8c10-0bf76c432cbb",
+        "name": "Upsert row(s)"
+      }
+    ],
+    "connections": {
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "Upsert row(s)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "8f30f132-88d5-4cf9-9889-d2abc0988c60",
+    "activeVersionId": "8f30f132-88d5-4cf9-9889-d2abc0988c60",
+    "versionCounter": 29,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-16T16:03:28.786Z",
+        "createdAt": "2026-07-16T16:03:28.786Z",
+        "id": "6e30f4ffb71d4b65",
+        "name": "Data Pipeline"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.284Z",
+        "createdAt": "2026-07-16T16:03:28.284Z",
+        "id": "e1c954be4bee474d",
+        "name": "Data Transformation"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-29T16:06:07.792Z",
+        "createdAt": "2026-07-29T16:06:07.792Z",
+        "role": "workflow:owner",
+        "workflowId": "j4559D3lMQzP11Yd",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version 8f30f132",
+      "description": ""
+    }
+  }
+]

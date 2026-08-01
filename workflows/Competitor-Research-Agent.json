@@ -1,0 +1,385 @@
+[
+  {
+    "updatedAt": "2026-07-30T13:06:24.194Z",
+    "createdAt": "2026-07-30T11:19:09.756Z",
+    "id": "4Q2xIkwO1dROsFyQ",
+    "name": "Competitor-Research-Agent",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "competitor-research",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -48,
+          32
+        ],
+        "id": "cd4d2654-73cf-46dd-85a1-2911e27c4290",
+        "name": "OnWebhookCall",
+        "webhookId": "139e8a8b-2fa2-4c74-bb8a-31fb032c68a8"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ `Analyze the following competitor target:\n- Competitor Name: \"${$json.body.company_name}\"\n- Target Industry: \"${$json.body.industry || 'B2B SaaS'}\"\n\nOperational Instructions:\n1. Verify: First, execute the 'Wikipedia' tool to confirm the competitor's official web domain.\n2. Locate: Find their official pricing page URL (e.g., \"company_name pricing page\") using your general search capability.\n3. Scrape: Call the 'FetchPricingPage' tool, passing the absolute URL of their pricing page as the 'url' parameter.\n4. Extract: Parse the raw text returned by the tool, identify the highest/Enterprise tier, and map the pricing and key features.\n5. Standardize: Formulate your final response to exactly match the structured JSON schema provided.` }}",
+          "hasOutputParser": true,
+          "needsFallback": true,
+          "options": {
+            "systemMessage": "Identity: You are an elite B2B Sales Competitive Intelligence Specialist.\nObjective: Your goal is to gather highly accurate and up-to-date information regarding the competitor company provided in the user message.\n\nExecution Loop Instructions:\n1. First, call the 'Wikipedia' tool to verify the official web domain of the competitor.\n2. Once the domain is confirmed, construct a search query to identify their pricing page (e.g., \"company_name pricing page\") and use the 'FetchPricingPage' tool to pull the page's raw data.\n3. Read the retrieved pricing text carefully and isolate the \"Enterprise\" or highest custom tier.\n4. If the pricing page is successfully analyzed, construct your final response strictly matching the required JSON schema.\n\nRules & Constraints:\n- Never make up price values. If an enterprise price is not explicitly listed, return \"Contact Sales\".\n- If any tool execution fails, try a maximum of 2 times before falling back to general knowledge.\n- You must only output the standardized JSON payload. Do not add any conversational preamble or markdown backticks."
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          368,
+          32
+        ],
+        "id": "2e564ee9-eefe-4342-8e7b-81b29b6b1e63",
+        "name": "CompetitorResearchAgent",
+        "retryOnFail": true
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "openai/gpt-oss-20b",
+            "mode": "list",
+            "cachedResultName": "openai/gpt-oss-20b"
+          },
+          "responsesApiEnabled": false,
+          "options": {
+            "temperature": 0.3
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          256
+        ],
+        "id": "994c3747-e3ca-4291-9207-27104a573dde",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "doxpsivmFLpAY4By",
+            "name": "Hugging Face"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+        "typeVersion": 1,
+        "position": [
+          432,
+          256
+        ],
+        "id": "2cac0b3c-fde9-4ad5-8d05-71e1785bf35d",
+        "name": "Wikipedia"
+      },
+      {
+        "parameters": {
+          "toolDescription": "Use this tool ONLY to fetch the raw text or HTML content of a competitor's pricing webpage. You must supply a single, valid, absolute URL (e.g., 'https://n8n.io/pricing') as the parameter. Do not pass search keywords or incomplete domains. Use this tool only after you have identified the exact pricing URL.",
+          "url": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('URL', ``, 'string') }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.4,
+        "position": [
+          560,
+          256
+        ],
+        "id": "ea7c6aa7-7afe-4392-bc31-9b752fe92bd8",
+        "name": "FetchPricingPage"
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $json.headers.host }}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+        "typeVersion": 1.6,
+        "position": [
+          304,
+          256
+        ],
+        "id": "9f5d6a1c-4d5e-496c-a9c3-84eb6c31f6e1",
+        "name": "Redis Chat Memory",
+        "retryOnFail": true,
+        "maxTries": 2,
+        "credentials": {
+          "redis": {
+            "id": "e76ad1d3-2c33-4548-b58c-2f7a310793bb",
+            "name": "Redis \u2014 n8n Stack"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsonSchemaExample": "{\n  \"company_name\": \"The official name of the competitor analyzed.\",\n  \"pricing_url\": \"The absolute URL where the pricing or enterprise tier details were extracted.\",\n  \"enterprise_tier_exists\": \"A boolean (true/false) indicating if a custom Enterprise, Corporate, or highest-tier plan exists.\",\n  \"starting_price\": \"The starting price of the Enterprise plan if listed (e.g., '$2,500/yr'). If pricing is custom, unlisted, or requires a demo, output 'Contact Sales'.\",\n  \"key_enterprise_features\": [\n    \"A list of distinct features or add-ons exclusive to this tier (e.g., SSO, 99.9% SLA, dedicated technical account manager).\"\n  ],\n  \"limitations_and_constraints\": \"Any contract minimums, seat requirements, API rate limits, or usage caps tied to this plan. If none are specified, output 'None specified'.\"\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.3,
+        "position": [
+          704,
+          256
+        ],
+        "id": "713aef56-db47-40ad-902f-9e272aa9a0b6",
+        "name": "Structured Output Parser"
+      },
+      {
+        "parameters": {
+          "model": "openrouter/auto",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          160,
+          256
+        ],
+        "id": "46e8c806-8ffe-42ab-8c32-7c684bf8b246",
+        "name": "OpenRouter Chat Model",
+        "credentials": {
+          "openRouterApi": {
+            "id": "Wfnk5q7gswurynsI",
+            "name": "OpenRouter account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "sendAndWait",
+          "sendTo": "sohila.k.data@gmail.com",
+          "subject": "=Action Required: Competitive Profile Review - \" + {{$json.output.company_name}}",
+          "message": "=<p>A new competitor profile has been compiled by the <strong>Autonomous Research Agent</strong> and is awaiting validation.</p>\n\n<hr>\n\n<ul>\n  <li><strong>Competitor Name:</strong> {{$json.output.company_name || 'N/A'}}</li>\n  <li><strong>Pricing URL:</strong> <a href=\"{{$json.output.pricing_url || '#'}}\">Verify pricing page</a></li>\n  <li><strong>Enterprise Tier Identified:</strong> {{($json.output.enterprise_tier_exists && $json.output.enterprise_tier_exists.toLowerCase() === 'yes') ? 'Yes \u2705' : 'No \u274c'}}</li>\n  <li><strong>Starting Price:</strong> <strong>{{$json.starting_price || 'Unknown'}}</strong></li>\n</ul>\n\n<h3>\ud83c\udf1f Extracted Enterprise Features:</h3>\n<ul>\n  {{ Array.isArray($json.output.key_enterprise_features) && $json.output.key_enterprise_features.length > 0 ? $json.output.key_enterprise_features.map(feature => `<li>${feature}</li>`).join('') : '<li>No features extracted or data format error.</li>' }}\n</ul>\n\n<h3>\u26a0\ufe0f Limitations & Constraints:</h3>\n<p><em>{{$json.output.limitations_and_constraints || 'None provided.'}}</em></p>",
+          "approvalOptions": {
+            "values": {
+              "approvalType": "double"
+            }
+          },
+          "options": {
+            "appendAttribution": false
+          }
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          720,
+          32
+        ],
+        "id": "80e7a043-94d9-4c90-af4f-a561bf5678f6",
+        "name": "Send a message",
+        "webhookId": "259b5df5-ebd9-48e0-86ca-e050cd103ac8",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "lnIdGq9BGx5bYyLm",
+            "name": "Gmail account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "OnWebhookCall": {
+        "main": [
+          [
+            {
+              "node": "CompetitorResearchAgent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "CompetitorResearchAgent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wikipedia": {
+        "ai_tool": [
+          [
+            {
+              "node": "CompetitorResearchAgent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FetchPricingPage": {
+        "ai_tool": [
+          [
+            {
+              "node": "CompetitorResearchAgent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Redis Chat Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "CompetitorResearchAgent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Structured Output Parser": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "CompetitorResearchAgent",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CompetitorResearchAgent": {
+        "main": [
+          [
+            {
+              "node": "Send a message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "CompetitorResearchAgent",
+              "type": "ai_languageModel",
+              "index": 1
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {
+      "OnWebhookCall": [
+        {
+          "json": {
+            "headers": {
+              "host": "localhost:5678",
+              "user-agent": "PostmanRuntime/7.43.0",
+              "content-type": "application/json"
+            },
+            "params": {},
+            "query": {},
+            "body": {
+              "company_name": "n8n",
+              "industry": "Workflow Automation"
+            }
+          }
+        }
+      ],
+      "CompetitorResearchAgent": [
+        {
+          "json": {
+            "output": {
+              "company_name": "n8n",
+              "pricing_url": "https://n8n.io/pricing",
+              "enterprise_tier_exists": "Yes",
+              "starting_price": "Contact Sales",
+              "key_enterprise_features": [
+                "Custom pricing and contract terms",
+                "Dedicated account manager",
+                "SLA-backed uptime guarantees",
+                "Advanced security features (SSO, SAML, LDAP)",
+                "Audit logs and compliance reporting",
+                "Unlimited workflows and executions",
+                "Priority support with 24/7 response",
+                "Custom integrations and on-premise deployment options",
+                "Dedicated infrastructure or private cloud"
+              ],
+              "limitations_and_constraints": "Enterprise pricing is not publicly disclosed; interested customers must contact sales for a custom quote."
+            }
+          },
+          "pairedItem": {
+            "item": 0
+          }
+        }
+      ]
+    },
+    "versionId": "50f3d3db-26b3-4cfa-8b3d-e1633aa55d3e",
+    "activeVersionId": null,
+    "versionCounter": 161,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-16T16:03:29.217Z",
+        "createdAt": "2026-07-16T16:03:29.217Z",
+        "id": "08f43634238e406b",
+        "name": "Agentic AI"
+      },
+      {
+        "updatedAt": "2026-07-07T22:04:11.368Z",
+        "createdAt": "2026-07-07T22:04:11.368Z",
+        "id": "7oGNlQUzjXpkaBkv",
+        "name": "API"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:29.020Z",
+        "createdAt": "2026-07-16T16:03:29.020Z",
+        "id": "9a8d1d753df54ed1",
+        "name": "Production Automation"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-30T11:19:09.756Z",
+        "createdAt": "2026-07-30T11:19:09.756Z",
+        "role": "workflow:owner",
+        "workflowId": "4Q2xIkwO1dROsFyQ",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

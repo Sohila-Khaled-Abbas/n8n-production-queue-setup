@@ -1,0 +1,334 @@
+[
+  {
+    "updatedAt": "2026-07-29T18:06:18.348Z",
+    "createdAt": "2026-07-29T16:36:10.707Z",
+    "id": "RDPhYMwmxf6eqXsl",
+    "name": "Member-Ingestion-Child",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "email"
+              },
+              {
+                "name": "first_name"
+              },
+              {
+                "name": "learning_track"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          -48
+        ],
+        "id": "783c82b0-6c99-4c5c-8047-9d8b3af00043",
+        "name": "When Executed by Another Workflow"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "c9dad54e-46d2-4ae6-a6ea-ded64b5962ef",
+                "leftValue": "={{ $json.email }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "array",
+                  "operation": "notExists",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "looseTypeValidation": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          432,
+          -48
+        ],
+        "id": "567220fa-b32a-447d-b783-284526d129e3",
+        "name": "IsUserNew"
+      },
+      {
+        "parameters": {
+          "dataTableId": {
+            "__rl": true,
+            "value": "gZQgWrIGsPXBpqat",
+            "mode": "list",
+            "cachedResultName": "community_members",
+            "cachedResultUrl": "/projects/7Kuw5RaGwePDWMtJ/datatables/gZQgWrIGsPXBpqat"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "email": "={{ $json.email }}",
+              "first_name": "={{ $json.first_name }}",
+              "learning_track": "={{ $json.learning_track }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "email",
+                "displayName": "email",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "first_name",
+                "displayName": "first_name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "learning_track",
+                "displayName": "learning_track",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          656,
+          -144
+        ],
+        "id": "bc87a9fd-72c1-4660-aff6-e4854d377b49",
+        "name": "InsertNewMember"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "1fbbb806-aa28-471c-8715-d1de820afab1",
+                "name": "status",
+                "value": "new",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          880,
+          -144
+        ],
+        "id": "a5e9a567-081a-4322-a435-0c358aab4c16",
+        "name": "SetNewStatus"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "cf48c338-48f9-4aab-b742-9af1ea59f62b",
+                "name": "status",
+                "value": "duplicate",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          656,
+          48
+        ],
+        "id": "8056febc-308c-4ebc-909d-11168ce3d3ea",
+        "name": "SetDuplicateStatus"
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "value": "gZQgWrIGsPXBpqat",
+            "mode": "list",
+            "cachedResultName": "community_members",
+            "cachedResultUrl": "/projects/7Kuw5RaGwePDWMtJ/datatables/gZQgWrIGsPXBpqat"
+          },
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "email",
+                "keyValue": "={{ $json.email }}"
+              }
+            ]
+          },
+          "returnAll": true
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          208,
+          -48
+        ],
+        "id": "a7ef622e-0115-4330-b8f4-9368cdf038c2",
+        "name": "QueryEmailExists"
+      }
+    ],
+    "connections": {
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "QueryEmailExists",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IsUserNew": {
+        "main": [
+          [
+            {
+              "node": "InsertNewMember",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "SetDuplicateStatus",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "InsertNewMember": {
+        "main": [
+          [
+            {
+              "node": "SetNewStatus",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "QueryEmailExists": {
+        "main": [
+          [
+            {
+              "node": "IsUserNew",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false,
+      "timeSavedMode": "fixed",
+      "saveDataSuccessExecution": "all",
+      "callerPolicy": "workflowsFromSameOwner"
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {
+      "When Executed by Another Workflow": [
+        {
+          "json": {
+            "email": "student2026@n8n.io",
+            "first_name": "Alex",
+            "learning_track": "Data Engineering"
+          },
+          "pairedItem": {
+            "item": 0
+          }
+        }
+      ]
+    },
+    "versionId": "64b088ef-c209-4433-b693-fbeeed645ed8",
+    "activeVersionId": "64b088ef-c209-4433-b693-fbeeed645ed8",
+    "versionCounter": 67,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-16T16:03:28.284Z",
+        "createdAt": "2026-07-16T16:03:28.284Z",
+        "id": "e1c954be4bee474d",
+        "name": "Data Transformation"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.786Z",
+        "createdAt": "2026-07-16T16:03:28.786Z",
+        "id": "6e30f4ffb71d4b65",
+        "name": "Data Pipeline"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-29T16:36:10.707Z",
+        "createdAt": "2026-07-29T16:36:10.707Z",
+        "role": "workflow:owner",
+        "workflowId": "RDPhYMwmxf6eqXsl",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version 64b088ef",
+      "description": ""
+    }
+  }
+]

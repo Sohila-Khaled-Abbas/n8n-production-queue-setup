@@ -1,0 +1,108 @@
+[
+  {
+    "updatedAt": "2026-07-31T19:24:13.376Z",
+    "createdAt": "2026-07-31T19:11:57.567Z",
+    "id": "cl7XMahDRKB5GTSs",
+    "name": "Sub_SendSlackNotification",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "d833b995-ae20-4b40-95f1-d892b92f2997",
+        "name": "When Executed by Another Workflow"
+      },
+      {
+        "parameters": {
+          "select": "channel",
+          "channelId": {
+            "__rl": true,
+            "value": "C0BM929QGRG",
+            "mode": "list",
+            "cachedResultName": "finance-market-alerts"
+          },
+          "text": "={{ $json.alert_text }}",
+          "otherOptions": {}
+        },
+        "type": "n8n-nodes-base.slack",
+        "typeVersion": 2.5,
+        "position": [
+          224,
+          0
+        ],
+        "id": "eb615874-ae39-4954-a441-43d65415e8b3",
+        "name": "Send a message",
+        "webhookId": "7505780f-f302-481d-9933-84584dc58ec3",
+        "credentials": {
+          "slackApi": {
+            "id": "WhbdXTTGbC3tfR1N",
+            "name": "Slack account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "Send a message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "a9f49b51-96e8-4f15-8b14-224e09f34d9d",
+    "activeVersionId": "a9f49b51-96e8-4f15-8b14-224e09f34d9d",
+    "versionCounter": 10,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-07-31T19:11:57.567Z",
+        "createdAt": "2026-07-31T19:11:57.567Z",
+        "role": "workflow:owner",
+        "workflowId": "cl7XMahDRKB5GTSs",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version a9f49b51",
+      "description": ""
+    }
+  }
+]

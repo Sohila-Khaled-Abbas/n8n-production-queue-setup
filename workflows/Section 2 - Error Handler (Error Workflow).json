@@ -1,0 +1,212 @@
+[
+  {
+    "updatedAt": "2026-07-24T16:15:05.661Z",
+    "createdAt": "2026-07-24T12:42:41.524Z",
+    "id": "aw6RmoFxC5krv8aK",
+    "name": "Section 2 - Error Handler (Error Workflow)",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.errorTrigger",
+        "typeVersion": 1,
+        "position": [
+          -288,
+          -48
+        ],
+        "id": "3874271d-5091-42d8-9ac8-ab63242c4fb2",
+        "name": "TriggerError"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://learn.app.n8n.cloud/webhook/course/n8n103/error-report",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "X-Assessment-ID",
+                "value": "e8bce3d38b15ef6ce378bde696e04474"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "workflow_name",
+                "value": "={{ $json.workflow.name }}"
+              },
+              {
+                "name": "workflow_id",
+                "value": "={{ $json.workflow.id }}"
+              },
+              {
+                "name": "execution_url",
+                "value": "={{ $json.execution.url }}"
+              },
+              {
+                "name": "error_message",
+                "value": "={{ $json.execution.error.message }}"
+              },
+              {
+                "name": "failed_node",
+                "value": "={{ $json.execution.lastNodeExecuted }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          -64,
+          -48
+        ],
+        "id": "edb0c5aa-bff6-4e0a-b4c2-367a89f97f29",
+        "name": "ReportError",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "VCjTrRb8YGJHXwcC",
+            "name": "n8n Academy API Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "dbd6148f-8d98-48c0-97cf-603c6e6faaf7",
+                "name": "text",
+                "value": "=Workflow \"{{ $json.workflow.name }}\" failed at node \"{{ $json.execution.lastNodeExecuted }}\": {{ $json.execution.error.message }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          160,
+          -48
+        ],
+        "id": "41b1ccff-5c31-4645-affb-c94992aa6b07",
+        "name": "Edit Fields"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          384,
+          -48
+        ],
+        "id": "85c02a9a-3f8c-4e57-a0ef-64f0ffa6c8ae",
+        "name": "SendToSlack"
+      },
+      {
+        "parameters": {
+          "content": "# Section 2 - Error Handler (Error Workflow)\n\nOwned By: Sohila Khaled\nLast Updated: 24.07.2026\n\nError workflow that captures failures from linked workflows and\nreports error details to the Academy endpoint.\n\n## Trigger\n- Error Trigger: Fires when a linked workflow fails in production\n\n## Data Captured\n- workflow.name: Name of failed workflow\n- workflow.id: Workflow ID\n- execution.url: Link to failed execution\n- execution.error.message: Error details\n- execution.lastNodeExecuted: Node that failed\n\n## Endpoint\n- POST /webhook/course/n8n103/error-report\n\n## Requirements\n- Must be published to be used as an error workflow\n- Only triggers on production executions, not manual tests\n\nPart of: n8n Foundations Program, N8N103 Course, Section 2",
+          "height": 720,
+          "width": 560,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -912,
+          -368
+        ],
+        "id": "c5f1857b-441e-4ffd-a454-d9b893276ea5",
+        "name": "Sticky Note"
+      }
+    ],
+    "connections": {
+      "TriggerError": {
+        "main": [
+          [
+            {
+              "node": "ReportError",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "ReportError": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields": {
+        "main": [
+          [
+            {
+              "node": "SendToSlack",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "fb7c781b-609e-4396-82a7-0ea4aac69c1d",
+    "activeVersionId": "fb7c781b-609e-4396-82a7-0ea4aac69c1d",
+    "versionCounter": 50,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-21T16:55:55.312Z",
+        "createdAt": "2026-07-21T16:55:55.312Z",
+        "id": "O0O6l6rgnM6XfLWP",
+        "name": "n8n103"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-24T12:42:41.524Z",
+        "createdAt": "2026-07-24T12:42:41.524Z",
+        "role": "workflow:owner",
+        "workflowId": "aw6RmoFxC5krv8aK",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version fb7c781b",
+      "description": ""
+    }
+  }
+]

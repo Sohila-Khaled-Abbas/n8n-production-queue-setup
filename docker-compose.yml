@@ -207,7 +207,6 @@ services:
     stop_grace_period: 30s
     ports:
       - "80:5678"
-      - "5679:5679"
     deploy:
       resources:
         limits:

@@ -1,0 +1,136 @@
+[
+  {
+    "updatedAt": "2026-08-01T13:03:56.135Z",
+    "createdAt": "2026-08-01T12:11:21.656Z",
+    "id": "clzDuY3giYcQImEq",
+    "name": "Sub_AnomalyEscalation",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "b32f361c-8918-4040-95a4-1f01787c8591",
+        "name": "When Executed by Another Workflow"
+      },
+      {
+        "parameters": {
+          "jsCode": "const record = $input.item.json || {};\n\n// Extract transaction fields with safe fallbacks\nconst transactionId = record.transaction_id || 'N/A';\nconst region = record.region || 'N/A';\nconst revenue = Number(record.revenue ?? 0);\nconst batchMean = Number(record.batch_mean_revenue ?? 0);\nconst zScore = Number(record.z_score ?? 0);\nconst timestamp = record.timestamp || 'N/A';\n\n// Extract AI Analysis & Ticket fields\nconst rootCause = record.root_cause_hypothesis || 'Pending AI Analysis';\nconst recommendedAction = record.recommended_action || 'Review operational logs';\nconst issueUrl = record.issue_url || 'N/A';\n\n// Construct formatted alert message\nconst alertText = `\ud83d\udea8 *Data Anomaly & AI Analysis Report*\n\u2022 *Transaction ID*: ${transactionId}\n\u2022 *Region*: ${region}\n\u2022 *Revenue*: $${revenue.toLocaleString()} (Batch Mean: $${batchMean.toLocaleString()}, Z-Score: ${zScore})\n\u2022 *Timestamp*: ${timestamp}\n\u2022 *AI Hypothesis*: ${rootCause}\n\u2022 *Recommended Action*: ${recommendedAction}\n\u2022 *Incident Ticket*: ${issueUrl}`;\n\nreturn {\n  json: {\n    alert_text: alertText,\n    severity: Math.abs(zScore) > 3.0 ? 'CRITICAL' : 'WARNING'\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          224,
+          0
+        ],
+        "id": "b4f3dec3-b035-48fd-b09e-cd6043b5ff78",
+        "name": "FormatAlertMessage"
+      },
+      {
+        "parameters": {
+          "select": "channel",
+          "channelId": {
+            "__rl": true,
+            "value": "C0BME8WF2FK",
+            "mode": "list",
+            "cachedResultName": "data-alerts"
+          },
+          "text": "={{ $json.alert_text }}",
+          "otherOptions": {}
+        },
+        "type": "n8n-nodes-base.slack",
+        "typeVersion": 2.5,
+        "position": [
+          448,
+          0
+        ],
+        "id": "3259d368-738e-4e65-90de-1cd27707ee5a",
+        "name": "SendSlackAlert",
+        "webhookId": "b62c6735-0476-4f22-88df-8a6422fa80d4",
+        "credentials": {
+          "slackApi": {
+            "id": "WhbdXTTGbC3tfR1N",
+            "name": "Slack account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "FormatAlertMessage",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FormatAlertMessage": {
+        "main": [
+          [
+            {
+              "node": "SendSlackAlert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false,
+      "timeSavedMode": "fixed",
+      "saveDataErrorExecution": "none",
+      "saveDataSuccessExecution": "all",
+      "callerPolicy": "workflowsFromSameOwner"
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "38f3dc48-c00c-4c27-a8f9-b0f070f1c082",
+    "activeVersionId": "38f3dc48-c00c-4c27-a8f9-b0f070f1c082",
+    "versionCounter": 28,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2026-08-01T12:11:21.656Z",
+        "createdAt": "2026-08-01T12:11:21.656Z",
+        "role": "workflow:owner",
+        "workflowId": "clzDuY3giYcQImEq",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version 38f3dc48",
+      "description": ""
+    }
+  }
+]

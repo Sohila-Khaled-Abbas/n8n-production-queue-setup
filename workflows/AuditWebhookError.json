@@ -1,0 +1,138 @@
+[
+  {
+    "updatedAt": "2026-07-31T21:05:22.654Z",
+    "createdAt": "2026-07-31T20:57:17.970Z",
+    "id": "vnD3Be65RG1oTGcb",
+    "name": "AuditWebhookError",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          96
+        ],
+        "id": "2e1771e0-b3aa-49fa-ab73-fcaeed81aeff",
+        "name": "When Executed by Another Workflow"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO audit_logs (\n    workflow_id,\n    execution_id,\n    node_name,\n    error_message,\n    payload\n) VALUES (\n    '{{ $json.workflow_id }}',\n    '{{ $json.execution_id }}',\n    '{{ $json.node_name }}',\n    '{{ $json.error_message }}',\n    '{{ JSON.stringify($json.payload).replace(/'/g, \"''\") }}'::jsonb\n);",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          224,
+          0
+        ],
+        "id": "d7d4df26-0003-47bd-a4b6-2ea7a16e517d",
+        "name": "LogAuditPostgres",
+        "executeOnce": false,
+        "credentials": {
+          "postgres": {
+            "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+            "name": "PostgreSQL \u2014 n8n Stack"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sendTo": "sohila.k.data@gmail.com",
+          "subject": "=[ALERT] Stripe Webhook Error - Execution {{ $json.execution_id }}",
+          "emailType": "text",
+          "message": "=A failure occurred during Stripe Webhook processing.  Workflow ID: {{ $json.workflow_id }} Execution ID: {{ $json.execution_id }} Failed Node: {{ $json.node_name }} Error Message: {{ $json.error_message }}  Payload Details: {{ JSON.stringify($json.payload, null, 2) }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          224,
+          192
+        ],
+        "id": "eb6c232d-06df-4fb1-bd91-8d06daf1c5f3",
+        "name": "SendErrorEmail",
+        "webhookId": "d5c81951-1b73-480b-89ac-7861cf51550d",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "lnIdGq9BGx5bYyLm",
+            "name": "Gmail account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "LogAuditPostgres",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "SendErrorEmail",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "9409206b-e00a-4636-8a1e-b40fe6e2cdc7",
+    "activeVersionId": "9409206b-e00a-4636-8a1e-b40fe6e2cdc7",
+    "versionCounter": 16,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-31T20:57:21.597Z",
+        "createdAt": "2026-07-31T20:57:21.597Z",
+        "id": "ACqOV80SAxAHOAtZ",
+        "name": "Error-Workflow"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-31T20:57:17.970Z",
+        "createdAt": "2026-07-31T20:57:17.970Z",
+        "role": "workflow:owner",
+        "workflowId": "vnD3Be65RG1oTGcb",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version 9409206b",
+      "description": ""
+    }
+  }
+]

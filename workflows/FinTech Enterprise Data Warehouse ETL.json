@@ -1,0 +1,192 @@
+[
+  {
+    "updatedAt": "2026-07-28T19:26:04.867Z",
+    "createdAt": "2026-07-28T18:17:29.037Z",
+    "id": "09JLKeNn6YLhGx68",
+    "name": "FinTech: Enterprise Data Warehouse ETL",
+    "description": null,
+    "active": false,
+    "isArchived": true,
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "ar-settlements",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "be21c880-9a10-41a8-9d57-0e9633efc430",
+        "name": "Webhook",
+        "webhookId": "75b137dd-896c-4c4a-9266-b53dceec400f"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "CREATE TABLE public.fact_ar_settlements (\n    transaction_id VARCHAR(50) PRIMARY KEY,\n    amount DECIMAL(12, 2) NOT NULL,\n    settlement_date DATE NOT NULL,\n    customer_id VARCHAR(50) NOT NULL,\n    customer_name VARCHAR(100)\n);",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          224,
+          -96
+        ],
+        "id": "2b2bd5cf-71d2-47fc-8f7a-8280585c9479",
+        "name": "CreateTable",
+        "executeOnce": true,
+        "credentials": {
+          "postgres": {
+            "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+            "name": "PostgreSQL \u2014 n8n Stack"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "language": "pythonNative",
+          "pythonCode": "from dateutil import parser\nimport datetime\n\noutput_items = []\n# Grab the array of settlements from the first incoming webhook item\nsettlements = items['json']['settlements']\n\nfor trx in settlements:\n    # Standardize the messy date strings to ISO format (YYYY-MM-DD)\n    parsed_date = parser.parse(trx[\"date\"])\n    clean_date = parsed_date.strftime('%Y-%m-%d')\n    \n    # Flatten the nested customer object\n    flat_item = {\n        \"transaction_id\": trx[\"trx_id\"],\n        \"amount\": trx[\"amount\"],\n        \"settlement_date\": clean_date,\n        \"customer_id\": trx[\"customer\"][\"id\"],\n        \"customer_name\": trx[\"customer\"][\"name\"]\n    }\n    \n    # Append each transaction as its own n8n item\n    output_items.append({\"json\": flat_item})\n\n# Returns 5 separate items to the pipeline\nreturn output_items\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          144,
+          48
+        ],
+        "id": "b6557ca2-311a-424f-b4aa-26b5dfa24e3c",
+        "name": "Code in Python"
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "CreateTable",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Code in Python",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {
+      "Webhook": [
+        {
+          "json": {
+            "batch_id": "AR_BATCH_9091",
+            "settlements": [
+              {
+                "trx_id": "TX-101",
+                "amount": 1500.5,
+                "date": "10-24-2023",
+                "customer": {
+                  "id": "C001",
+                  "name": "Acme Corp"
+                }
+              },
+              {
+                "trx_id": "TX-102",
+                "amount": 200,
+                "date": "2023/10/25",
+                "customer": {
+                  "id": "C002",
+                  "name": "Global LLC"
+                }
+              },
+              {
+                "trx_id": "TX-103",
+                "amount": 3450.75,
+                "date": "Oct 26, 2023",
+                "customer": {
+                  "id": "C003",
+                  "name": "Tech Inc"
+                }
+              },
+              {
+                "trx_id": "TX-104",
+                "amount": 120,
+                "date": "27-10-2023",
+                "customer": {
+                  "id": "C004",
+                  "name": "StartUp Co"
+                }
+              },
+              {
+                "trx_id": "TX-105",
+                "amount": 999.99,
+                "date": "2023-10-28T08:00:00Z",
+                "customer": {
+                  "id": "C005",
+                  "name": "Mega Corp"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "versionId": "96f6f774-0b5a-4c61-9335-d9f03371de19",
+    "activeVersionId": null,
+    "versionCounter": 17,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-16T16:03:28.284Z",
+        "createdAt": "2026-07-16T16:03:28.284Z",
+        "id": "e1c954be4bee474d",
+        "name": "Data Transformation"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.786Z",
+        "createdAt": "2026-07-16T16:03:28.786Z",
+        "id": "6e30f4ffb71d4b65",
+        "name": "Data Pipeline"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-28T18:17:29.037Z",
+        "createdAt": "2026-07-28T18:17:29.037Z",
+        "role": "workflow:owner",
+        "workflowId": "09JLKeNn6YLhGx68",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

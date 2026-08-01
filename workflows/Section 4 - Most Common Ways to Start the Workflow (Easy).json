@@ -1,8 +1,8 @@
 [
   {
-    "updatedAt": "2026-07-18T12:13:54.608Z",
-    "createdAt": "2026-07-01T13:03:28.757Z",
-    "id": "pJpZcQ6fHtqAi1nL",
+    "updatedAt": "2026-07-27T18:33:17.787Z",
+    "createdAt": "2026-07-27T18:33:05.587Z",
+    "id": "Q0EguNXQgqyQmmez",
     "name": "Section 4 - Most Common Ways to Start the Workflow (Easy)",
     "description": null,
     "active": false,
@@ -13,10 +13,10 @@
         "type": "n8n-nodes-base.manualTrigger",
         "typeVersion": 1,
         "position": [
-          -96,
+          0,
           0
         ],
-        "id": "de8984f5-8462-4e5f-9ed1-5e8bb4cbd9c5",
+        "id": "bbc991ed-e335-456c-8b55-94ba5477f2a4",
         "name": "When clicking \u2018Execute workflow\u2019"
       },
       {
@@ -33,10 +33,10 @@
         "type": "n8n-nodes-base.scheduleTrigger",
         "typeVersion": 1.3,
         "position": [
-          -96,
-          192
+          0,
+          240
         ],
-        "id": "e5fe1d26-7f84-4c17-b628-9ce1f45271de",
+        "id": "4cc666ac-abc8-4a3b-bafc-c45637141f16",
         "name": "Schedule Trigger"
       },
       {
@@ -46,10 +46,10 @@
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
         "position": [
-          128,
-          96
+          304,
+          128
         ],
-        "id": "eba733ba-7c17-4d2b-84d3-1e2812433f10",
+        "id": "5f4650d4-ed2b-45c7-a036-ab618868766e",
         "name": "Edit Fields"
       },
       {
@@ -59,10 +59,10 @@
         "type": "@n8n/n8n-nodes-langchain.chatTrigger",
         "typeVersion": 1.4,
         "position": [
-          -96,
-          528
+          -48,
+          480
         ],
-        "id": "38099211-b011-47d4-8616-3be137859cde",
+        "id": "6597cce3-f1a8-4756-b11d-6f5c0426a239",
         "name": "When chat message received",
         "webhookId": "19a0f852-dd0d-4349-aedc-5fab84fc1ba6"
       },
@@ -73,11 +73,31 @@
         "type": "@n8n/n8n-nodes-langchain.agent",
         "typeVersion": 3.1,
         "position": [
-          128,
-          528
+          144,
+          496
         ],
-        "id": "dc825986-5836-4b62-a9b0-3964881d8104",
+        "id": "22214f49-22d4-4e14-b101-75eb820d9475",
         "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-5-mini",
+            "mode": "list",
+            "cachedResultName": "gpt-5-mini"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          144,
+          672
+        ],
+        "id": "12e2995f-efae-411f-887f-b9afe130ea32",
+        "name": "OpenAI Chat Model"
       },
       {
         "parameters": {
@@ -131,12 +151,12 @@
         "type": "n8n-nodes-base.formTrigger",
         "typeVersion": 2.4,
         "position": [
-          -96,
-          848
+          -80,
+          864
         ],
-        "id": "fc3aaa40-633c-4693-af18-28cae0015abb",
+        "id": "8072f7fc-1f8a-40e0-a938-cc3b83eff4ac",
         "name": "On form submission",
-        "webhookId": "b7a23b9e-bd96-4718-bdfc-c7e884434cfd"
+        "webhookId": "564f315e-6f07-4fda-ac11-b0ee9ffe8d5c"
       },
       {
         "parameters": {
@@ -146,11 +166,11 @@
         },
         "type": "n8n-nodes-base.stickyNote",
         "position": [
-          800,
-          240
+          -128,
+          1040
         ],
         "typeVersion": 1,
-        "id": "964460c9-00b1-46a8-85b6-3c9ae9a683a6",
+        "id": "34d6c607-4170-4cb7-9a80-0227716b43fd",
         "name": "Sticky Note"
       },
       {
@@ -190,12 +210,12 @@
         "type": "n8n-nodes-base.formTrigger",
         "typeVersion": 2.4,
         "position": [
-          -96,
-          1072
+          -80,
+          1424
         ],
-        "id": "898b8fec-7f79-4442-bccb-2fb8ebd38f15",
+        "id": "ece26ab1-5b42-44b3-a884-a0c257c99022",
         "name": "On form submission1",
-        "webhookId": "f5c1b641-d92c-4489-90c2-c449b3dd6555"
+        "webhookId": "5d4a02b3-e450-4e3b-9cd1-e60a1e279ff2"
       },
       {
         "parameters": {
@@ -239,9 +259,9 @@
         "typeVersion": 3.4,
         "position": [
           128,
-          1072
+          1424
         ],
-        "id": "a642b3e0-5426-4c87-a485-3ccee8bab148",
+        "id": "ec55c542-917d-41b6-9f9b-09a141e3bade",
         "name": "Edit Fields1"
       },
       {
@@ -297,31 +317,11 @@
         "typeVersion": 2.4,
         "position": [
           -96,
-          1296
+          1728
         ],
-        "id": "b5053a67-dff6-430b-80a7-ebbf13461db4",
+        "id": "905c5f7a-cd04-40e5-a721-52d842cd5bc7",
         "name": "On form submission2",
-        "webhookId": "5129d1a7-f969-4d10-bca8-d7b636be9b7d"
-      },
-      {
-        "parameters": {
-          "model": "llama3.2:3b",
-          "options": {}
-        },
-        "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-        "typeVersion": 1,
-        "position": [
-          -16,
-          736
-        ],
-        "id": "b0ec3dff-17cd-4554-8b17-d8ca2bb6fa5d",
-        "name": "Ollama Chat Model",
-        "credentials": {
-          "ollamaApi": {
-            "id": "wDe9MCIO6q1M7Gau",
-            "name": "Ollama account"
-          }
-        }
+        "webhookId": "60e8014a-1e5a-4b5d-9624-cca569033f2a"
       }
     ],
     "connections": {
@@ -358,6 +358,17 @@
           ]
         ]
       },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
       "On form submission1": {
         "main": [
           [
@@ -368,71 +379,29 @@
             }
           ]
         ]
-      },
-      "Ollama Chat Model": {
-        "ai_languageModel": [
-          [
-            {
-              "node": "AI Agent",
-              "type": "ai_languageModel",
-              "index": 0
-            }
-          ]
-        ]
       }
     },
     "settings": {
       "executionOrder": "v1",
       "binaryMode": "separate",
-      "availableInMCP": true
+      "availableInMCP": false
     },
-    "staticData": {
-      "node:Schedule Trigger": {
-        "recurrenceRules": []
-      }
-    },
-    "meta": {
-      "templateCredsSetupCompleted": true
-    },
+    "staticData": null,
+    "meta": null,
     "nodeGroups": [],
     "pinData": {},
-    "versionId": "9849c370-f963-4c73-87c9-54ac483af382",
+    "versionId": "ef68ee8d-55c6-48ea-b5cb-a43da26e5d95",
     "activeVersionId": null,
-    "versionCounter": 7,
-    "triggerCount": 5,
+    "versionCounter": 3,
+    "triggerCount": 0,
     "sourceWorkflowId": null,
-    "tags": [
-      {
-        "updatedAt": "2026-07-16T16:03:29.217Z",
-        "createdAt": "2026-07-16T16:03:29.217Z",
-        "id": "08f43634238e406b",
-        "name": "Agentic AI"
-      },
-      {
-        "updatedAt": "2026-07-16T16:03:28.284Z",
-        "createdAt": "2026-07-16T16:03:28.284Z",
-        "id": "e1c954be4bee474d",
-        "name": "Data Transformation"
-      },
-      {
-        "updatedAt": "2026-07-16T16:03:28.540Z",
-        "createdAt": "2026-07-16T16:03:28.540Z",
-        "id": "90acb56ef2f84a89",
-        "name": "Event-Driven"
-      },
-      {
-        "updatedAt": "2026-07-16T16:03:29.020Z",
-        "createdAt": "2026-07-16T16:03:29.020Z",
-        "id": "9a8d1d753df54ed1",
-        "name": "Production Automation"
-      }
-    ],
+    "tags": [],
     "shared": [
       {
-        "updatedAt": "2026-07-01T13:03:28.757Z",
-        "createdAt": "2026-07-01T13:03:28.757Z",
+        "updatedAt": "2026-07-27T18:33:05.587Z",
+        "createdAt": "2026-07-27T18:33:05.587Z",
         "role": "workflow:owner",
-        "workflowId": "pJpZcQ6fHtqAi1nL",
+        "workflowId": "Q0EguNXQgqyQmmez",
         "projectId": "7Kuw5RaGwePDWMtJ",
         "project": {
           "updatedAt": "2026-06-09T16:37:14.049Z",
@@ -448,8 +417,8 @@
       }
     ],
     "versionMetadata": {
-      "name": "Version 9849c370",
-      "description": ""
+      "name": null,
+      "description": null
     }
   }
 ]

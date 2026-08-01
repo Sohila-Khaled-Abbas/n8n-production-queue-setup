@@ -1,0 +1,159 @@
+[
+  {
+    "updatedAt": "2026-07-28T19:25:58.272Z",
+    "createdAt": "2026-07-28T16:28:39.597Z",
+    "id": "Ny3YVgOVZfTY93Ig",
+    "name": "Sales Operations: Lead Routing & Enrichment",
+    "description": null,
+    "active": false,
+    "isArchived": true,
+    "nodes": [
+      {
+        "parameters": {
+          "path": "f63d12be-ca41-4688-94e9-96d547845d94",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "098b1c72-7ac4-4625-b000-845e74000d7d",
+        "name": "Webhook",
+        "webhookId": "f63d12be-ca41-4688-94e9-96d547845d94"
+      },
+      {
+        "parameters": {
+          "domain": "={{ $json.domain }}",
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.clearbit",
+        "typeVersion": 1,
+        "position": [
+          448,
+          0
+        ],
+        "id": "128a24c3-fe31-4318-bce1-53061023ad3b",
+        "name": "Enrich a company"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "7cfaebbc-ecff-4f7d-8d82-a62523aa9d4f",
+                "name": "domain",
+                "value": "={{ $json.body.email.extractDomain()}}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          224,
+          0
+        ],
+        "id": "090e2ab0-60d8-468f-9549-088a6757182d",
+        "name": "DomainExtractor"
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "DomainExtractor",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "DomainExtractor": {
+        "main": [
+          [
+            {
+              "node": "Enrich a company",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {
+      "Webhook": [
+        {
+          "json": {
+            "headers": {
+              "content-type": "application/json",
+              "user-agent": "LandingPageHook/1.0"
+            },
+            "body": {
+              "first_name": "Jane",
+              "last_name": "Doe",
+              "email": "jane.doe@techstartup.io",
+              "company": "Tech Startup",
+              "source_campaign": "Q3_Enterprise_Webinar"
+            }
+          }
+        }
+      ]
+    },
+    "versionId": "be0a6b62-ee0d-44f0-91d3-b8a155bd2725",
+    "activeVersionId": null,
+    "versionCounter": 24,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-16T16:03:29.020Z",
+        "createdAt": "2026-07-16T16:03:29.020Z",
+        "id": "9a8d1d753df54ed1",
+        "name": "Production Automation"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:29.217Z",
+        "createdAt": "2026-07-16T16:03:29.217Z",
+        "id": "08f43634238e406b",
+        "name": "Agentic AI"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-28T16:28:39.597Z",
+        "createdAt": "2026-07-28T16:28:39.597Z",
+        "role": "workflow:owner",
+        "workflowId": "Ny3YVgOVZfTY93Ig",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

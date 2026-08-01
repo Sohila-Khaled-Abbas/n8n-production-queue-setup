@@ -1,0 +1,910 @@
+[
+  {
+    "updatedAt": "2026-08-01T13:14:50.014Z",
+    "createdAt": "2026-08-01T10:33:39.686Z",
+    "id": "HdXPvKtF22v0vBA4",
+    "name": "Operational-Data-System",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          -32,
+          -160
+        ],
+        "id": "f6de3a46-c219-43b1-a63f-a47861430e71",
+        "name": "When clicking \u2018Execute workflow\u2019"
+      },
+      {
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "{\n  \"data\": [\n    {\n      \"transaction_id\": \"TX1001\",\n      \"timestamp\": \"2026-08-01T10:00:00Z\",\n      \"region\": \"NA\",\n      \"revenue\": 1200.50,\n      \"conversion_rate\": 0.035,\n      \"latency_ms\": 142\n    },\n    {\n      \"transaction_id\": \"TX1002\",\n      \"timestamp\": \"2026-08-01T10:05:00Z\",\n      \"region\": \"EU\",\n      \"revenue\": 1150.00,\n      \"conversion_rate\": 0.032,\n      \"latency_ms\": 150\n    },\n    {\n      \"transaction_id\": \"TX1003\",\n      \"timestamp\": \"2026-08-01T10:10:00Z\",\n      \"region\": \"NA\",\n      \"revenue\": 1280.75,\n      \"conversion_rate\": 0.038,\n      \"latency_ms\": 138\n    },\n    {\n      \"transaction_id\": \"TX1004\",\n      \"timestamp\": \"2026-08-01T10:15:00Z\",\n      \"region\": \"APAC\",\n      \"revenue\": 1210.00,\n      \"conversion_rate\": 0.034,\n      \"latency_ms\": 145\n    },\n    {\n      \"transaction_id\": \"TX1005\",\n      \"timestamp\": \"2026-08-01T10:20:00Z\",\n      \"region\": \"EU\",\n      \"revenue\": 1190.25,\n      \"conversion_rate\": 0.033,\n      \"latency_ms\": 140\n    },\n    {\n      \"transaction_id\": \"TX1006\",\n      \"timestamp\": \"2026-08-01T10:25:00Z\",\n      \"region\": \"NA\",\n      \"revenue\": 8900.00,\n      \"conversion_rate\": 0.125,\n      \"latency_ms\": 850\n    }\n  ]\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          192,
+          -64
+        ],
+        "id": "bf9ded2b-1b9d-4772-b701-c486735b843a",
+        "name": "MockDataIngestion"
+      },
+      {
+        "parameters": {
+          "fieldToSplitOut": "data",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitOut",
+        "typeVersion": 1,
+        "position": [
+          416,
+          -64
+        ],
+        "id": "6697d867-69f0-4695-a4fe-7c178032eaa4",
+        "name": "ItemLists"
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {}
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          -32,
+          32
+        ],
+        "id": "725734ae-2614-42b6-975b-438ea0d11a36",
+        "name": "ScheduleTrigger"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Validate schema and sanitize nulls / numeric types\nconst items = $input.all();\nconst cleanedData = [];\n\nfor (const item of items) {\n  const record = item.json;\n  \n  // Mandatory field check\n  if (!record.transaction_id || !record.timestamp) {\n    continue;\n  }\n  \n  cleanedData.push({\n    json: {\n      transaction_id: String(record.transaction_id).trim(),\n      timestamp: new Date(record.timestamp).toISOString(),\n      region: record.region ? String(record.region).toUpperCase() : 'UNKNOWN',\n      revenue: parseFloat(record.revenue) || 0.0,\n      conversion_rate: parseFloat(record.conversion_rate) || 0.0,\n      latency_ms: parseInt(record.latency_ms, 10) || 0\n    }\n  });\n}\n\nreturn cleanedData;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          640,
+          -64
+        ],
+        "id": "0af734c0-972c-479c-bd29-71db312ca1ca",
+        "name": "CleanAndValidateSchema"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Compute sample mean, standard deviation, and Z-Score for revenue metric\nconst items = $input.all();\nconst revenues = items.map(item => item.json.revenue);\n\nif (revenues.length === 0) return [];\n\n// Calculate Mean\nconst mean = revenues.reduce((acc, val) => acc + val, 0) / revenues.length;\n\n// Calculate Standard Deviation\nconst variance = revenues.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / revenues.length;\nconst stdDev = Math.sqrt(variance);\n\n// Z-Score threshold for anomaly detection (2.0 = ~95.4% confidence interval)\nconst ANOMALY_THRESHOLD = 2.0;\n\nreturn items.map(item => {\n  const rev = item.json.revenue;\n  const zScore = stdDev === 0 ? 0 : (rev - mean) / stdDev;\n  const isAnomaly = Math.abs(zScore) >= ANOMALY_THRESHOLD;\n  \n  return {\n    json: {\n      ...item.json,\n      batch_mean_revenue: Number(mean.toFixed(2)),\n      batch_std_dev: Number(stdDev.toFixed(2)),\n      z_score: Number(zScore.toFixed(4)),\n      is_anomaly: isAnomaly\n    }\n  };\n});"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          864,
+          -64
+        ],
+        "id": "18e36411-13be-4463-b246-e7bd9db87911",
+        "name": "CalculateZScoresAndAggregates"
+      },
+      {
+        "parameters": {
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "value": "1WEqya3crWHLgSfn",
+            "mode": "list",
+            "cachedResultName": "fact_daily_analytics",
+            "cachedResultUrl": "/projects/7Kuw5RaGwePDWMtJ/datatables/1WEqya3crWHLgSfn"
+          },
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "transaction_id",
+                "keyValue": "={{ $json.transaction_id }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "is_anomaly": "={{ $json.is_anomaly }}",
+              "transaction_id": "={{ $json.transaction_id }}",
+              "timestamp": "={{ $json.timestamp }}",
+              "region": "={{ $json.region }}",
+              "revenue": "={{ $json.revenue }}",
+              "z_score": "={{ $json.z_score }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "transaction_id",
+                "displayName": "transaction_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "timestamp",
+                "displayName": "timestamp",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "region",
+                "displayName": "region",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "revenue",
+                "displayName": "revenue",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "z_score",
+                "displayName": "z_score",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "is_anomaly",
+                "displayName": "is_anomaly",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "boolean",
+                "readOnly": false,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1088,
+          -64
+        ],
+        "id": "f77c3fda-d3f3-4b64-9590-5a4e8746186d",
+        "name": "SyncToDataWarehouse"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "0a3f2825-49ee-45b4-ad35-39f0ecb3cfb4",
+                "leftValue": "={{ $json.is_anomaly }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          1312,
+          -64
+        ],
+        "id": "58f07a59-eb65-42b4-94c7-0a0222e75e02",
+        "name": "CheckForAnomalies"
+      },
+      {
+        "parameters": {
+          "workflowId": {
+            "__rl": true,
+            "value": "clzDuY3giYcQImEq",
+            "mode": "list",
+            "cachedResultUrl": "/workflow/clzDuY3giYcQImEq",
+            "cachedResultName": "Sub_AnomalyEscalation"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": true
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.3,
+        "position": [
+          2560,
+          -192
+        ],
+        "id": "0c6098ef-708b-492a-b399-a91fef7c30c2",
+        "name": "CallAnomalyEscalationSubWorkflow"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Summary log for normal operational records\nconst items = $input.all();\nconsole.log(`Processed ${items.length} normal records without anomalies.`);\nreturn items;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2560,
+          64
+        ],
+        "id": "cc9ed96f-6a89-49e0-9dc4-c84b9ac3a8ea",
+        "name": "LogNormalRecords"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=You are an expert Data Reliability Engineer. Analyze the following operational anomaly payload and generate a concise Root Cause Analysis (RCA) hypothesis and recommended remediation steps.\n\nAnomaly Context:\n- Transaction ID: {{ $json.transaction_id }}\n- Region: {{ $json.region }}\n- Observed Revenue: ${{ $json.revenue }}\n- Batch Mean Revenue: {{ $('CalculateZScoresAndAggregates').item.json.batch_mean_revenue }}\n- Z-Score: {{ $json.z_score }}\n- Latency (ms): {{ $('CalculateZScoresAndAggregates').item.json.latency_ms }}\n- Timestamp: {{ $json.timestamp }}\n\nProvide your output in valid JSON matching this schema:\n{\n  \"severity_assessment\": \"CRITICAL | WARNING | INFO\",\n  \"root_cause_hypothesis\": \"Brief explanation of potential cause\",\n  \"recommended_action\": \"Actionable step for the on-call engineer\"\n}",
+          "needsFallback": true,
+          "batching": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chainLlm",
+        "typeVersion": 1.9,
+        "position": [
+          1536,
+          -192
+        ],
+        "id": "e82a6947-078e-49c4-874a-e9ccf4fd8406",
+        "name": "AI_RootCauseAnalyzer"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "openai/gpt-oss-120b",
+            "mode": "list",
+            "cachedResultName": "openai/gpt-oss-120b"
+          },
+          "responsesApiEnabled": false,
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          1552,
+          32
+        ],
+        "id": "e395da65-97b3-49f0-af60-d8eb8d4b3543",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "doxpsivmFLpAY4By",
+            "name": "Hugging Face"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": "openrouter/auto",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          1680,
+          32
+        ],
+        "id": "b676b0b2-a7b7-47a1-a8e9-0148e986c7f6",
+        "name": "OpenRouter Chat Model",
+        "credentials": {
+          "openRouterApi": {
+            "id": "Wfnk5q7gswurynsI",
+            "name": "OpenRouter account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jiraVersion": "cloudOAuth2",
+          "project": {
+            "__rl": true,
+            "value": "10001",
+            "mode": "list",
+            "cachedResultName": "Analytics Hub"
+          },
+          "issueType": {
+            "__rl": true,
+            "value": "10007",
+            "mode": "list",
+            "cachedResultName": "Task"
+          },
+          "summary": "={{ $json.jira_summary }}",
+          "additionalFields": {
+            "description": "={{ $json.jira_description }}"
+          }
+        },
+        "type": "n8n-nodes-base.jira",
+        "typeVersion": 1,
+        "position": [
+          2112,
+          -192
+        ],
+        "id": "bad928dd-46f3-4f82-9181-b611d0f2d2e9",
+        "name": "CreateIncidentTicket",
+        "credentials": {
+          "jiraSoftwareCloudOAuth2Api": {
+            "id": "bU9CkDMI22YvscC2",
+            "name": "Jira SW Cloud account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "// 1. Get raw text from the AI node output\nconst rawText = $input.item.json.text || '';\n\n// 2. Strip markdown code fence blocks (```json ... ```)\nconst cleanedText = rawText\n  .replace(/```json/gi, '')\n  .replace(/```/g, '')\n  .trim();\n\n// 3. Parse JSON safely with fallbacks\nlet aiData = {};\ntry {\n  aiData = JSON.parse(cleanedText);\n} catch (e) {\n  aiData = {\n    severity_assessment: \"WARNING\",\n    root_cause_hypothesis: rawText || \"Unable to parse AI response as JSON.\",\n    recommended_action: \"Inspect transaction logs manually.\"\n  };\n}\n\n// 4. Retrieve original transaction context from CheckForAnomalies\nconst anomalyRecord = $('CheckForAnomalies').item.json || {};\n\nconst severity = aiData.severity_assessment || 'CRITICAL';\nconst hypothesis = aiData.root_cause_hypothesis || 'N/A';\nconst action = aiData.recommended_action || 'N/A';\n\n// 5. Output unified payload ready for Jira\nreturn {\n  json: {\n    // Transaction Fields\n    transaction_id: anomalyRecord.transaction_id || 'N/A',\n    region: anomalyRecord.region || 'N/A',\n    revenue: anomalyRecord.revenue || 0,\n    z_score: anomalyRecord.z_score || 0,\n    timestamp: anomalyRecord.timestamp || 'N/A',\n    \n    // Parsed AI Fields\n    severity_assessment: severity,\n    root_cause_hypothesis: hypothesis,\n    recommended_action: action,\n    \n    // Pre-formatted Jira Ticket Fields\n    jira_summary: `[${severity}] Data Anomaly Detected: TX ${anomalyRecord.transaction_id} (${anomalyRecord.region})`,\n    jira_description: `An anomaly was flagged by the statistical pipeline.\n\n\u2022 Transaction ID: ${anomalyRecord.transaction_id}\n\u2022 Region: ${anomalyRecord.region}\n\u2022 Revenue: $${anomalyRecord.revenue}\n\u2022 Z-Score: ${anomalyRecord.z_score}\n\u2022 Timestamp: ${anomalyRecord.timestamp}\n\n--- AI Root Cause Analysis ---\n\u2022 Severity: ${severity}\n\u2022 Hypothesis: ${hypothesis}\n\u2022 Recommended Action: ${action}`\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1888,
+          -192
+        ],
+        "id": "c011abb4-7d8c-4dee-8199-4cbe8e9b35a9",
+        "name": "FormatAIResponseForJira"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Merge Jira ticket output with the formatted AI & Transaction data\nconst jiraOutput = $input.item.json || {};\nconst aiAndTxData = $('FormatAIResponseForJira').item.json || {};\n\nreturn {\n  json: {\n    ...aiAndTxData,\n    issue_url: jiraOutput.key || jiraOutput.self || jiraOutput.issue_url || 'N/A'\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2336,
+          -192
+        ],
+        "id": "f2f6111b-1f3d-4825-a72b-15d9872573fd",
+        "name": "PrepareSubWorkflowInput"
+      },
+      {
+        "parameters": {
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "value": "u7jXoh6Z9H6NMMgY",
+            "mode": "list",
+            "cachedResultName": "executive_daily_metrics",
+            "cachedResultUrl": "/projects/7Kuw5RaGwePDWMtJ/datatables/u7jXoh6Z9H6NMMgY"
+          },
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "metric_date",
+                "keyValue": "={{ new Date().toISOString().split('T')[0] }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "metric_date": "={{ new Date().toISOString().split('T')[0] }}",
+              "total_records_processed": "={{ $('CalculateZScoresAndAggregates').all().length }}",
+              "anomalies_flagged": "={{ $('CalculateZScoresAndAggregates').all().filter(item => item.json.is_anomaly === true).length }}",
+              "last_run_status": "={{ $('CalculateZScoresAndAggregates').all().some(item => item.json.is_anomaly === true) ? 'ATTENTION_REQUIRED' : 'HEALTHY' }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "metric_date",
+                "displayName": "metric_date",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "total_records_processed",
+                "displayName": "total_records_processed",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "anomalies_flagged",
+                "displayName": "anomalies_flagged",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "last_run_status",
+                "displayName": "last_run_status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "dryRun": false
+          }
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          2784,
+          -64
+        ],
+        "id": "cf5e1cc2-f2c4-47f7-ae59-1e0eb7914275",
+        "name": "Upsert row(s)",
+        "executeOnce": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Retrieve all cleaned records from the ETL stage\nconst allCleanItems = $('CleanAndValidateSchema').all().map(item => item.json);\nconst jsonContent = JSON.stringify(allCleanItems, null, 2);\n\n// 2. Generate partition dates (year=YYYY/month=MM)\nconst now = new Date();\nconst year = now.getFullYear();\nconst month = String(now.getMonth() + 1).padStart(2, '0');\nconst timestamp = now.getTime();\n\nconst fileKey = `year=${year}/month=${month}/batch_${timestamp}.json`;\nconst fileName = `batch_${timestamp}.json`;\n\n// 3. Convert JSON text into n8n binary data buffer\nconst binaryData = await this.helpers.prepareBinaryData(\n  Buffer.from(jsonContent),\n  fileName,\n  'application/json'\n);\n\nreturn [\n  {\n    json: {\n      file_key: fileKey,\n      file_name: fileName,\n      total_archived_records: allCleanItems.length,\n      archived_at: now.toISOString()\n    },\n    binary: {\n      data: binaryData\n    }\n  }\n];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3008,
+          -64
+        ],
+        "id": "efebd500-a986-441a-ac07-1082e47d7f09",
+        "name": "PrepareColdStorageFile"
+      }
+    ],
+    "connections": {
+      "When clicking \u2018Execute workflow\u2019": {
+        "main": [
+          [
+            {
+              "node": "MockDataIngestion",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "MockDataIngestion": {
+        "main": [
+          [
+            {
+              "node": "ItemLists",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "ScheduleTrigger": {
+        "main": [
+          [
+            {
+              "node": "MockDataIngestion",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "ItemLists": {
+        "main": [
+          [
+            {
+              "node": "CleanAndValidateSchema",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CleanAndValidateSchema": {
+        "main": [
+          [
+            {
+              "node": "CalculateZScoresAndAggregates",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CalculateZScoresAndAggregates": {
+        "main": [
+          [
+            {
+              "node": "SyncToDataWarehouse",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "SyncToDataWarehouse": {
+        "main": [
+          [
+            {
+              "node": "CheckForAnomalies",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CheckForAnomalies": {
+        "main": [
+          [
+            {
+              "node": "AI_RootCauseAnalyzer",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "LogNormalRecords",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "LogNormalRecords": {
+        "main": [
+          [
+            {
+              "node": "Upsert row(s)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CallAnomalyEscalationSubWorkflow": {
+        "main": [
+          [
+            {
+              "node": "Upsert row(s)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI_RootCauseAnalyzer": {
+        "main": [
+          [
+            {
+              "node": "FormatAIResponseForJira",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI_RootCauseAnalyzer",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI_RootCauseAnalyzer",
+              "type": "ai_languageModel",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "CreateIncidentTicket": {
+        "main": [
+          [
+            {
+              "node": "PrepareSubWorkflowInput",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FormatAIResponseForJira": {
+        "main": [
+          [
+            {
+              "node": "CreateIncidentTicket",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "PrepareSubWorkflowInput": {
+        "main": [
+          [
+            {
+              "node": "CallAnomalyEscalationSubWorkflow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upsert row(s)": {
+        "main": [
+          [
+            {
+              "node": "PrepareColdStorageFile",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "PrepareColdStorageFile": {
+        "main": [
+          []
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": {
+      "node:ScheduleTrigger": {
+        "recurrenceRules": []
+      }
+    },
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {
+      "MockDataIngestion": [
+        {
+          "json": {
+            "data": [
+              {
+                "transaction_id": "TX1001",
+                "timestamp": "2026-08-01T10:00:00Z",
+                "region": "NA",
+                "revenue": 1200.5,
+                "conversion_rate": 0.035,
+                "latency_ms": 142
+              },
+              {
+                "transaction_id": "TX1002",
+                "timestamp": "2026-08-01T10:05:00Z",
+                "region": "EU",
+                "revenue": 1150,
+                "conversion_rate": 0.032,
+                "latency_ms": 150
+              },
+              {
+                "transaction_id": "TX1003",
+                "timestamp": "2026-08-01T10:10:00Z",
+                "region": "NA",
+                "revenue": 1280.75,
+                "conversion_rate": 0.038,
+                "latency_ms": 138
+              },
+              {
+                "transaction_id": "TX1004",
+                "timestamp": "2026-08-01T10:15:00Z",
+                "region": "APAC",
+                "revenue": 1210,
+                "conversion_rate": 0.034,
+                "latency_ms": 145
+              },
+              {
+                "transaction_id": "TX1005",
+                "timestamp": "2026-08-01T10:20:00Z",
+                "region": "EU",
+                "revenue": 1190.25,
+                "conversion_rate": 0.033,
+                "latency_ms": 140
+              },
+              {
+                "transaction_id": "TX1006",
+                "timestamp": "2026-08-01T10:25:00Z",
+                "region": "NA",
+                "revenue": 8900,
+                "conversion_rate": 0.125,
+                "latency_ms": 850
+              }
+            ]
+          },
+          "pairedItem": {
+            "item": 0
+          }
+        }
+      ],
+      "ItemLists": [
+        {
+          "json": {
+            "transaction_id": "TX1001",
+            "timestamp": "2026-08-01T10:00:00Z",
+            "region": "NA",
+            "revenue": 1200.5,
+            "conversion_rate": 0.035,
+            "latency_ms": 142
+          },
+          "pairedItem": {
+            "item": 0
+          }
+        },
+        {
+          "json": {
+            "transaction_id": "TX1002",
+            "timestamp": "2026-08-01T10:05:00Z",
+            "region": "EU",
+            "revenue": 1150,
+            "conversion_rate": 0.032,
+            "latency_ms": 150
+          },
+          "pairedItem": {
+            "item": 0
+          }
+        },
+        {
+          "json": {
+            "transaction_id": "TX1003",
+            "timestamp": "2026-08-01T10:10:00Z",
+            "region": "NA",
+            "revenue": 1280.75,
+            "conversion_rate": 0.038,
+            "latency_ms": 138
+          },
+          "pairedItem": {
+            "item": 0
+          }
+        },
+        {
+          "json": {
+            "transaction_id": "TX1004",
+            "timestamp": "2026-08-01T10:15:00Z",
+            "region": "APAC",
+            "revenue": 1210,
+            "conversion_rate": 0.034,
+            "latency_ms": 145
+          },
+          "pairedItem": {
+            "item": 0
+          }
+        },
+        {
+          "json": {
+            "transaction_id": "TX1005",
+            "timestamp": "2026-08-01T10:20:00Z",
+            "region": "EU",
+            "revenue": 1190.25,
+            "conversion_rate": 0.033,
+            "latency_ms": 140
+          },
+          "pairedItem": {
+            "item": 0
+          }
+        },
+        {
+          "json": {
+            "transaction_id": "TX1006",
+            "timestamp": "2026-08-01T10:25:00Z",
+            "region": "NA",
+            "revenue": 8900,
+            "conversion_rate": 0.125,
+            "latency_ms": 850
+          },
+          "pairedItem": {
+            "item": 0
+          }
+        }
+      ],
+      "AI_RootCauseAnalyzer": [
+        {
+          "json": {
+            "text": "```json\n{\n  \"severity_assessment\": \"CRITICAL\",\n  \"root_cause_hypothesis\": \"A processing anomaly (e.g., duplicate record or mis\u2011applied pricing rule) caused TX1006 to be ingested with an inflated revenue value, inflating the batch mean and triggering a high latency path.\",\n  \"recommended_action\": \"Immediately pause the ingestion of new transactions for the NA region, retrieve the raw source logs for TX1006, verify that the transaction was not duplicated or mis\u2011priced, and fix the transformation rule or deduplication logic before re\u2011enabling the pipeline.\"\n}\n```"
+          },
+          "pairedItem": {
+            "item": 0
+          }
+        }
+      ]
+    },
+    "versionId": "f228cf2a-b873-463b-9be0-1c4b1d1caaf0",
+    "activeVersionId": "f228cf2a-b873-463b-9be0-1c4b1d1caaf0",
+    "versionCounter": 201,
+    "triggerCount": 1,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-16T16:03:28.284Z",
+        "createdAt": "2026-07-16T16:03:28.284Z",
+        "id": "e1c954be4bee474d",
+        "name": "Data Transformation"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.786Z",
+        "createdAt": "2026-07-16T16:03:28.786Z",
+        "id": "6e30f4ffb71d4b65",
+        "name": "Data Pipeline"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-08-01T10:33:39.686Z",
+        "createdAt": "2026-08-01T10:33:39.686Z",
+        "role": "workflow:owner",
+        "workflowId": "HdXPvKtF22v0vBA4",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version f228cf2a",
+      "description": ""
+    }
+  }
+]

@@ -1,0 +1,229 @@
+[
+  {
+    "updatedAt": "2026-07-24T16:09:30.627Z",
+    "createdAt": "2026-07-21T21:54:25.303Z",
+    "id": "bgJCJl1T0xeswVZC",
+    "name": "Section 2 - Debugging Practice",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "7ce3e2bd-9426-4af4-9696-4300d5f6a6c1",
+        "name": "TriggerManual"
+      },
+      {
+        "parameters": {
+          "url": "https://learn.app.n8n.cloud/webhook/course/n8n103/unreliable-api",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "X-Assessment-ID",
+                "value": "e8bce3d38b15ef6ce378bde696e04474"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          224,
+          0
+        ],
+        "id": "6a06f829-96a0-4746-9c35-6f52add1825b",
+        "name": "GetUnreliableData",
+        "retryOnFail": true,
+        "maxTries": 5,
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "VCjTrRb8YGJHXwcC",
+            "name": "n8n Academy API Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://learn.app.n8n.cloud/webhook/webhook/course/n8n103/retry-result",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "X-Assessment-ID",
+                "value": "e8bce3d38b15ef6ce378bde696e04474"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "confirmation_code",
+                "value": "={{ $json.confirmation_code }}"
+              },
+              {
+                "name": "order_id",
+                "value": "={{ $json.order.order_id }}"
+              },
+              {
+                "name": "customer_name",
+                "value": "={{ $json.order.customer_name }}"
+              },
+              {
+                "name": "retry_configured",
+                "value": "true"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          448,
+          0
+        ],
+        "id": "da4aee50-be00-4c1b-b6c6-52c840dfeb3d",
+        "name": "SendRetryResult",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "VCjTrRb8YGJHXwcC",
+            "name": "n8n Academy API Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "# Section 2 - Debugging Practice\n\nOwned By: Sohila Khaled\nLast Updated: 22.07.2026\n\nMain workflow for Section 2 exercises. Tests retry configuration\nagainst a flaky API endpoint.\n\n## Nodes\n- TriggerManual: Starts the workflow\n- GetUnreliableData: Calls 50% failure rate API (retry configured)\n- SendRetryResult: Submits successful retry data\n\n## Key Configurations\n- GetUnreliableData has Retry On Fail enabled (5 tries, 1000ms wait)\n\n## Dependencies\n- Requires: n8n Academy API Key credential\n\nPart of: n8n Foundations Program, N8N103 Course - Section 2\n",
+          "height": 560,
+          "width": 512,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -608,
+          -240
+        ],
+        "id": "9069174e-a018-4ad9-a337-989f016f2211",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "url": "https://tightrope-large-petty.ngrok-free.dev/webhook/course/n8n103/failure-test",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          672,
+          0
+        ],
+        "id": "96be7335-cb64-49f5-9344-58ebeb7c9165",
+        "name": "TriggerFailureTest",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "VCjTrRb8YGJHXwcC",
+            "name": "n8n Academy API Key"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "TriggerManual": {
+        "main": [
+          [
+            {
+              "node": "GetUnreliableData",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GetUnreliableData": {
+        "main": [
+          [
+            {
+              "node": "SendRetryResult",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "SendRetryResult": {
+        "main": [
+          [
+            {
+              "node": "TriggerFailureTest",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "05b4fd17-2697-430e-bc0a-40e154bf6d49",
+    "activeVersionId": null,
+    "versionCounter": 52,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-21T16:55:55.312Z",
+        "createdAt": "2026-07-21T16:55:55.312Z",
+        "id": "O0O6l6rgnM6XfLWP",
+        "name": "n8n103"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-21T21:54:25.303Z",
+        "createdAt": "2026-07-21T21:54:25.303Z",
+        "role": "workflow:owner",
+        "workflowId": "bgJCJl1T0xeswVZC",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

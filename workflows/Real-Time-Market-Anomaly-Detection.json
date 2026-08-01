@@ -1,0 +1,529 @@
+[
+  {
+    "updatedAt": "2026-07-31T19:46:50.208Z",
+    "createdAt": "2026-07-31T15:55:27.582Z",
+    "id": "5qX6Hq5RuxtfiyHA",
+    "name": "Real-Time-Market-Anomaly-Detection",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          -16
+        ],
+        "id": "5f8e70ec-2a77-4b91-9dff-03c8a19e8eac",
+        "name": "HourlyTrigger"
+      },
+      {
+        "parameters": {
+          "url": "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "vs_currency",
+                "value": "usd"
+              },
+              {
+                "name": "days",
+                "value": "1"
+              },
+              {
+                "name": "interval",
+                "value": "hourly"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "response": {
+                "neverError": true,
+                "responseFormat": "json"
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          224,
+          -16
+        ],
+        "id": "9208516c-61c9-4000-8f33-35b1d40b2d6e",
+        "name": "FetchMarketData",
+        "retryOnFail": true,
+        "waitBetweenTries": 3000
+      },
+      {
+        "parameters": {
+          "model": "openrouter/auto",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          912,
+          80
+        ],
+        "id": "e39c76d3-da85-4304-911d-35b7be792f1d",
+        "name": "OpenRouter Chat Model",
+        "credentials": {
+          "openRouterApi": {
+            "id": "Wfnk5q7gswurynsI",
+            "name": "OpenRouter account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "openai/gpt-oss-120b",
+            "mode": "list",
+            "cachedResultName": "openai/gpt-oss-120b"
+          },
+          "responsesApiEnabled": false,
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          1040,
+          80
+        ],
+        "id": "30de5531-2470-46e1-b6ed-98bb25656f7c",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "doxpsivmFLpAY4By",
+            "name": "Hugging Face"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const inputData = $input.first().json;\n\n// 1. Trap API errors or unexpected structures\nif (!inputData.prices || !Array.isArray(inputData.prices) || inputData.prices.length === 0) {\n  return [{\n    json: {\n      error_detected: true,\n      anomaly_detected: false,\n      message: inputData.status?.error_message || 'Invalid or empty price dataset returned.'\n    }\n  }];\n}\n\nconst pricesArr = inputData.prices; // Array of [timestamp_ms, price]\n\nif (pricesArr.length < 2) {\n  return [{\n    json: {\n      error_detected: true,\n      anomaly_detected: false,\n      message: 'Insufficient historical data points available.'\n    }\n  }];\n}\n\n// 2. Extract latest price and enforce numeric float types\nconst latestEntry = pricesArr[pricesArr.length - 1];\nconst currentPrice = parseFloat(latestEntry[1]);\n\n// 3. Compute 24-hour moving average across returned hourly intervals\nlet sumPrice = 0;\nfor (let i = 0; i < pricesArr.length; i++) {\n  sumPrice += parseFloat(pricesArr[i][1]);\n}\nconst movingAverage24h = sumPrice / pricesArr.length;\n\n// 4. Calculate percentage deviation\nconst deviationPct = ((currentPrice - movingAverage24h) / movingAverage24h) * 100;\nconst absDeviationPct = Math.abs(deviationPct);\n\n// 5. Evaluate against 5.0% threshold\nconst anomalyDetected = absDeviationPct >= 5.0;\nconst timestampISO = new Date(latestEntry[0]).toISOString();\n\nreturn [{\n  json: {\n    error_detected: false,\n    asset: 'Bitcoin (BTC)',\n    symbol: 'BTCUSD',\n    current_price: Number(currentPrice.toFixed(2)),\n    moving_average_24h: Number(movingAverage24h.toFixed(2)),\n    deviation_pct: Number(deviationPct.toFixed(2)),\n    abs_deviation_pct: Number(absDeviationPct.toFixed(2)),\n    anomaly_detected: anomalyDetected,\n    timestamp: timestampISO\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          -16
+        ],
+        "id": "24eda55f-8d43-4310-8807-36575775f038",
+        "name": "DetectAnomaly"
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "id": "2807b877-5265-44ff-9a9b-83e74a1f5068",
+                      "leftValue": "={{ $json.anomaly_detected }}",
+                      "rightValue": true,
+                      "operator": {
+                        "type": "boolean",
+                        "operation": "true",
+                        "singleValue": true
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "id": "7e3c0689-a1bd-40ed-a7e2-003bb1000246",
+                      "leftValue": "={{ $json.anomaly_detected }}",
+                      "rightValue": "",
+                      "operator": {
+                        "type": "boolean",
+                        "operation": "false",
+                        "singleValue": true
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              }
+            ]
+          },
+          "options": {
+            "fallbackOutput": "none"
+          }
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          672,
+          -16
+        ],
+        "id": "f238c5eb-48bf-4c2a-b7a5-40e3c4209163",
+        "name": "RouteAnomaly"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=You are a Senior Risk Analyst at a financial institution.\nAnalyze the following crypto market anomaly and draft an executive briefing for the treasury team.\n\nAsset Context:\n- Asset Name: {{ $json.asset }} ({{ $json.symbol }})\n- Timestamp: {{ $json.timestamp }}\n- Current Price: ${{ $json.current_price }}\n- 24-Hour Moving Average: ${{ $json.moving_average_24h }}\n- Deviation Percentage: {{ $json.deviation_pct }}%\n\nRequirements:\n1. Provide a concise headline indicating whether the asset experienced a surge or drop.\n2. Detail 2 brief bullet points outlining liquidity or portfolio risk considerations.\n3. Keep the summary under 120 words in clean plain text format.",
+          "needsFallback": true,
+          "batching": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chainLlm",
+        "typeVersion": 1.9,
+        "position": [
+          896,
+          -144
+        ],
+        "id": "0eb512a7-872a-4043-a532-59959fc97c6f",
+        "name": "GenerateExecutiveBrief"
+      },
+      {
+        "parameters": {
+          "workflowId": {
+            "__rl": true,
+            "value": "cl7XMahDRKB5GTSs",
+            "mode": "list",
+            "cachedResultUrl": "/workflow/cl7XMahDRKB5GTSs",
+            "cachedResultName": "Sub_SendSlackNotification"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": true
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.3,
+        "position": [
+          1248,
+          -144
+        ],
+        "id": "70f464c7-7da2-4d6a-8980-a5df1ace3b3b",
+        "name": "CallNotificationSubWorkflow"
+      },
+      {
+        "parameters": {
+          "jsCode": "const input = $input.first().json;\nreturn [{\n  json: {\n    status: 'NORMAL_OPERATIONS',\n    asset: input.asset,\n    price: input.current_price,\n    moving_average: input.moving_average_24h,\n    deviation: `${input.deviation_pct}%`,\n    checked_at: input.timestamp\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          960,
+          256
+        ],
+        "id": "037c3d8f-bb1e-4a55-9fec-6da49e1bd1fb",
+        "name": "LogRoutineMetric"
+      },
+      {
+        "parameters": {
+          "dataTableId": {
+            "__rl": true,
+            "value": "DTfIuXkH9mibMn1Q",
+            "mode": "list",
+            "cachedResultName": "Market_Metrics_Log",
+            "cachedResultUrl": "/projects/7Kuw5RaGwePDWMtJ/datatables/DTfIuXkH9mibMn1Q"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "price": "={{ $('LogRoutineMetric').item.json.price }}",
+              "moving_average": "={{ $('LogRoutineMetric').item.json.moving_average }}",
+              "status": "={{ $('LogRoutineMetric').item.json.status }}",
+              "asset": "={{ $('LogRoutineMetric').item.json.asset }}",
+              "deviation": "={{ $('LogRoutineMetric').item.json.deviation }}",
+              "checked_at": "={{ $('LogRoutineMetric').item.json.checked_at }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "asset",
+                "displayName": "asset",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "price",
+                "displayName": "price",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "moving_average",
+                "displayName": "moving_average",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "deviation",
+                "displayName": "deviation",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "checked_at",
+                "displayName": "checked_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "dateTime",
+                "readOnly": false,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1472,
+          -16
+        ],
+        "id": "48349c49-95fd-4f93-8314-ac26712557a3",
+        "name": "LogMarketMetric"
+      }
+    ],
+    "connections": {
+      "HourlyTrigger": {
+        "main": [
+          [
+            {
+              "node": "FetchMarketData",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FetchMarketData": {
+        "main": [
+          [
+            {
+              "node": "DetectAnomaly",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "GenerateExecutiveBrief",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "GenerateExecutiveBrief",
+              "type": "ai_languageModel",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "DetectAnomaly": {
+        "main": [
+          [
+            {
+              "node": "RouteAnomaly",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "RouteAnomaly": {
+        "main": [
+          [
+            {
+              "node": "GenerateExecutiveBrief",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "LogRoutineMetric",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GenerateExecutiveBrief": {
+        "main": [
+          [
+            {
+              "node": "CallNotificationSubWorkflow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "LogRoutineMetric": {
+        "main": [
+          [
+            {
+              "node": "LogMarketMetric",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CallNotificationSubWorkflow": {
+        "main": [
+          [
+            {
+              "node": "LogMarketMetric",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": {
+      "node:HourlyTrigger": {
+        "recurrenceRules": []
+      }
+    },
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "aa0e9e6c-1d52-4596-be8b-befe5afc2dd9",
+    "activeVersionId": "aa0e9e6c-1d52-4596-be8b-befe5afc2dd9",
+    "versionCounter": 140,
+    "triggerCount": 1,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-16T16:03:29.020Z",
+        "createdAt": "2026-07-16T16:03:29.020Z",
+        "id": "9a8d1d753df54ed1",
+        "name": "Production Automation"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.284Z",
+        "createdAt": "2026-07-16T16:03:28.284Z",
+        "id": "e1c954be4bee474d",
+        "name": "Data Transformation"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.786Z",
+        "createdAt": "2026-07-16T16:03:28.786Z",
+        "id": "6e30f4ffb71d4b65",
+        "name": "Data Pipeline"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:29.217Z",
+        "createdAt": "2026-07-16T16:03:29.217Z",
+        "id": "08f43634238e406b",
+        "name": "Agentic AI"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-31T15:55:27.582Z",
+        "createdAt": "2026-07-31T15:55:27.582Z",
+        "role": "workflow:owner",
+        "workflowId": "5qX6Hq5RuxtfiyHA",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version aa0e9e6c",
+      "description": ""
+    }
+  }
+]

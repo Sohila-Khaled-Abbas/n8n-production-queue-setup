@@ -1,0 +1,224 @@
+[
+  {
+    "updatedAt": "2026-07-28T15:56:10.363Z",
+    "createdAt": "2026-07-28T15:37:33.532Z",
+    "id": "EPQZ28vJSFEq2rbW",
+    "name": "Automated Data Enrichment Pipeline",
+    "description": null,
+    "active": false,
+    "isArchived": true,
+    "nodes": [
+      {
+        "parameters": {
+          "formTitle": "Web Scraper Search",
+          "formDescription": "Enter the specific topic, search query, or URL you want to scrape and enrich.",
+          "formFields": {
+            "values": [
+              {
+                "fieldLabel": "search_query"
+              }
+            ]
+          },
+          "options": {
+            "appendAttribution": false,
+            "respondWithOptions": {
+              "values": {
+                "formSubmittedText": "Search query is sent to Apify "
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.formTrigger",
+        "typeVersion": 2.6,
+        "position": [
+          0,
+          0
+        ],
+        "id": "35c2cb4a-bfae-4221-9c39-ac9d62266923",
+        "name": "FormTrigger",
+        "webhookId": "9107e1f6-889e-431a-a907-0b76b61d83d8"
+      },
+      {
+        "parameters": {
+          "operation": "Run actor and get dataset",
+          "actorId": {
+            "__rl": true,
+            "value": "https://console.apify.com/actors/nFJndFXA5zjCTuudP/input",
+            "mode": "url"
+          },
+          "customBody": "={\n    \"chatGptSearch\": {\n        \"enableChatGpt\": false\n    },\n    \"copilotSearch\": {\n        \"enableCopilot\": false\n    },\n    \"focusOnPaidAds\": false,\n    \"forceExactMatch\": false,\n    \"geminiSearch\": {\n        \"enableGemini\": false\n    },\n    \"includeIcons\": false,\n    \"includeUnfilteredResults\": false,\n    \"maxPagesPerQuery\": 1,\n    \"maximumLeadsEnrichmentRecords\": 0,\n    \"mobileResults\": false,\n    \"perplexitySearch\": {\n        \"enablePerplexity\": false,\n        \"returnImages\": false,\n        \"returnRelatedQuestions\": false\n    },\n    \"queries\": \"{{ $json.search_query }}\",\n    \"saveHtml\": false,\n    \"saveHtmlToKeyValueStore\": true,\n    \"verifyLeadsEnrichmentEmails\": false\n}"
+        },
+        "type": "@apify/n8n-nodes-apify.apify",
+        "typeVersion": 1,
+        "position": [
+          224,
+          0
+        ],
+        "id": "49ac6e17-d886-42ac-807d-344d5ed987e2",
+        "name": "Run an Actor and get dataset",
+        "credentials": {
+          "apifyApi": {
+            "id": "vcmbtlBLy7CzWTMn",
+            "name": "Apify account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "text": "=",
+          "attributes": {
+            "attributes": [
+              {
+                "name": "Company_Name",
+                "description": "The official name of the business",
+                "required": true
+              },
+              {
+                "name": "Summary",
+                "description": "concise one-sentence summary of what the company does",
+                "required": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+        "typeVersion": 1.2,
+        "position": [
+          448,
+          0
+        ],
+        "id": "aa10aa58-b7a2-46fa-9d47-b43d9d807a8f",
+        "name": "Information Extractor"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "openai/gpt-oss-120b",
+            "mode": "list",
+            "cachedResultName": "openai/gpt-oss-120b"
+          },
+          "responsesApiEnabled": false,
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          528,
+          224
+        ],
+        "id": "3fe463aa-2729-4091-9108-c2a94f33f45a",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "doxpsivmFLpAY4By",
+            "name": "Hugging Face"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "FormTrigger": {
+        "main": [
+          [
+            {
+              "node": "Run an Actor and get dataset",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Run an Actor and get dataset": {
+        "main": [
+          [
+            {
+              "node": "Information Extractor",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Information Extractor",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {
+      "FormTrigger": [
+        {
+          "json": {
+            "search_query": "AI Automation",
+            "submittedAt": "2026-07-28T11:43:53.895-04:00",
+            "formMode": "test"
+          },
+          "pairedItem": {
+            "item": 0
+          }
+        }
+      ]
+    },
+    "versionId": "4826c19a-163d-4097-97a6-016b8e2b7ea8",
+    "activeVersionId": null,
+    "versionCounter": 40,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-16T16:03:28.284Z",
+        "createdAt": "2026-07-16T16:03:28.284Z",
+        "id": "e1c954be4bee474d",
+        "name": "Data Transformation"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.786Z",
+        "createdAt": "2026-07-16T16:03:28.786Z",
+        "id": "6e30f4ffb71d4b65",
+        "name": "Data Pipeline"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-28T15:37:33.532Z",
+        "createdAt": "2026-07-28T15:37:33.532Z",
+        "role": "workflow:owner",
+        "workflowId": "EPQZ28vJSFEq2rbW",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": null,
+      "description": null
+    }
+  }
+]

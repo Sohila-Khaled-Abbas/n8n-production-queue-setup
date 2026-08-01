@@ -1,0 +1,121 @@
+[
+  {
+    "updatedAt": "2026-07-29T21:35:38.701Z",
+    "createdAt": "2026-07-29T21:32:42.475Z",
+    "id": "2gqpT2C7G534qUrj",
+    "name": "CRM-Upload-Child",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "9429e9e4-5122-49c3-bff5-e0d4c53ac6d9",
+        "name": "When Executed by Another Workflow"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.yourcrm.com/v1/leads",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"lead_email\": \"{{ $json.email }}\",\n  \"lead_first_name\": \"{{ $json.first_name }}\",\n  \"lead_company\": \"{{ $json.company }}\",\n  \"enrichment_status\": \"enriched\",\n  \"job_title\": \"{{ $json.role }}\",\n  \"experience_seniority\": \"{{ $json.seniority }}\",\n  \"organization_size\": \"{{ $json.company_size }}\",\n  \"hq_location\": \"{{ $json.location }}\",\n  \"synced_at\": \"{{ $now }}\"\n}\n",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          224,
+          0
+        ],
+        "id": "2d4e83a1-4113-42f4-b3a1-b48b898d9883",
+        "name": "PostToCRM"
+      }
+    ],
+    "connections": {
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "PostToCRM",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {
+      "PostToCRM": [
+        {
+          "json": {
+            "success": true,
+            "crm_lead_id": "CRM_LEAD_880921",
+            "email": "lead1@microsoft.com",
+            "status": "synchronized",
+            "created_at": "2026-07-29T14:33:46-07:00"
+          }
+        }
+      ]
+    },
+    "versionId": "820ff19f-4222-4f4a-a461-4c27b7d6e0b2",
+    "activeVersionId": "820ff19f-4222-4f4a-a461-4c27b7d6e0b2",
+    "versionCounter": 12,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-16T16:03:28.284Z",
+        "createdAt": "2026-07-16T16:03:28.284Z",
+        "id": "e1c954be4bee474d",
+        "name": "Data Transformation"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.786Z",
+        "createdAt": "2026-07-16T16:03:28.786Z",
+        "id": "6e30f4ffb71d4b65",
+        "name": "Data Pipeline"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-29T21:32:42.475Z",
+        "createdAt": "2026-07-29T21:32:42.475Z",
+        "role": "workflow:owner",
+        "workflowId": "2gqpT2C7G534qUrj",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version 820ff19f",
+      "description": ""
+    }
+  }
+]

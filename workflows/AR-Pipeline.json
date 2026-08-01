@@ -1,0 +1,442 @@
+[
+  {
+    "updatedAt": "2026-07-29T16:26:26.504Z",
+    "createdAt": "2026-07-29T12:58:04.940Z",
+    "id": "houNRcVZiLLwykQN",
+    "name": "AR-Pipeline",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "ar-settlement-batch",
+          "options": {
+            "responseCode": {
+              "values": {}
+            }
+          }
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          16
+        ],
+        "id": "a2ba92d0-6962-4a8e-997e-2641db130d09",
+        "name": "ReceiveARBatch",
+        "webhookId": "8d6c9077-3fdb-4585-8be3-389a80a7b5df"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "726034e9-3451-40c6-9a84-79ad721ccb1c",
+                "leftValue": "={{ $json.batch_id }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEmpty",
+                  "singleValue": true
+                }
+              },
+              {
+                "id": "0d1471d6-fe31-46f9-9150-23ae79640dde",
+                "leftValue": "={{ $json.record_count }}",
+                "rightValue": 1,
+                "operator": {
+                  "type": "number",
+                  "operation": "gte"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          224,
+          16
+        ],
+        "id": "e6d378e8-b186-4e2b-8dee-af2a99675a3e",
+        "name": "ValidatePayload"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          448,
+          112
+        ],
+        "id": "6c4aabd5-e050-4f6a-9026-04e2bb923d7a",
+        "name": "DiscardMalformedData"
+      },
+      {
+        "parameters": {
+          "fieldToSplitOut": "transactions",
+          "include": "selectedOtherFields",
+          "fieldsToInclude": "batch_id, settlement_date",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitOut",
+        "typeVersion": 1,
+        "position": [
+          448,
+          -80
+        ],
+        "id": "f55413d7-b26e-49b0-b0a3-9f326acd217e",
+        "name": "ExtractTransactions"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Loop over all incoming split items and dynamically flatten nested fields\nconst cleanedItems = [];\n\nfor (const item of $input.all()) {\n  const flatObj = {};\n  \n  // Recurse dynamically through nested objects without hardcoding key names\n  function flatten(obj, prefix = '') {\n    for (const key in obj) {\n      if (obj.hasOwnProperty(key)) {\n        const val = obj[key];\n        // Clean column names to comply with database conventions (lowercase, underscores)\n        const cleanKey = key.toLowerCase().replace(/[^a-z0-9_]/g, '_');\n        const propName = prefix ? `${prefix}_${cleanKey}` : cleanKey;\n        \n        if (val && typeof val === 'object' && !Array.isArray(val) && !(val instanceof Date)) {\n          flatten(val, propName);\n        } else {\n          flatObj[propName] = val;\n        }\n      }\n    }\n  }\n\n  flatten(item.json);\n  cleanedItems.push({ json: flatObj });\n}\n\nreturn cleanedItems;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          -80
+        ],
+        "id": "cef80584-bb21-431e-985d-7c7d8c36df03",
+        "name": "DynamicFlattenFields"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "643177a5-26a8-4c18-b1cb-2bcc891cfbf8",
+                "name": "transaction_id",
+                "value": "={{ $json.transactions_transaction_id }}",
+                "type": "string"
+              },
+              {
+                "id": "1c23ad85-14c5-4612-943f-29c76aa07a98",
+                "name": "customer_name",
+                "value": "={{ $json.transactions_customer_name }}",
+                "type": "string"
+              },
+              {
+                "id": "13868c23-6881-4ccd-83e3-cb752920d041",
+                "name": "amount",
+                "value": "={{ $json.transactions_amount }}",
+                "type": "number"
+              },
+              {
+                "id": "ab21cb6a-6f97-4009-9803-c9fbdab30a07",
+                "name": "nested_meta_invoice_ref",
+                "value": "={{ $json.transactions_nested_meta_invoice_ref }}",
+                "type": "string"
+              },
+              {
+                "id": "3ffc0949-39eb-44f0-94a7-0f6d9afee922",
+                "name": "nested_meta_region_code",
+                "value": "={{ $json.transactions_nested_meta_region_code }}",
+                "type": "string"
+              },
+              {
+                "id": "c29021cc-48ca-4088-b0ff-4fd4e6964c9e",
+                "name": "nested_meta_processor_fee",
+                "value": "={{ $json.transactions_nested_meta_processor_fee }}",
+                "type": "number"
+              },
+              {
+                "id": "568c0cf0-8658-4228-8119-011d762a52d7",
+                "name": "batch_id",
+                "value": "={{ $json.batch_id }}",
+                "type": "string"
+              },
+              {
+                "id": "ff9910a4-f2ca-4f4b-ab22-432f917c4b47",
+                "name": "settlement_date",
+                "value": "={{ $json.settlement_date }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          896,
+          -80
+        ],
+        "id": "cecd910b-1891-4879-b13f-2e5e950ff6fc",
+        "name": "FattenFields"
+      },
+      {
+        "parameters": {
+          "workflowId": {
+            "__rl": true,
+            "value": "j4559D3lMQzP11Yd",
+            "mode": "list",
+            "cachedResultUrl": "/workflow/j4559D3lMQzP11Yd",
+            "cachedResultName": "AR-Pipeline-Upsert-Child"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "amount": "={{ $json.amount }}",
+              "nested_meta_processor_fee": "={{ $json.nested_meta_processor_fee }}",
+              "transaction_id": "={{ $json.transaction_id }}",
+              "customer_name": "={{ $json.customer_name }}",
+              "nested_meta_invoice_ref": "={{ $json.nested_meta_invoice_ref }}",
+              "nested_meta_region_code": "={{ $json.nested_meta_region_code }}",
+              "batch_id": "={{ $json.batch_id }}",
+              "settlement_date": "={{ $json.settlement_date }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "transaction_id",
+                "displayName": "transaction_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "customer_name",
+                "displayName": "customer_name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "amount",
+                "displayName": "amount",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number"
+              },
+              {
+                "id": "nested_meta_invoice_ref",
+                "displayName": "nested_meta_invoice_ref",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "nested_meta_region_code",
+                "displayName": "nested_meta_region_code",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "nested_meta_processor_fee",
+                "displayName": "nested_meta_processor_fee",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "number"
+              },
+              {
+                "id": "batch_id",
+                "displayName": "batch_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "settlement_date",
+                "displayName": "settlement_date",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              }
+            ],
+            "attemptToConvertTypes": true,
+            "convertFieldsToString": true
+          },
+          "mode": "each",
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.3,
+        "position": [
+          1120,
+          -80
+        ],
+        "id": "7ccc16ff-f5b6-4cd0-83ba-6a5baaf4686c",
+        "name": "ExecuteChildUpsert"
+      }
+    ],
+    "connections": {
+      "ReceiveARBatch": {
+        "main": [
+          [
+            {
+              "node": "ValidatePayload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "ValidatePayload": {
+        "main": [
+          [
+            {
+              "node": "ExtractTransactions",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "DiscardMalformedData",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "ExtractTransactions": {
+        "main": [
+          [
+            {
+              "node": "DynamicFlattenFields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "DynamicFlattenFields": {
+        "main": [
+          [
+            {
+              "node": "FattenFields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FattenFields": {
+        "main": [
+          [
+            {
+              "node": "ExecuteChildUpsert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {
+      "ReceiveARBatch": [
+        {
+          "json": {
+            "batch_id": "BATCH_2026_07_29_A",
+            "settlement_date": "2026-07-29",
+            "record_count": 2,
+            "transactions": [
+              {
+                "transaction_id": "TXN_99801",
+                "customer_name": "Phoenix Logistics",
+                "amount": 4250.75,
+                "nested_meta": {
+                  "invoice_ref": "INV-40291",
+                  "region_code": "US_EAST",
+                  "processor_fee": 12.5
+                }
+              },
+              {
+                "transaction_id": "TXN_99802",
+                "customer_name": "Atlas Manufacturing",
+                "amount": 8900,
+                "nested_meta": {
+                  "invoice_ref": "INV-40292",
+                  "region_code": "EU_WEST",
+                  "processor_fee": 25
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "versionId": "2d504ebe-3441-40c7-a322-49b4e0839cef",
+    "activeVersionId": "2d504ebe-3441-40c7-a322-49b4e0839cef",
+    "versionCounter": 68,
+    "triggerCount": 1,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-16T16:03:28.284Z",
+        "createdAt": "2026-07-16T16:03:28.284Z",
+        "id": "e1c954be4bee474d",
+        "name": "Data Transformation"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.786Z",
+        "createdAt": "2026-07-16T16:03:28.786Z",
+        "id": "6e30f4ffb71d4b65",
+        "name": "Data Pipeline"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-29T12:58:04.940Z",
+        "createdAt": "2026-07-29T12:58:04.940Z",
+        "role": "workflow:owner",
+        "workflowId": "houNRcVZiLLwykQN",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version 2d504ebe",
+      "description": ""
+    }
+  }
+]

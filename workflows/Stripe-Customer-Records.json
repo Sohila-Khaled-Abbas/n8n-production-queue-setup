@@ -1,0 +1,367 @@
+[
+  {
+    "updatedAt": "2026-07-31T21:07:06.342Z",
+    "createdAt": "2026-07-31T20:19:51.401Z",
+    "id": "k4GcJDsbMnoZzZ27",
+    "name": "Stripe-Customer-Records",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "stripe-customer-webhook",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          -80
+        ],
+        "id": "014c3e20-ac2d-4cc8-b88e-0f1b33322bd9",
+        "name": "StripeWebhookTrigger",
+        "webhookId": "7004f63b-0b49-4dc4-b79c-2561383c388f"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "{\"received\": true}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          224,
+          -80
+        ],
+        "id": "0a56c37d-82ef-4f17-8ba1-511f61b5531e",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "ed035cd5-5ec4-4be1-a496-40f3c6aed906",
+                "leftValue": "={{ $json.body.type }}",
+                "rightValue": "customer.updated",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals",
+                  "name": "filter.operator.equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          448,
+          -80
+        ],
+        "id": "ba3f6368-31c3-4829-b7f0-66a419332825",
+        "name": "ValidateEventType"
+      },
+      {
+        "parameters": {
+          "jsCode": "const body = $input.first().json.body;\nconst customer = body.data.object;\n\n// Sanitize single quotes for raw SQL safety if needed\nconst cleanString = (val) => val ? String(val).replace(/'/g, \"''\") : null;\n\nreturn [\n  {\n    json: {\n      stripe_customer_id: customer.id,\n      email: cleanString(customer.email),\n      name: cleanString(customer.name),\n      phone: cleanString(customer.phone),\n      delinquent: Boolean(customer.delinquent),\n      user_id: cleanString(customer.metadata?.user_id),\n      last_event_id: body.id,\n      updated_at: new Date(body.created * 1000).toISOString()\n    }\n  }\n];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          -176
+        ],
+        "id": "23b1fd1f-88d4-4085-a9e0-53dc2b6c6da0",
+        "name": "TransformCustomerData"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "CREATE TABLE IF NOT EXISTS customers (\n    stripe_customer_id VARCHAR(255) PRIMARY KEY,\n    email VARCHAR(255),\n    name VARCHAR(255),\n    phone VARCHAR(50),\n    delinquent BOOLEAN DEFAULT FALSE,\n    user_id VARCHAR(255),\n    last_event_id VARCHAR(255),\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n);",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          896,
+          -176
+        ],
+        "id": "b858f771-a406-4ce5-b0ad-b93cb47a6bb4",
+        "name": "Execute a SQL query",
+        "executeOnce": true,
+        "credentials": {
+          "postgres": {
+            "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+            "name": "PostgreSQL \u2014 n8n Stack"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "INSERT INTO customers (\n    stripe_customer_id,\n    email,\n    name,\n    phone,\n    delinquent,\n    user_id,\n    last_event_id,\n    updated_at\n) VALUES (\n    '{{ $('TransformCustomerData').item.json.stripe_customer_id }}',\n    '{{ $('TransformCustomerData').item.json.email }}',\n    '{{ $('TransformCustomerData').item.json.name }}',\n    '{{ $('TransformCustomerData').item.json.phone }}',\n   {{ $('TransformCustomerData').item.json.delinquent }} ,\n    '{{ $('TransformCustomerData').item.json.user_id }}',\n    '{{ $('TransformCustomerData').item.json.last_event_id }}',\n    '{{ $('TransformCustomerData').item.json.updated_at }}'\n)\nON CONFLICT (stripe_customer_id)\nDO UPDATE SET\n    email = EXCLUDED.email,\n    name = EXCLUDED.name,\n    phone = EXCLUDED.phone,\n    delinquent = EXCLUDED.delinquent,\n    user_id = EXCLUDED.user_id,\n    last_event_id = EXCLUDED.last_event_id,\n    updated_at = EXCLUDED.updated_at;",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          1120,
+          -176
+        ],
+        "id": "5903c58f-de9c-4387-b1b2-9b1be2822374",
+        "name": "UpsertCustomerPostgres",
+        "retryOnFail": false,
+        "credentials": {
+          "postgres": {
+            "id": "5617978f-0b85-4382-8768-f84e14ee6223",
+            "name": "PostgreSQL \u2014 n8n Stack"
+          }
+        },
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          672,
+          16
+        ],
+        "id": "6e287948-aca6-4c43-aab5-0707228cad0d",
+        "name": "No Operation, do nothing"
+      },
+      {
+        "parameters": {
+          "jsCode": "const errorData = $input.first().json;\n\nreturn [\n  {\n    json: {\n      workflow_id: $workflow.id,\n      execution_id: $execution.id,\n      node_name: errorData.execution?.lastNodeExecuted || \"UpsertCustomerPostgres\",\n      error_message: errorData.error?.message || \"Unknown database error\",\n      payload: errorData\n    }\n  }\n];;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1344,
+          -176
+        ],
+        "id": "a0e5e47e-930c-4fbd-adb7-b6fe3e572457",
+        "name": "FormatErrorPayload"
+      },
+      {
+        "parameters": {
+          "workflowId": {
+            "__rl": true,
+            "value": "vnD3Be65RG1oTGcb",
+            "mode": "list",
+            "cachedResultUrl": "/workflow/vnD3Be65RG1oTGcb",
+            "cachedResultName": "AuditWebhookError"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": true
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.3,
+        "position": [
+          1568,
+          -176
+        ],
+        "id": "40af6e0e-f3bd-40d1-8bc8-c3c53ef5039a",
+        "name": "Call 'AuditWebhookError'"
+      }
+    ],
+    "connections": {
+      "StripeWebhookTrigger": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Respond to Webhook": {
+        "main": [
+          [
+            {
+              "node": "ValidateEventType",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "ValidateEventType": {
+        "main": [
+          [
+            {
+              "node": "TransformCustomerData",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "No Operation, do nothing",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TransformCustomerData": {
+        "main": [
+          [
+            {
+              "node": "Execute a SQL query",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Execute a SQL query": {
+        "main": [
+          [
+            {
+              "node": "UpsertCustomerPostgres",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "UpsertCustomerPostgres": {
+        "main": [
+          [],
+          [
+            {
+              "node": "FormatErrorPayload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FormatErrorPayload": {
+        "main": [
+          [
+            {
+              "node": "Call 'AuditWebhookError'",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "nodeGroups": [],
+    "pinData": {
+      "StripeWebhookTrigger": [
+        {
+          "json": {
+            "headers": {
+              "stripe-signature": "t=1722470000,v1=9f8a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a"
+            },
+            "body": {
+              "id": "evt_1Pxxx2E2eZvKYlo2C",
+              "object": "event",
+              "api_version": "2024-06-20",
+              "created": 1722470000,
+              "type": "customer.updated",
+              "data": {
+                "object": {
+                  "id": "cus_Q123456789",
+                  "object": "customer",
+                  "email": "jane.doe@example.com",
+                  "name": "Jane Doe",
+                  "phone": "+15550192834",
+                  "currency": "usd",
+                  "delinquent": false,
+                  "metadata": {
+                    "user_id": "usr_998877"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "versionId": "21cc6b6a-0bf8-4097-804b-51c543a04840",
+    "activeVersionId": "21cc6b6a-0bf8-4097-804b-51c543a04840",
+    "versionCounter": 81,
+    "triggerCount": 1,
+    "sourceWorkflowId": null,
+    "tags": [
+      {
+        "updatedAt": "2026-07-16T16:03:28.284Z",
+        "createdAt": "2026-07-16T16:03:28.284Z",
+        "id": "e1c954be4bee474d",
+        "name": "Data Transformation"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:29.020Z",
+        "createdAt": "2026-07-16T16:03:29.020Z",
+        "id": "9a8d1d753df54ed1",
+        "name": "Production Automation"
+      },
+      {
+        "updatedAt": "2026-07-16T16:03:28.786Z",
+        "createdAt": "2026-07-16T16:03:28.786Z",
+        "id": "6e30f4ffb71d4b65",
+        "name": "Data Pipeline"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2026-07-31T20:19:51.401Z",
+        "createdAt": "2026-07-31T20:19:51.401Z",
+        "role": "workflow:owner",
+        "workflowId": "k4GcJDsbMnoZzZ27",
+        "projectId": "7Kuw5RaGwePDWMtJ",
+        "project": {
+          "updatedAt": "2026-06-09T16:37:14.049Z",
+          "createdAt": "2026-06-09T16:15:53.210Z",
+          "id": "7Kuw5RaGwePDWMtJ",
+          "name": "Sohila Abbas <sohila.k.data@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "customTelemetryTags": [],
+          "creatorId": "ef255f89-7c87-4d14-8714-7469755d5486"
+        }
+      }
+    ],
+    "versionMetadata": {
+      "name": "Version 21cc6b6a",
+      "description": ""
+    }
+  }
+]
