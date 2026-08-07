@@ -107,6 +107,17 @@ This portfolio is backed by official certifications from the n8n Academy:
 * **Business Case:** A content curation pipeline. Users forward interesting links, videos, or articles to a Telegram bot. The bot extracts metadata, summarizes the content using AI, and adds it to a structured Notion board.
 * **Business Value:** Streamlines personal knowledge management and research aggregation.
 
+### 📄 Google Drive PDF Qdrant Vector Indexer
+* **Workflow File:** [Google Drive Automated PDF Ingestion & Qdrant Indexer.json](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/workflows/Demo%20RAG%20in%20n8n.json)
+* **Standalone Showcase Repo:** [n8n-workflow-gdrive-pdf-qdrant-indexer](published_repos/n8n-workflow-gdrive-pdf-qdrant-indexer) | [GitHub Link](https://github.com/Sohila-Khaled-Abbas/n8n-workflow-gdrive-pdf-qdrant-indexer)
+* **Business Case:** Event-driven ETL pipeline monitoring Google Drive for uploaded PDFs, extracting and chunking text with character-aware splitters, and upserting vector embeddings into Qdrant.
+* **Business Value:** Completely automates knowledge base synchronization; new enterprise PDFs in Drive become queryable by RAG agents within seconds.
+
+### 📡 Daily Viral Content Radar & Trend Analysis
+* **Workflow File:** [Daily Viral Content Radar & Trend Analysis ETL Pipeline.json](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/workflows/Section%204%20-%20Most%20Common%20Ways%20to%20Start%20the%20Workflow%20Easy.json)
+* **Standalone Showcase Repo:** [n8n-workflow-daily-viral-content-radar](published_repos/n8n-workflow-daily-viral-content-radar) | [GitHub Link](https://github.com/Sohila-Khaled-Abbas/n8n-workflow-daily-viral-content-radar)
+* **Business Case:** Automated trend monitoring pipeline scraping viral content, extracting engagement metrics, classifying topics via AI, and generating daily digest reports.
+* **Business Value:** Keeps marketing and product teams ahead of industry trends with automated daily intelligence digests.
 
 ---
 
