@@ -134,3 +134,7 @@ Our services must be designed to withstand downstream network failures or resour
   - Any node making external HTTP requests or interacting with external APIs (like Slack, Google Drive, or Pinecone) should have **Retry on Fail** configured (typically `3` attempts with `3000ms` wait intervals) to protect against transient network drops (e.g., `ECONNRESET`).
 - **Autoscaler Resilience**:
   - The autoscaler script must handle Docker API or Redis connection exceptions gracefully. If Docker or Redis is temporarily unresponsive, the autoscaler must log the warning, sleep, and retry instead of exiting the process.
+- **Broker Crash Resilience & Auto-Recovery**:
+  - The Redis queue broker must have `aof-load-truncated yes` and `aof-use-rdb-preamble yes` enabled in `redis.conf`. This guarantees that partial writes caused by abrupt container termination or host reboots do not block Redis from booting.
+- **Orphan Execution Healing**:
+  - Worker crashes can leave database records in `running` or `waiting` state indefinitely. Database maintenance scripts must dynamically detect and mark orphaned executions older than 24 hours as `crashed`.
