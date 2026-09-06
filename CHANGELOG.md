@@ -6,6 +6,25 @@ All notable changes to the **n8n Production Autoscaling Stack** will be document
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-09-06
+
+### 🚀 Changed
+- **n8n Upgraded to Latest Release**: Upgraded core base images to latest official release (`docker.n8n.io/n8nio/n8n:latest`).
+- **Standardized Multi-Stage Docker Builds**: Aligned `Dockerfile` and `docker-compose.yml` to pull from the official `docker.n8n.io` mirror, ensuring identical base image layering between `n8n-init`, `n8n-main-server`, `n8n-webhook`, and `n8n-worker`.
+
+### 🛡️ Fixed & Hardened
+- **Redis AOF Crash-Loop Resolution & Self-Healing**:
+  - Diagnosed and fixed an append-only file (AOF) corruption (`appendonly.aof.6.incr.aof: Expected \r\n, got: 0000`) caused by an ungraceful container termination, which was putting Redis in a persistent restart loop.
+  - Truncated the corrupt 5,644 trailing bytes to restore complete volume data integrity without data loss.
+  - Added `aof-load-truncated yes` and `aof-use-rdb-preamble yes` to `redis.conf` to permanently prevent crash loops and enable automatic crash self-healing on container reboots.
+- **Worker & Sidecar Health Stabilization**: Verified worker health check endpoints (`http://127.0.0.1:5679/healthz`), restored clean connectivity to the BullMQ Redis broker, and stabilized runner sidecars (`n8n-worker-runner`).
+- **Dynamic Database Orphan Cleanup**: Modernized `scripts/cleanup.sql` to dynamically detect and transition orphaned executions older than 24 hours from `running`/`waiting` to `crashed`, replacing historical hardcoded execution IDs.
+
+### 📚 Documentation
+- **Production Troubleshooting Runbook**: Added comprehensive runbook in `docs/troubleshooting.md` for diagnosing and repairing Redis AOF corruptions using `redis-check-aof` and offset truncation.
+- **Production Guide Updates**: Updated `docs/production_guide.md` with Redis queue broker persistence and durability guidelines.
+- **Engineering Standards**: Updated `docs/software_engineering_standards.md` with broker resilience standards and database orphan-healing rules.
+
 ### ✨ Added
 - **GPT-OSS-20B Workflows**: Added two new workflows for 20B+ parameter inference:
   - `GPT_OSS_20B_OpenRouter.json`: Uses OpenRouter's API (`openai/gpt-oss-20b:free`) to bypass local hardware limits.

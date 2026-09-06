@@ -65,7 +65,7 @@ This document lists, describes, and provides usage instructions for the automati
 
 ### 1. `cleanup.sql`
 - **Purpose**: Heavy execution history can cause n8n database storage to swell to hundreds of gigabytes (bloat). This script cleans it up safely.
-  - Sets stuck execution records (e.g. from terminated worker processes) to `crashed`.
+  - Dynamically sets orphaned execution records older than 24 hours (e.g. from terminated worker processes) to `crashed`.
   - Deletes all execution entities and binary data logs older than 3 days.
   - Reclaims and compresses physical disk space using `VACUUM FULL`.
   - Reports final table sizes.

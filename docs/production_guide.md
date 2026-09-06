@@ -45,6 +45,19 @@ To support high-concurrency queue execution (where multiple workers read/write t
 
 ---
 
+## ⚡ Redis Broker Durability & Recovery Tuning
+
+The Redis service acts as the central BullMQ queue broker coordinating between `n8n-main`, `n8n-webhook`, and `n8n-worker`. Our production setup in `redis.conf` is tuned for high throughput with crash-resilient persistence:
+
+- **AOF + RDB Dual Durability**:
+  - `appendonly yes` with `appendfsync everysec`: Records transactions to disk every second, ensuring virtually no queue loss.
+  - `aof-use-rdb-preamble yes`: Uses compact RDB binary format for base AOF rewrites, accelerating container startup times.
+- **Crash Self-Healing (`aof-load-truncated yes`)**:
+  - In environments where Docker or the host PC may be terminated abruptly, the active `.incr.aof` file can end with a partial write. Setting `aof-load-truncated yes` allows Redis to automatically discard the damaged trailing fragment and boot immediately without blocking worker operations.
+- **Memory Ceiling & Eviction**:
+  - `maxmemory 96mb`: Caps Redis memory usage to fit low-resource deployments.
+  - `maxmemory-policy allkeys-lru`: Evicts oldest idle keys under extreme load to prevent container Out-Of-Memory termination.
+
 ## 📊 Dynamic Worker Autoscaling
 
 The `n8n-autoscaler` service monitors the BullMQ queue (`bull:jobs:wait`) inside Redis and dynamically adjusts worker replicas using `docker compose scale`.

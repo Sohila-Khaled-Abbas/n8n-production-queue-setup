@@ -13,7 +13,7 @@ RUN apk add --no-cache \
     curl
 
 # Stage 2: Copy to n8n image
-FROM n8nio/n8n:2.28.6
+FROM docker.n8n.io/n8nio/n8n:latest
 
 USER root
 

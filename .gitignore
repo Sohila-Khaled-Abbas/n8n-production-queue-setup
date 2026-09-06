@@ -41,6 +41,17 @@ logs/
 *.bak
 *.swp
 
+# ─── Python ──────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+.ruff_cache/
+
 # ─── Temp Exports & Secrets ──────────────────────────────────
 workflows/all_creds.json
 workflows/all_workflows.json

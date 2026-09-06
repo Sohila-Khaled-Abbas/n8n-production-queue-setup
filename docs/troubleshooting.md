@@ -860,6 +860,52 @@ docker compose exec redis redis-cli KEYS "bull:*"
 
 ---
 
+## Redis & BullMQ Queue Issues
+
+### Redis crash loops on restart: `Bad file format reading the append only file appendonly.aof`
+
+**Symptoms:**
+- The `n8n-redis` container repeatedly shows `Restarting (1)` or fails health checks.
+- Dependent containers (`n8n-main-server`, `n8n-webhook`, `n8n-worker`, `redis-monitor`, `n8n-autoscaler`) fail to connect to Redis, log connection timeouts, or restart.
+- Container logs (`docker logs n8n-redis`) output:
+  ```text
+  # Bad file format reading the append only file appendonly.aof.6.incr.aof: make a backup of your AOF file, then use ./redis-check-aof --fix <filename.manifest>
+  ```
+
+**Root Cause:**
+When Redis is configured with `appendonly yes` (AOF persistence) and terminates abruptly—such as during an unexpected Docker restart, power loss, or host reboot—the trailing incremental transaction in the `.incr.aof` file can be left partially written (truncated without trailing `\r\n`). By default in Redis 7+, if `aof-load-truncated` is not enabled, Redis refuses to boot to prevent data ambiguity.
+
+**Immediate Recovery:**
+1. Check the integrity of the AOF manifest using a temporary Redis utility container:
+   ```bash
+   docker run --rm -v n8n_redis_data:/data redis:7-alpine redis-check-aof /data/appendonlydir/appendonly.aof.manifest
+   ```
+   This will report the exact byte offset where the file was clean (e.g. `ok_up_to=41673830`, `diff=5644`).
+2. Truncate the corrupt trailing bytes directly to the verified `ok_up_to` offset:
+   ```bash
+   # Replace <valid_offset> and <incr_file_name> with the values reported by redis-check-aof
+   docker run --rm -v n8n_redis_data:/data redis:7-alpine truncate -s <valid_offset> /data/appendonlydir/<incr_file_name>
+   ```
+3. Re-verify the AOF directory:
+   ```bash
+   docker run --rm -v n8n_redis_data:/data redis:7-alpine redis-check-aof /data/appendonlydir/appendonly.aof.manifest
+   ```
+   It should output: `All AOF files and manifest are valid`.
+4. Start Redis:
+   ```bash
+   docker compose start redis
+   ```
+
+**Permanent Prevention:**
+Ensure `redis.conf` has the following directives enabled:
+```conf
+aof-load-truncated yes
+aof-use-rdb-preamble yes
+```
+With `aof-load-truncated yes`, Redis will automatically discard any corrupt trailing buffer caused by a sudden system crash and boot up cleanly without manual intervention.
+
+---
+
 ## Getting Help
 
 1. **Check logs first:** `docker compose logs -f`

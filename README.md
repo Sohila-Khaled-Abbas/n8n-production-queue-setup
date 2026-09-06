@@ -6,8 +6,8 @@
 
 **A production-grade, self-hosted n8n deployment with dynamic worker autoscaling, Puppeteer/Playwright browser automation, queue-mode execution, PostgreSQL persistence, and automated Redis queue monitoring.**
 
-[![n8n Version](https://img.shields.io/badge/n8n-2.28.6-FF6D5A?logo=n8n&logoColor=white)](https://hub.docker.com/r/n8nio/n8n)
-[![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![n8n Version](https://img.shields.io/badge/n8n-latest-FF6D5A?logo=n8n&logoColor=white)](https://hub.docker.com/r/n8nio/n8n)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastMCP](https://img.shields.io/badge/FastMCP-Server-092E20?logo=fastapi&logoColor=white)](https://github.com/jlowin/fastmcp)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://hub.docker.com/_/postgres)
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)](https://hub.docker.com/_/redis)
@@ -94,13 +94,13 @@
 
 | Container | Image | Role |
 |---|---|---|
-| `n8n` | Custom (`Dockerfile` based on `2.28.6`) | Editor UI, REST API, task broker |
-| `n8n-webhook` | Custom (`Dockerfile` based on `2.28.6`) | Dedicated webhook processor |
-| `n8n-worker` | Custom (`Dockerfile` based on `2.28.6`) | Queue worker — **autoscaled** |
-| `n8n-worker-runner` | Custom (`Dockerfile.runner` based on `2.28.6`) | Task runner sidecar — **autoscaled 1:1 with worker** |
+| `n8n` | Custom (`Dockerfile` based on `docker.n8n.io/n8nio/n8n:latest`) | Editor UI, REST API, task broker |
+| `n8n-webhook` | Custom (`Dockerfile` based on `docker.n8n.io/n8nio/n8n:latest`) | Dedicated webhook processor |
+| `n8n-worker` | Custom (`Dockerfile` based on `docker.n8n.io/n8nio/n8n:latest`) | Queue worker — **autoscaled** |
+| `n8n-worker-runner` | Custom (`Dockerfile.runner` based on `n8nio/runners:latest`) | Task runner sidecar — **autoscaled 1:1 with worker** |
 | `n8n-autoscaler` | Custom (`autoscaler/Dockerfile`) | Redis queue monitor + Docker Compose scaler |
 | `redis-monitor` | Custom (`monitor/monitor.Dockerfile`) | Queue depth logger |
-| `n8n-init` | `docker.n8n.io/n8nio/n8n:2.28.6` | One-shot credential provisioner |
+| `n8n-init` | `docker.n8n.io/n8nio/n8n:latest` | One-shot credential provisioner |
 | `mcp_server` | Custom Python (`mcp_server/server.py`) | **FastMCP n8n AI Workflow Architect** |
 | `n8n-postgres` | `postgres:16-alpine` | Persistent data store |
 | `qdrant` | `qdrant/qdrant:latest` | Vector database |
