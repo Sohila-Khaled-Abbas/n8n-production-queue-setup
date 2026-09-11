@@ -173,3 +173,113 @@ Set these Environment Variables in your Windows System Settings:
 - `OLLAMA_KEEP_ALIVE=1h`: Keeps models loaded in VRAM for 1 hour of inactivity, eliminating load times.
 - `OLLAMA_NUM_PARALLEL=2`: Processes parallel requests efficiently.
 
+---
+
+## 🎯 Site Reliability Engineering: SLIs, SLOs & SLAs
+
+For mission-critical production deployments, establish the following Service Level Objectives:
+
+| Service Level Metric | Indicator (SLI) | Target (SLO) | Business SLA |
+|---|---|---|---|
+| **Webhook Ingestion Availability** | Successful `POST /webhook/*` responses (`200 OK`) / Total requests | **≥ 99.95%** monthly | 99.9% uptime credit threshold |
+| **Webhook Response Latency** | HTTP response round-trip time for queuing trigger events | **P95 < 150ms**, P99 < 500ms | P95 < 1000ms |
+| **Queue Processing Time** | Time from Redis enqueue (`bull:jobs:wait`) to worker completion | **P95 < 15s**, P99 < 60s | P95 < 120s |
+| **Broker Data Durability** | Unrecoverable queue events after host termination | **0 lost tasks** (AOF sync everysec) | 100% durability |
+| **Disaster Recovery RPO** | Maximum data loss window during total hardware loss | **< 1 hour** (automated rclone backups) | RPO < 4 hours |
+| **Disaster Recovery RTO** | Time to restore full cluster operations from backup archive | **< 15 minutes** | RTO < 60 minutes |
+
+---
+
+## 📖 Operational Runbooks & Playbooks
+
+### Playbook 1: Zero-Downtime Rolling Update
+
+When upgrading n8n versions or redeploying custom Docker images without dropping live webhook traffic:
+
+```bash
+# 1. Pull or build latest Docker images
+docker compose build n8n n8n-webhook n8n-worker n8n-worker-runner
+
+# 2. Update webhook processor first (drain in-flight HTTP connections)
+docker compose up -d --no-deps n8n-webhook
+
+# 3. Update main editor server
+docker compose up -d --no-deps n8n
+
+# 4. Gracefully restart workers (n8n will wait for up to stop_grace_period: 5m for jobs to finish)
+docker compose up -d --no-deps n8n-worker n8n-worker-runner
+
+# 5. Verify cluster health endpoints
+curl -f http://127.0.0.1:80/healthz && echo "Main healthy"
+docker compose exec n8n-worker curl -f http://127.0.0.1:5679/healthz && echo "Worker healthy"
+```
+
+### Playbook 2: Dynamic Orphan Execution Healing
+
+If a worker container crashes unexpectedly during execution, executions in PostgreSQL may remain stuck in `running` or `waiting` status.
+
+```bash
+# 1. Execute dynamic orphan cleanup and space reclamation
+docker compose exec -T postgres psql -U n8n -d n8n < scripts/cleanup.sql
+
+# 2. Verify stale executions have transitioned to 'crashed'
+docker compose exec -T postgres psql -U n8n -d n8n -c "
+  SELECT id, status, \"startedAt\", \"stoppedAt\" 
+  FROM execution_entity 
+  WHERE status = 'crashed' 
+  ORDER BY \"stoppedAt\" DESC LIMIT 10;"
+```
+
+### Playbook 3: Redis Broker Emergency Diagnostics & Health Check
+
+```bash
+# Check Redis memory and connection pool status
+docker compose exec redis redis-cli info memory
+docker compose exec redis redis-cli info clients
+
+# Verify AOF persistence status and file sizes
+docker compose exec redis redis-cli info persistence
+
+# Inspect current BullMQ queue backlog
+docker compose exec redis redis-cli LLEN bull:jobs:wait
+docker compose exec redis redis-cli LLEN bull:jobs:active
+```
+
+---
+
+## 🚨 Prometheus Alerting Rules Specification
+
+When configuring Prometheus with Alertmanager, integrate these standard alert rules (`/etc/prometheus/alert.rules.yml`):
+
+```yaml
+groups:
+  - name: n8n_production_alerts
+    rules:
+      - alert: N8nQueueBackpressure
+        expr: n8n_bull_queue_waiting_jobs > 20
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "n8n Redis queue backpressure high"
+          description: "Queue depth has exceeded 20 pending executions for more than 2 minutes. Autoscaler may be hitting MAX_REPLICAS limit."
+
+      - alert: N8nWorkerCrashLoop
+        expr: rate(container_last_seen{container_label_com_docker_compose_service="n8n-worker"}[5m]) < 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "n8n Worker container is down or crash-looping"
+          description: "No healthy n8n-worker container detected by Docker Engine API."
+
+      - alert: PostgresConnectionSaturation
+        expr: pg_stat_activity_count > 80
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL connection pool near exhaustion"
+          description: "Active connections exceeded 80% of max_connections limit. Consider deploying PgBouncer."
+```
+
