@@ -11,7 +11,11 @@ This document lists, describes, and provides usage instructions for the automati
 | **[auto_sync.ps1](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/auto_sync.ps1)** | PowerShell | Automates exporting workflows, updating docs data, and git push. | Host Machine |
 | **[configure_sql_server.ps1](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/configure_sql_server.ps1)** | PowerShell | Configures SQL Server host auth & creates logins. | Host Machine (Admin) |
 | **[provision.js](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/provision.js)** | Node.js | Seeds default stack credentials & installs WAHA node. | `n8n-init` Container |
-| **[cleanup.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/cleanup.sql)** | PostgreSQL | Prunes execution history and runs table compression. | `postgres` Database |
+| **[cleanup.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/cleanup.sql)** | PostgreSQL | Prunes execution history, heals orphans, and runs table compression. | `postgres` Database |
+| **[export_workflows.py](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/export_workflows.py)** | Python | Directly dumps all workflows from PostgreSQL into individual JSONs. | Host Machine |
+| **[generate_docs_data.py](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/generate_docs_data.py)** | Python | Compiles workflow catalog and docs into `docs/data.json`. | Host / CI Pipeline |
+| **[publish_workflows_portfolio.py](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/publish_workflows_portfolio.py)** | Python | Generates isolated GitHub repository showcases for portfolio workflows. | Host Machine |
+| **[publish_via_github_api.py](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/publish_via_github_api.py)** | Python | Pushes showcase repositories and sets GitHub topics via REST API. | Host Machine |
 | **[modify_workflow.py](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/modify_workflow.py)** | Python | Batch configures Ollama nodes to optimize GPU VRAM. | Host/Any Machine |
 | **[parse_nodes.py](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/parse_nodes.py)** | Python | Analyzes workflow exports for Ollama node details. | Host/Any Machine |
 | **[durations.sql](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/scripts/durations.sql)** | PostgreSQL | Measures the execution times of the latest 15 runs. | `postgres` Database |
@@ -31,6 +35,34 @@ This document lists, describes, and provides usage instructions for the automati
 - **Execution**:
   ```powershell
   .\scripts\auto_sync.ps1
+  ```
+
+### 2. `export_workflows.py`
+- **Purpose**: Directly connects to the local PostgreSQL container via Docker exec and extracts all registered workflows into clean, formatted JSON files in `workflows/`.
+- **Execution**:
+  ```bash
+  python scripts/export_workflows.py
+  ```
+
+### 3. `generate_docs_data.py`
+- **Purpose**: Scans all workflow JSON files in `workflows/` and markdown documentation in `docs/` to compile a unified database file (`docs/data.json`) consumed by the GitHub Pages documentation portal.
+- **Execution**:
+  ```bash
+  python scripts/generate_docs_data.py
+  ```
+
+### 4. `publish_workflows_portfolio.py`
+- **Purpose**: Generates standalone, production-ready GitHub repository structures for selected showcase workflows under `published_repos/`, including badges, Mermaid architecture diagrams, MIT license, `.gitignore`, and `.github/workflows/validate-workflow.yml` CI quality gate.
+- **Execution**:
+  ```bash
+  python scripts/publish_workflows_portfolio.py
+  ```
+
+### 5. `publish_via_github_api.py`
+- **Purpose**: Uses the GitHub REST API (`PyGithub` / `requests`) to create or update remote repositories, upload workflow assets, and automatically assign software engineering topics (`#n8n`, `#data-engineering`, `#rag`, `#fastmcp`).
+- **Execution**:
+  ```bash
+  python scripts/publish_via_github_api.py
   ```
 
 ---

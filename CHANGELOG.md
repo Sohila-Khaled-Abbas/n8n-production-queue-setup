@@ -6,6 +6,33 @@ All notable changes to the **n8n Production Autoscaling Stack** will be document
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-09-11
+
+### 🛡️ Fixed & Hardened (CI/CD Quality Gates)
+- **CI Python Linting & Formatting**:
+  - Reconfigured `pyproject.toml` moving `exclude` to the top-level `[tool.ruff]` section to properly filter generated downstream showcase repositories (`published_repos/`) and ephemeral caches.
+  - Added `E501` to `[tool.ruff.lint].ignore` in alignment with official Ruff guidelines when using `ruff format`.
+  - Removed unused variables (`scaled`), eliminated extraneous f-string prefixes, resolved trailing whitespace issues, and formatted the entire codebase with `ruff format`.
+  - Both `ruff check .` and `ruff format --check .` now pass cleanly in CI with 0 errors.
+- **GitHub Pages Deployment Conflict Resolution**:
+  - Diagnosed and resolved the 5-second failure on `Deploy Docs to GitHub Pages` caused by a branch configuration mismatch in `actions/deploy-pages@v4` and a race condition on concurrency group `"pages"`.
+  - Consolidated deployment logic into `.github/workflows/deploy.yml` using `peaceiris/actions-gh-pages@v4` targeting the active `gh-pages` branch.
+  - Added smart path triggers (`docs/**`, `workflows/**`, `scripts/generate_docs_data.py`, and `.github/workflows/deploy.yml`) to prevent redundant builds on unrelated commits.
+  - Removed the conflicting `.github/workflows/deploy-docs.yml`.
+
+### 📚 Documentation & Software Engineering Standards
+- **Enterprise Software Engineering Extensions**:
+  - Documented enterprise production tooling blueprints across the stack: **Prometheus & Grafana** (`n8n-observability`), **OpenTelemetry** distributed tracing with W3C traceparent headers, **Traefik v3 / Caddy** reverse proxy and rate-limiting, **PgBouncer** connection pooling, **HashiCorp Vault / Infisical** dynamic secret management, and **k6** webhook stress testing.
+- **Architectural Diagrams**:
+  - Added Mermaid sequence diagrams for distributed webhook ingestion and task runner sidecar IPC.
+  - Added Mermaid flowchart for the autoscaler queue-depth decision engine loop.
+- **Reliability & Operations**:
+  - Added Site Reliability Engineering (SRE) SLOs and SLIs (99.95% availability, P95 < 150ms).
+  - Added operational runbooks for zero-downtime rolling updates, Redis health checks, and database orphan healing.
+  - Updated workflow portfolio metrics to reflect 100 compiled production workflows.
+
+---
+
 ## [1.4.0] - 2026-09-06
 
 ### 🚀 Changed

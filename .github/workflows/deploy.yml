@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'docs/**'
+      - 'workflows/**'
+      - 'scripts/generate_docs_data.py'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow pushing to the gh-pages branch

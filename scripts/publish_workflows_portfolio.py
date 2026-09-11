@@ -8,12 +8,10 @@ complete with custom README.md files, Mermaid architecture diagrams, CI/CD valid
 badges, workflow JSON files, and automated GitHub topic tagging scripts.
 """
 
-import os
 import json
-import re
-import sys
+import os
 import shutil
-import subprocess
+import sys
 
 # Reconfigure stdout/stderr to UTF-8 on Windows
 if sys.platform.startswith("win"):
@@ -37,8 +35,25 @@ SHOWCASE_WORKFLOWS = [
         "title": "Gourmet Bistro Multi-Agent AI Customer Service & Ordering System",
         "category": "AI Chatbots & Conversational Commerce",
         "tagline": "Multi-agent LangChain structure for restaurant customer service, RAG vector search, order creation, and kitchen dispatch.",
-        "tech_stack": ["n8n", "LangChain Multi-Agent", "Qdrant Vector DB", "Google Sheets", "Supabase PostgreSQL", "Telegram Bot API"],
-        "topics": ["n8n", "n8n-workflow", "langchain", "multi-agent", "rag", "qdrant", "telegram-bot", "supabase", "software-engineering"],
+        "tech_stack": [
+            "n8n",
+            "LangChain Multi-Agent",
+            "Qdrant Vector DB",
+            "Google Sheets",
+            "Supabase PostgreSQL",
+            "Telegram Bot API",
+        ],
+        "topics": [
+            "n8n",
+            "n8n-workflow",
+            "langchain",
+            "multi-agent",
+            "rag",
+            "qdrant",
+            "telegram-bot",
+            "supabase",
+            "software-engineering",
+        ],
         "business_value": "Enforces strict business rules (phone validation, delivery checks, 5-minute cancellation grace period) while reducing front-of-house customer service load by up to 80%.",
         "mermaid_diagram": """sequenceDiagram
     autonumber
@@ -62,7 +77,7 @@ SHOWCASE_WORKFLOWS = [
         Agent->>Agent: Validate Egyptian Phone & Address
         Agent->>Kitchen: Send Real-Time Order Telegram Alert
         Agent-->>Customer: Order Dispatched to Kitchen
-    end"""
+    end""",
     },
     {
         "slug": "n8n-workflow-upwork-ai-proposal-creator",
@@ -70,8 +85,23 @@ SHOWCASE_WORKFLOWS = [
         "title": "Upwork AI Automated Proposal & Job Lead Scraper",
         "category": "Productivity & Lead Generation",
         "tagline": "Scrapes target Upwork job postings via Apify, analyzes job requirements using LLMs, and auto-drafts tailored proposals.",
-        "tech_stack": ["n8n", "Apify Upwork Scraper", "LangChain Agent", "OpenAI GPT-4", "JavaScript"],
-        "topics": ["n8n", "n8n-workflow", "apify", "web-scraping", "openai", "gpt-4", "proposal-generator", "software-engineering"],
+        "tech_stack": [
+            "n8n",
+            "Apify Upwork Scraper",
+            "LangChain Agent",
+            "OpenAI GPT-4",
+            "JavaScript",
+        ],
+        "topics": [
+            "n8n",
+            "n8n-workflow",
+            "apify",
+            "web-scraping",
+            "openai",
+            "gpt-4",
+            "proposal-generator",
+            "software-engineering",
+        ],
         "business_value": "Saves agency owners and freelancers up to 10+ hours per week by automating top-of-funnel freelance job qualification and proposal drafting.",
         "mermaid_diagram": """graph TD
     A[Cron Schedule / Webhook] --> B[Apify Upwork Scraper Node]
@@ -80,7 +110,7 @@ SHOWCASE_WORKFLOWS = [
     D --> E[LangChain AI Proposal Generator]
     E --> F[Format Proposal & Match Client Criteria]
     F --> G[Save Draft to Google Sheets / Notion]
-    C -- No --> H[Skip Job Entry]"""
+    C -- No --> H[Skip Job Entry]""",
     },
     {
         "slug": "n8n-workflow-emaar-towers-lead-qualification",
@@ -88,8 +118,22 @@ SHOWCASE_WORKFLOWS = [
         "title": "Emaar Towers Real Estate Lead Qualification AI Agent",
         "category": "Lead Generation & CRM",
         "tagline": "High-end real estate lead filtering agent that qualifies buyers based on budget, down payment capacity, and location preferences.",
-        "tech_stack": ["n8n", "LangChain Agent", "OpenRouter API", "Google Sheets CRM", "Telegram Alerts"],
-        "topics": ["n8n", "n8n-workflow", "lead-qualification", "crm-automation", "openrouter", "telegram-bot", "software-engineering"],
+        "tech_stack": [
+            "n8n",
+            "LangChain Agent",
+            "OpenRouter API",
+            "Google Sheets CRM",
+            "Telegram Alerts",
+        ],
+        "topics": [
+            "n8n",
+            "n8n-workflow",
+            "lead-qualification",
+            "crm-automation",
+            "openrouter",
+            "telegram-bot",
+            "software-engineering",
+        ],
         "business_value": "Filters out unqualified leads automatically and alerts senior real estate brokers immediately for high-budget luxury inquiries.",
         "mermaid_diagram": """flowchart LR
     Inquiry[Inbound Buyer Message] --> Agent[AI Qualification Agent]
@@ -97,7 +141,7 @@ SHOWCASE_WORKFLOWS = [
     Questions --> Eval{Budget >= Luxury Threshold?}
     Eval -- High Value Lead --> CRM[Persist in Google Sheets CRM]
     CRM --> Alert[Trigger Urgent Broker Telegram Alert]
-    Eval -- Low Budget --> Nurture[Send Automated Informational Brochure]"""
+    Eval -- Low Budget --> Nurture[Send Automated Informational Brochure]""",
     },
     {
         "slug": "n8n-workflow-delivery-telegram-bot",
@@ -105,8 +149,22 @@ SHOWCASE_WORKFLOWS = [
         "title": "Interactive Food Delivery Telegram Bot with MSSQL Session Persistence",
         "category": "AI Chatbots & Conversational Commerce",
         "tagline": "Conversational commerce bot enabling natural language food ordering with durable state persistence in MSSQL.",
-        "tech_stack": ["n8n", "Telegram Trigger", "LangChain Agent", "MSSQL", "OpenRouter"],
-        "topics": ["n8n", "n8n-workflow", "telegram-bot", "mssql", "conversational-commerce", "session-persistence", "software-engineering"],
+        "tech_stack": [
+            "n8n",
+            "Telegram Trigger",
+            "LangChain Agent",
+            "MSSQL",
+            "OpenRouter",
+        ],
+        "topics": [
+            "n8n",
+            "n8n-workflow",
+            "telegram-bot",
+            "mssql",
+            "conversational-commerce",
+            "session-persistence",
+            "software-engineering",
+        ],
         "business_value": "Provides 24/7 interactive ordering directly inside messaging apps with automatic session recovery across chat restarts.",
         "mermaid_diagram": """sequenceDiagram
     Customer->>Telegram: Send Cart Modification / Order Message
@@ -114,7 +172,7 @@ SHOWCASE_WORKFLOWS = [
     n8n->>MSSQL: Read Active Session State & Cart
     n8n->>LangChain: Process Intent & Update Items
     LangChain->>MSSQL: Update Cart Payload & State
-    n8n-->>Customer: Return Updated Order Summary"""
+    n8n-->>Customer: Return Updated Order Summary""",
     },
     {
         "slug": "n8n-workflow-apple-rag-chatbot-v2",
@@ -122,15 +180,30 @@ SHOWCASE_WORKFLOWS = [
         "title": "Apple Products Technical Support RAG AI Agent (V2)",
         "category": "RAG & Knowledge Bases",
         "tagline": "Retrieval-Augmented Generation (RAG) assistant indexing Apple technical support documentation for context-aware Q&A.",
-        "tech_stack": ["n8n", "Qdrant Vector DB", "OpenAI Embeddings", "LangChain Conversational Agent", "Chat Trigger"],
-        "topics": ["n8n", "n8n-workflow", "rag", "qdrant", "openai-embeddings", "vector-database", "ai-agent", "software-engineering"],
+        "tech_stack": [
+            "n8n",
+            "Qdrant Vector DB",
+            "OpenAI Embeddings",
+            "LangChain Conversational Agent",
+            "Chat Trigger",
+        ],
+        "topics": [
+            "n8n",
+            "n8n-workflow",
+            "rag",
+            "qdrant",
+            "openai-embeddings",
+            "vector-database",
+            "ai-agent",
+            "software-engineering",
+        ],
         "business_value": "Eliminates AI hallucinations by grounding responses strictly in verified product documentation with source citation.",
         "mermaid_diagram": """graph LR
     UserMsg[User Technical Question] --> Embed[OpenAI Embedding Generator]
     Embed --> Qdrant[Qdrant Vector DB Similarity Search]
     Qdrant --> Context[Retrieve Top Relevant Doc Snippets]
     Context --> Agent[LangChain RAG Agent]
-    Agent --> Response[Answer with Source Citations]"""
+    Agent --> Response[Answer with Source Citations]""",
     },
     {
         "slug": "n8n-workflow-daily-viral-content-radar",
@@ -138,15 +211,29 @@ SHOWCASE_WORKFLOWS = [
         "title": "Daily Viral Content Radar & Multi-API Trend Aggregator",
         "category": "Productivity & Content ETL Pipelines",
         "tagline": "Monitors social platforms and APIs daily, extracts high-performing content trends, and generates AI executive summaries.",
-        "tech_stack": ["n8n", "HTTP Request (APIs)", "LLM Summarizer", "Google Sheets", "Email Digest"],
-        "topics": ["n8n", "n8n-workflow", "content-curation", "trend-analysis", "etl-pipeline", "http-api", "software-engineering"],
+        "tech_stack": [
+            "n8n",
+            "HTTP Request (APIs)",
+            "LLM Summarizer",
+            "Google Sheets",
+            "Email Digest",
+        ],
+        "topics": [
+            "n8n",
+            "n8n-workflow",
+            "content-curation",
+            "trend-analysis",
+            "etl-pipeline",
+            "http-api",
+            "software-engineering",
+        ],
         "business_value": "Automates content curation and market trend monitoring, providing content teams with daily viral insights effortlessly.",
         "mermaid_diagram": """flowchart TD
     Cron[Daily Cron Trigger 08:00 AM] --> APIs[Fetch External API Social Metrics]
     APIs --> Parse[Parse Metric Virality Scores]
     Parse --> LLM[Generate AI Summary & Hook Recommendations]
     LLM --> Sheet[Store Viral Trends in Google Sheets]
-    LLM --> Email[Send Executive Email Digest]"""
+    LLM --> Email[Send Executive Email Digest]""",
     },
     {
         "slug": "n8n-workflow-telegram-notion-etl",
@@ -154,8 +241,22 @@ SHOWCASE_WORKFLOWS = [
         "title": "AI Learning Pipeline: Telegram to Notion Knowledge ETL",
         "category": "Productivity & Content ETL Pipelines",
         "tagline": "Extracts links, videos, and research papers from Telegram messages, enriches them with AI summaries, and populates a Notion database.",
-        "tech_stack": ["n8n", "Telegram Bot API", "Notion API", "OpenAI Summarizer", "HTML Metadata Scraper"],
-        "topics": ["n8n", "n8n-workflow", "telegram-bot", "notion-api", "etl-pipeline", "knowledge-management", "software-engineering"],
+        "tech_stack": [
+            "n8n",
+            "Telegram Bot API",
+            "Notion API",
+            "OpenAI Summarizer",
+            "HTML Metadata Scraper",
+        ],
+        "topics": [
+            "n8n",
+            "n8n-workflow",
+            "telegram-bot",
+            "notion-api",
+            "etl-pipeline",
+            "knowledge-management",
+            "software-engineering",
+        ],
         "business_value": "Automates personal knowledge management and research aggregation into structured workspace databases.",
         "mermaid_diagram": """sequenceDiagram
     User->>Telegram: Forward Article / Video / Research Link
@@ -163,7 +264,7 @@ SHOWCASE_WORKFLOWS = [
     n8n->>Scraper: Extract Page Title & HTML Metadata
     n8n->>OpenAI: Generate Key Insights & Tags
     n8n->>Notion: Create Database Entry with Tags & Summary
-    n8n-->>User: Reply Telegram Confirmation with Notion Link"""
+    n8n-->>User: Reply Telegram Confirmation with Notion Link""",
     },
     {
         "slug": "n8n-workflow-gdrive-pdf-qdrant-indexer",
@@ -171,14 +272,29 @@ SHOWCASE_WORKFLOWS = [
         "title": "Google Drive PDF Vector Indexer & Qdrant RAG Pipeline",
         "category": "RAG & Knowledge Bases",
         "tagline": "Automates document ingestion: monitors Google Drive folder for new PDFs, parses text, generates embeddings, and indexes into Qdrant.",
-        "tech_stack": ["n8n", "Google Drive Trigger", "PDF Parser", "OpenAI Embeddings", "Qdrant Vector DB"],
-        "topics": ["n8n", "n8n-workflow", "google-drive-api", "qdrant", "pdf-parser", "rag", "vector-embeddings", "software-engineering"],
+        "tech_stack": [
+            "n8n",
+            "Google Drive Trigger",
+            "PDF Parser",
+            "OpenAI Embeddings",
+            "Qdrant Vector DB",
+        ],
+        "topics": [
+            "n8n",
+            "n8n-workflow",
+            "google-drive-api",
+            "qdrant",
+            "pdf-parser",
+            "rag",
+            "vector-embeddings",
+            "software-engineering",
+        ],
         "business_value": "Keeps RAG vector databases continuously updated in real-time as enterprise knowledge files are added to Google Drive.",
         "mermaid_diagram": """flowchart LR
     GDrive[New PDF uploaded to GDrive] --> Download[Download PDF Payload]
     Download --> Parse[Extract Text Chunks]
     Parse --> Embed[Generate Vector Embeddings]
-    Embed --> Qdrant[Upsert Vector Points to Qdrant Collection]"""
+    Embed --> Qdrant[Upsert Vector Points to Qdrant Collection]""",
     },
     {
         "slug": "n8n-workflow-sentiment-analysis-agent",
@@ -186,15 +302,29 @@ SHOWCASE_WORKFLOWS = [
         "title": "Automated Customer Feedback Sentiment Analysis & Escalation Agent",
         "category": "Lead Generation & CRM Automation",
         "tagline": "Classifies incoming customer review sentiment in real-time, logs analytics, and triggers instant alerts for negative feedback.",
-        "tech_stack": ["n8n", "OpenAI Classifier", "Google Sheets", "Telegram Alerts", "Webhook Processor"],
-        "topics": ["n8n", "n8n-workflow", "sentiment-analysis", "customer-feedback", "nlp", "crm-automation", "software-engineering"],
+        "tech_stack": [
+            "n8n",
+            "OpenAI Classifier",
+            "Google Sheets",
+            "Telegram Alerts",
+            "Webhook Processor",
+        ],
+        "topics": [
+            "n8n",
+            "n8n-workflow",
+            "sentiment-analysis",
+            "customer-feedback",
+            "nlp",
+            "crm-automation",
+            "software-engineering",
+        ],
         "business_value": "Prevents customer churn by enabling support teams to respond to unhappy customers within minutes of submission.",
         "mermaid_diagram": """flowchart TD
     Webhook[Customer Review Submitted] --> Classify[LLM Sentiment Classifier]
     Classify --> Grade{Sentiment Score}
     Grade -- Positive / Neutral --> Log[Log in Google Sheets Database]
     Grade -- Negative --> Log
-    Grade -- Negative --> Alert[Send High Priority Escalation Alert via Telegram]"""
+    Grade -- Negative --> Alert[Send High Priority Escalation Alert via Telegram]""",
     },
     {
         "slug": "n8n-workflow-gpt-oss-20b-huggingface",
@@ -202,8 +332,21 @@ SHOWCASE_WORKFLOWS = [
         "title": "GPT-OSS-20B Cloud Inference Workflow with Auto-Retry Logic",
         "category": "AI Integration & Cloud Inference",
         "tagline": "Production-ready integration with HuggingFace Inference API for 20B parameter open-source LLMs featuring 503 retry handling.",
-        "tech_stack": ["n8n", "HuggingFace API", "Custom Error Handling (503 Retry)", "JavaScript Parser"],
-        "topics": ["n8n", "n8n-workflow", "huggingface", "open-source-llm", "cloud-inference", "error-handling", "software-engineering"],
+        "tech_stack": [
+            "n8n",
+            "HuggingFace API",
+            "Custom Error Handling (503 Retry)",
+            "JavaScript Parser",
+        ],
+        "topics": [
+            "n8n",
+            "n8n-workflow",
+            "huggingface",
+            "open-source-llm",
+            "cloud-inference",
+            "error-handling",
+            "software-engineering",
+        ],
         "business_value": "Provides reliable, serverless access to high-parameter open-source AI models without managing expensive local GPU infrastructure.",
         "mermaid_diagram": """sequenceDiagram
     Trigger->>HuggingFace: Send Chat Completion Request
@@ -213,41 +356,51 @@ SHOWCASE_WORKFLOWS = [
         n8n->>HuggingFace: Retry Chat Completion Request
     end
     HuggingFace-->>n8n: Return 200 OK Payload
-    n8n->>n8n: Parse Response JSON & Extract Content"""
-    }
+    n8n->>n8n: Parse Response JSON & Extract Content""",
+    },
 ]
+
 
 def parse_workflow_json(json_path):
     if not os.path.exists(json_path):
         return None
     try:
-        with open(json_path, "r", encoding="utf-8") as f:
+        with open(json_path, encoding="utf-8") as f:
             data = json.load(f)
         if isinstance(data, list):
             data = data[0] if len(data) > 0 else {}
-            
+
         nodes = data.get("nodes", [])
         node_count = len(nodes)
-        
+
         node_types = []
         triggers = []
         for n in nodes:
-            t = n.get("type", "").replace("n8n-nodes-base.", "").replace("@n8n/n8n-nodes-langchain.", "")
+            t = (
+                n.get("type", "")
+                .replace("n8n-nodes-base.", "")
+                .replace("@n8n/n8n-nodes-langchain.", "")
+            )
             if t and t not in node_types:
                 node_types.append(t)
-            if "trigger" in t.lower() or "webhook" in t.lower() or "manual" in t.lower():
+            if (
+                "trigger" in t.lower()
+                or "webhook" in t.lower()
+                or "manual" in t.lower()
+            ):
                 triggers.append(n.get("name", t))
-                
+
         return {
             "name": data.get("name", os.path.basename(json_path).replace(".json", "")),
             "node_count": node_count,
             "node_types": node_types,
             "triggers": triggers,
-            "raw_data": data
+            "raw_data": data,
         }
     except Exception as e:
         print(f"Error parsing {json_path}: {e}")
         return None
+
 
 def generate_readme(item, parsed_info):
     title = item["title"]
@@ -257,25 +410,38 @@ def generate_readme(item, parsed_info):
     business_value = item["business_value"]
     mermaid_diagram = item.get("mermaid_diagram", "")
     topics = item.get("topics", [])
-    
+
     node_count = parsed_info["node_count"] if parsed_info else "N/A"
-    node_types_str = ", ".join([f"`{t}`" for t in parsed_info["node_types"]]) if parsed_info else "n8n Nodes"
-    triggers_str = ", ".join([f"`{tr}`" for tr in parsed_info["triggers"]]) if parsed_info else "Manual / Trigger"
-    
-    tech_badges = " ".join([f"![{t}](https://img.shields.io/badge/{t.replace(' ', '_')}-informational?style=flat-square)" for t in tech_stack])
+    node_types_str = (
+        ", ".join([f"`{t}`" for t in parsed_info["node_types"]])
+        if parsed_info
+        else "n8n Nodes"
+    )
+    triggers_str = (
+        ", ".join([f"`{tr}`" for tr in parsed_info["triggers"]])
+        if parsed_info
+        else "Manual / Trigger"
+    )
+
+    tech_badges = " ".join(
+        [
+            f"![{t}](https://img.shields.io/badge/{t.replace(' ', '_')}-informational?style=flat-square)"
+            for t in tech_stack
+        ]
+    )
     topic_badges = " ".join([f"`#{t}`" for t in topics])
 
     readme_content = f"""<div align="center">
 
 # ⚡ {title}
 
-**Category:** `{category}`  
+**Category:** `{category}`<br>
 *{tagline}*
 
 {tech_badges}
 [![n8n Compatible](https://img.shields.io/badge/n8n-Workflow-FF6D5A?style=flat-square&logo=n8n&logoColor=white)](https://n8n.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
-[![CI Validation](https://github.com/{GITHUB_USER}/{item['slug']}/actions/workflows/validate-workflow.yml/badge.svg)](https://github.com/{GITHUB_USER}/{item['slug']}/actions)
+[![CI Validation](https://github.com/{GITHUB_USER}/{item["slug"]}/actions/workflows/validate-workflow.yml/badge.svg)](https://github.com/{GITHUB_USER}/{item["slug"]}/actions)
 
 [Main Portfolio Hub]({MAIN_REPO}) · [Architecture & Principles](#-software-engineering-architecture--standards) · [How to Import](#-how-to-import-and-run)
 
@@ -355,7 +521,7 @@ To import this workflow into your n8n instance:
 
 ## 🔗 Related Portfolio Workflows
 
-This workflow is part of the **Production n8n Workflow Portfolio**. Explore more production-grade workflows in the main hub:  
+This workflow is part of the **Production n8n Workflow Portfolio**. Explore more production-grade workflows in the main hub:<br>
 👉 **[{MAIN_REPO}]({MAIN_REPO})**
 
 ---
@@ -364,6 +530,7 @@ This workflow is part of the **Production n8n Workflow Portfolio**. Explore more
 Released under the [MIT License](LICENSE).
 """
     return readme_content
+
 
 def generate_ci_workflow():
     return """name: Validate n8n Workflow Schema
@@ -401,6 +568,7 @@ jobs:
           fi
 """
 
+
 def generate_gitignore():
     return """.DS_Store
 Thumbs.db
@@ -409,6 +577,7 @@ Thumbs.db
 node_modules/
 __pycache__/
 """
+
 
 def generate_license():
     return """MIT License
@@ -434,34 +603,39 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 def main():
-    print(f"🚀 Initializing Software Engineering Portfolio Showcase Generator...")
+    print("🚀 Initializing Software Engineering Portfolio Showcase Generator...")
     print(f"Output Directory: {OUTPUT_DIR}")
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     created_repos = []
-    
+
     for item in SHOWCASE_WORKFLOWS:
         slug = item["slug"]
         wf_file = item["file"]
         json_path = os.path.join(WORKFLOWS_DIR, wf_file)
-        
+
         repo_dir = os.path.join(OUTPUT_DIR, slug)
         os.makedirs(repo_dir, exist_ok=True)
-        
+
         parsed_info = parse_workflow_json(json_path)
-        
+
         # 1. Write README.md
         readme_path = os.path.join(repo_dir, "README.md")
         with open(readme_path, "w", encoding="utf-8") as f:
             f.write(generate_readme(item, parsed_info))
-            
+
         # 2. Write .github/workflows/validate-workflow.yml
         github_actions_dir = os.path.join(repo_dir, ".github", "workflows")
         os.makedirs(github_actions_dir, exist_ok=True)
-        with open(os.path.join(github_actions_dir, "validate-workflow.yml"), "w", encoding="utf-8") as f:
+        with open(
+            os.path.join(github_actions_dir, "validate-workflow.yml"),
+            "w",
+            encoding="utf-8",
+        ) as f:
             f.write(generate_ci_workflow())
-            
+
         # 3. Copy workflow JSON as workflow.json
         dest_json_path = os.path.join(repo_dir, "workflow.json")
         if parsed_info and parsed_info["raw_data"]:
@@ -471,20 +645,29 @@ def main():
             shutil.copy(json_path, dest_json_path)
         else:
             print(f"⚠️ Warning: Could not find original workflow file: {wf_file}")
-            
+
         # 4. Write .gitignore & LICENSE
         with open(os.path.join(repo_dir, ".gitignore"), "w", encoding="utf-8") as f:
             f.write(generate_gitignore())
         with open(os.path.join(repo_dir, "LICENSE"), "w", encoding="utf-8") as f:
             f.write(generate_license())
-            
+
         print(f"✅ Generated SE showcase repo structure & CI: published_repos/{slug}")
-        created_repos.append({"slug": slug, "title": item["title"], "topics": item.get("topics", []), "repo_dir": repo_dir})
+        created_repos.append(
+            {
+                "slug": slug,
+                "title": item["title"],
+                "topics": item.get("topics", []),
+                "repo_dir": repo_dir,
+            }
+        )
 
     # Generate PowerShell publish & tag script
     ps_script = os.path.join(OUTPUT_DIR, "publish_all_to_github.ps1")
     with open(ps_script, "w", encoding="utf-8") as f:
-        f.write("# PowerShell script to push all generated repositories and set GitHub topics\n")
+        f.write(
+            "# PowerShell script to push all generated repositories and set GitHub topics\n"
+        )
         f.write("$env:Path += ';C:\\Program Files\\GitHub CLI'\n")
         f.write("$env:GITHUB_TOKEN = ''\n")
         f.write("$GITHUB_USER = 'Sohila-Khaled-Abbas'\n\n")
@@ -495,14 +678,23 @@ def main():
             f.write(f"Set-Location -Path '{repo['repo_dir']}'\n")
             f.write("if (-not (Test-Path '.git')) { git init; git branch -M main }\n")
             f.write("git add .\n")
-            f.write("git commit -m 'feat: update showcase workflow with software engineering architecture, CI/CD, and tags' 2>$null\n")
-            f.write(f"gh repo create \"$GITHUB_USER/{s}\" --public --source=. --remote=origin --push -y 2>$null\n")
-            f.write(f"gh repo edit \"$GITHUB_USER/{s}\" {topics_arg} 2>$null\n")
+            f.write(
+                "git commit -m 'feat: update showcase workflow with software engineering architecture, CI/CD, and tags' 2>$null\n"
+            )
+            f.write(
+                f'gh repo create "$GITHUB_USER/{s}" --public --source=. --remote=origin --push -y 2>$null\n'
+            )
+            f.write(f'gh repo edit "$GITHUB_USER/{s}" {topics_arg} 2>$null\n')
             f.write("git push -u origin main\n\n")
-        f.write("Write-Host '🎉 All showcase repositories updated and tagged on GitHub successfully!'\n")
+        f.write(
+            "Write-Host '🎉 All showcase repositories updated and tagged on GitHub successfully!'\n"
+        )
 
-    print(f"\n🎉 Successfully generated {len(created_repos)} Software Engineering showcase repositories in 'published_repos/'.")
+    print(
+        f"\n🎉 Successfully generated {len(created_repos)} Software Engineering showcase repositories in 'published_repos/'."
+    )
     print(f"📄 Generated automated publishing script: {ps_script}")
+
 
 if __name__ == "__main__":
     main()

@@ -8,6 +8,18 @@ line-length = 88
 # Source folders containing Python files
 src = ["autoscaler", "monitor", "scripts"]
 
+# Exclude build, cache, generated showcase repos, and data directories
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    "n8n-data",
+    "backups",
+    "published_repos",
+    "mcp_server",
+]
+
 [tool.ruff.lint]
 # Enable Pyflakes (F), pycodestyle (E, W), isort (I), Upgrade (UP), Ruff-specific (RUF) rules
 select = [
@@ -18,17 +30,9 @@ select = [
     "UP",  # pyupgrade
     "RUF"  # Ruff-specific rules
 ]
-ignore = []
-
-# Exclude build, cache, and data directories
-exclude = [
-    ".git",
-    "__pycache__",
-    "build",
-    "dist",
-    "n8n-data",
-    "backups"
-]
+# Ignore line-too-long (E501) as code is formatted via ruff format (per Ruff official guidelines)
+ignore = ["E501"]
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
+

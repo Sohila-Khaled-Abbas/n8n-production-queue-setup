@@ -1,6 +1,6 @@
 # 💼 Production n8n Workflow Portfolio
 
-This portfolio contains **74 production-grade automation workflows**. These workflows solve real-world problems by integrating LLMs, vector databases (Qdrant, Supabase PgVector), relational databases (MSSQL, PostgreSQL), CRM platforms, and interactive interfaces (Telegram, Gmail, Google Sheets).
+This portfolio contains **100 production-grade automation workflows**. These workflows solve real-world problems by integrating LLMs, vector databases (Qdrant, Supabase PgVector), relational databases (MSSQL, PostgreSQL), CRM platforms, and interactive interfaces (Telegram, Gmail, Google Sheets).
 
 > [!TIP]
 > **Intelligent Tagging System:** All workflows in this repository have been programmatically tagged using a "software engineering mentality". When you import these workflows into n8n, you'll see advanced architectural tags like **`Data Pipeline`**, **`Event-Driven Architecture`**, **`RAG`**, **`Agentic AI`**, and **`Orchestration`** automatically applied to them based on their internal node structure.
@@ -118,6 +118,14 @@ This portfolio is backed by official certifications from the n8n Academy:
 * **Standalone Showcase Repo:** [n8n-workflow-daily-viral-content-radar](published_repos/n8n-workflow-daily-viral-content-radar) | [GitHub Link](https://github.com/Sohila-Khaled-Abbas/n8n-workflow-daily-viral-content-radar)
 * **Business Case:** Automated trend monitoring pipeline scraping viral content, extracting engagement metrics, classifying topics via AI, and generating daily digest reports.
 * **Business Value:** Keeps marketing and product teams ahead of industry trends with automated daily intelligence digests.
+
+### 🧠 High-Parameter LLM Cloud Inference (GPT-OSS-20B)
+* **Workflow Files:**
+  * [GPT_OSS_20B_HuggingFace.json](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/workflows/GPT_OSS_20B_HuggingFace.json)
+  * [GPT_OSS_20B_OpenRouter.json](file:///d:/courses/Data%20Science/Data%20Engineering/n8n/workflows/GPT_OSS_20B_OpenRouter.json)
+* **Standalone Showcase Repo:** [n8n-workflow-gpt-oss-20b-huggingface](published_repos/n8n-workflow-gpt-oss-20b-huggingface) | [GitHub Link](https://github.com/Sohila-Khaled-Abbas/n8n-workflow-gpt-oss-20b-huggingface)
+* **Business Case:** Enterprise 20B+ parameter model inference executed via Hugging Face's OpenAI-compatible v1 router and OpenRouter APIs, avoiding the need for heavy local multi-GPU hardware.
+* **Architecture & Reliability:** Integrates automatic exponential backoff on HTTP 503 (model cold-start/loading state), language-drift prevention prompts, and structured JSON extraction.
 
 ---
 

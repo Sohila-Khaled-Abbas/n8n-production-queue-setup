@@ -278,7 +278,7 @@ To prevent database connection timeouts during startup (especially on resource-c
 
 ---
 
-### Redis
+### Redis (Bull Queue Broker)
 
 | Attribute | Value |
 |---|---|
@@ -289,7 +289,22 @@ To prevent database connection timeouts during startup (especially on resource-c
 | Auth | Unauthenticated (internal network only) |
 | Memory Limit | `128M` |
 
-Acts as the **Bull queue broker**. Redis is unauthenticated — it is only accessible inside `n8n-net` and never published to the host network, so no password is needed.
+Acts as the **Bull queue broker** coordinating jobs between the main server, webhook processor, and worker pool. Redis is strictly accessible inside `n8n-net` and never published to the host network.
+
+#### Broker Durability & Crash Resilience Engine
+
+The broker is configured for high throughput combined with crash-safe transaction durability:
+
+1. **AOF + RDB Hybrid Persistence (`appendonly yes`, `aof-use-rdb-preamble yes`)**:
+   - Every mutating Redis command is logged to the Append-Only File with `appendfsync everysec`.
+   - The RDB preamble combines the point-in-time snapshot speed of RDB with the transaction granularity of AOF, dramatically reducing container startup and restart recovery times.
+
+2. **Automated Crash Self-Healing (`aof-load-truncated yes`)**:
+   - In containerized production environments, ungraceful container terminations (e.g. host reboots, OOM kills, power interruptions) can truncate the trailing bytes of the active `.incr.aof` file.
+   - Enabling `aof-load-truncated yes` instructs Redis to safely discard corrupt or partial trailing bytes upon startup, log a warning, and initialize immediately, preventing infinite crash-restart loops.
+
+3. **Memory Ceiling Protection**:
+   - Configured with `maxmemory 96mb` and `maxmemory-policy allkeys-lru` to guarantee that unexpected queue spikes never cause container OOM kills.
 
 ---
 
@@ -352,6 +367,64 @@ All services share `n8n-net` (Docker bridge). Services resolve each other by con
 
 ## Data Flow: Workflow Execution
 
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client as External Client / Webhook
+    participant Webhook as n8n-webhook (:5678)
+    participant Redis as Redis BullMQ (:6379)
+    participant Autoscaler as n8n-autoscaler (Docker API)
+    participant Worker as n8n-worker (:5679)
+    participant Runner as n8n-worker-runner
+    participant Postgres as PostgreSQL (:5432)
+
+    Client->>Webhook: POST /webhook/process-order
+    Webhook->>Redis: Enqueue Job (bull:jobs:wait)
+    Webhook-->>Client: 200 OK (Execution Queued)
+
+    par Autoscaling Loop
+        Autoscaler->>Redis: Poll LLEN bull:jobs:wait
+        alt Queue Length > SCALE_UP_THRESHOLD
+            Autoscaler->>Autoscaler: Trigger scale up (worker=N, runner=N)
+        end
+    end
+
+    Redis->>Worker: Dequeue Job (BRPOPLPUSH)
+    Worker->>Postgres: Record status = 'running'
+    
+    rect rgb(30, 41, 59)
+        Note over Worker,Runner: Isolated Code Node Delegation
+        Worker->>Runner: Submit JS/Python Task (WebSocket IPC :5679)
+        Runner->>Runner: Execute sandbox (Chromium / Pandas / UV)
+        Runner-->>Worker: Stream Execution Output & Artifacts
+    end
+
+    Worker->>Postgres: Persist Execution Result & State ('success'/'error')
+    Worker->>Redis: Acknowledge & Remove Job (bull:jobs:active -> completed)
+```
+
+### Autoscaler Decision Engine Loop
+
+```mermaid
+flowchart TD
+    Start([Poll Interval Elapsed]) --> ReadRedis[Query Redis LLEN bull:jobs:wait]
+    ReadRedis --> CountWorkers[Inspect Docker Worker Container Count]
+    
+    CountWorkers --> CheckCooldown{Cooldown Elapsed?}
+    CheckCooldown -- No --> Idle[Sleep & Wait for Next Cycle]
+    CheckCooldown -- Yes --> CheckScaleUp{Queue > ScaleUpThreshold<br/>AND Replicas < MaxReplicas?}
+    
+    CheckScaleUp -- Yes --> ScaleUp[Scale Worker & Runner +1<br/>docker compose up -d --scale]
+    ScaleUp --> ResetCooldown[Record Last Scale Timestamp]
+    
+    CheckScaleUp -- No --> CheckScaleDown{Queue < ScaleDownThreshold<br/>AND Replicas > MinReplicas?}
+    CheckScaleDown -- Yes --> ScaleDown[Scale Worker & Runner -1<br/>docker compose up -d --scale]
+    ScaleDown --> ResetCooldown
+    
+    CheckScaleDown -- No --> Idle
+    ResetCooldown --> Idle
+```
+
 ```
 1. User triggers workflow    →  n8n receives trigger (or n8n-webhook for HTTP)
 2. n8n enqueues job          →  Redis (Bull queue: bull:jobs:wait)
@@ -402,8 +475,70 @@ A collection of PowerShell, Python, and SQL scripts reside in the `scripts/` dir
 
 | Attribute | Value |
 |---|---|
-| Implementation | mcp_server/server.py & llm_generator.py |
-| Exposed port | 8000 |
+| Implementation | `mcp_server/server.py` & `llm_generator.py` |
+| Exposed port | `8000` |
 | Role | Generates workflows, reads n8n docs, discovers AI models |
 
 A FastMCP backend written in Python that provides a web-based Chat UI for AI-driven n8n workflow generation. It leverages a Multi-Agent RAG system to read n8n documentation and templates, automatically discovering available LLM models from existing workflows. It includes a built-in visual diff engine and direct 1-click exporting to the n8n REST API.
+
+---
+
+## Enterprise Stack Extensions Architecture
+
+For enterprise production deployments requiring carrier-grade reliability, compliance, and multi-tenant observability, the following architectural modules can be integrated directly into this stack:
+
+### 1. Prometheus & Grafana Telemetry Layer
+
+```
+┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐
+│   n8n /metrics  ├──────►│   Prometheus    ├──────►│     Grafana     │
+│   (Process,     │       │   Scraper       │       │   Dashboards    │
+│    Event Loop)  │       │   (15s interval)│       │   (SLO Alerts)  │
+└─────────────────┘       └─────────────────┘       └─────────────────┘
+         ▲
+         │ (Redis Queue Metrics)
+┌─────────────────┐
+│  redis-monitor  │
+│  Exporter       │
+└─────────────────┘
+```
+
+- **Scrape Target**: `n8n-main-server:5678/metrics` exposes standard Prometheus metrics (Node.js heap size, garbage collection cycles, active event loop lag, and HTTP latency).
+- **Queue Saturation Monitoring**: Ingests BullMQ queue metrics (`bull:jobs:wait`, `bull:jobs:active`, `bull:jobs:failed`) to trigger automated alerts when queue latency exceeds 30 seconds.
+- **Pre-configured Dashboards**: Community dashboard (Grafana ID `24474` - *n8n System Health Overview*) provides instant out-of-the-box visibility into runtime bottlenecks.
+
+### 2. Distributed Tracing (OpenTelemetry / OTel)
+
+```
+[ Inbound Webhook HTTP ] ──► (Generates W3C Traceparent Header)
+                                     │
+                                     ▼
+                            [ BullMQ Queue Job ] ──► (Propagates Span ID in Job Payload)
+                                     │
+                                     ▼
+                            [ Worker Node Execution ] ──► (Traces Node Execution Spans)
+                                     │
+                                     ▼
+                            [ OpenTelemetry Collector ] ──► Jaeger / Honeycomb / Datadog
+```
+
+- **Span Context Propagation**: Injects W3C `traceparent` headers into Redis BullMQ job metadata so that end-to-end execution spans remain continuous across asynchronous process boundaries.
+- **Latency Attribution**: Isolates whether delays stem from queue wait time, database lock contention, or third-party API throttling (e.g. OpenAI / Google Drive rate limits).
+
+### 3. Edge Reverse Proxy & Rate Limiting (Traefik v3)
+
+- **Dynamic Container Discovery**: Traefik inspects Docker labels dynamically to configure routes, eliminating manual config reloads when workers autoscale.
+- **Path-Based Traffic Segregation**:
+  - Route `/webhook/*` and `/webhook-test/*` directly to `n8n-webhook` containers.
+  - Route `/` and `/rest/*` to `n8n-main-server` with IP allowlisting or Basic Auth middleware.
+- **Automated SSL/TLS**: Native ACME integration with Let's Encrypt for automatic wildcard certificate generation and zero-downtime renewals.
+
+### 4. Database Connection Pooling (PgBouncer)
+
+- **Problem**: When `n8n-worker` autoscales from 1 to 5+ replicas, each worker process opens up to 10 connections (`DB_POSTGRESDB_POOL_SIZE=10`), potentially exhausting PostgreSQL's `max_connections` ceiling.
+- **Architecture**: Placing PgBouncer in front of PostgreSQL in `transaction` pooling mode allows hundreds of worker threads to share a persistent pool of 10–20 server connections, eliminating connection spikes and lowering PostgreSQL memory footprint.
+
+### 5. Secrets Management (HashiCorp Vault / Infisical)
+
+- **Decoupled Secrets**: Eliminates raw `.env` files on disk. Containers authenticate with Vault using Docker AppRole or cloud IAM.
+- **Dynamic Credentials**: PostgreSQL database passwords and API tokens are leased dynamically with TTLs and rotated automatically, adhering to SOC2 and ISO27001 data security standards.

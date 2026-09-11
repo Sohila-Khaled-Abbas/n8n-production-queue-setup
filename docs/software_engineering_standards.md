@@ -138,3 +138,54 @@ Our services must be designed to withstand downstream network failures or resour
   - The Redis queue broker must have `aof-load-truncated yes` and `aof-use-rdb-preamble yes` enabled in `redis.conf`. This guarantees that partial writes caused by abrupt container termination or host reboots do not block Redis from booting.
 - **Orphan Execution Healing**:
   - Worker crashes can leave database records in `running` or `waiting` state indefinitely. Database maintenance scripts must dynamically detect and mark orphaned executions older than 24 hours as `crashed`.
+
+---
+
+## 7. Distributed Workflow Idempotency & Deduplication
+
+In a distributed queue environment, external webhook triggers (e.g. Stripe, Shopify, Telegram) operate on **at-least-once delivery** semantics. Network retries can cause identical webhook events to arrive multiple times.
+
+### Architectural Standards:
+- **Idempotency Keys**: All transactional workflows (e.g. order creation, payments, inventory mutations) must generate or extract an idempotency key from inbound request headers (e.g. `X-Idempotency-Key` or `event.id`).
+- **Atomic Deduplication Check (Redis `SETNX`)**:
+  - Before performing downstream mutations, workflows must query Redis or a deduplication table:
+    ```javascript
+    // Pseudocode inside Code node / Function node
+    const key = `idempotency:${event.id}`;
+    const acquired = await redis.set(key, "PROCESSING", "NX", "EX", 3600);
+    if (!acquired) {
+      return [{ json: { status: "duplicate_ignored", eventId: event.id } }];
+    }
+    ```
+- **Terminal State Validation**: Always verify whether an entity already exists in PostgreSQL/CRM before issuing an `INSERT` or sending an email/message notification.
+
+---
+
+## 8. Dead Letter Queues (DLQ) & Circuit Breakers
+
+When unexpected payloads cause unhandled errors, repeatedly failing jobs must not block worker queues or exhaust memory.
+
+### Standards:
+- **Error Trigger Handlers**: Every production workflow must configure a dedicated **Error Trigger** workflow (`Error Workflow.json`).
+- **Poison Pill Isolation (DLQ)**:
+  - If a job fails after 3 automatic retries, the Error Trigger must route the full execution payload, error stack trace, and timestamp to a dedicated Dead Letter Queue in Redis (`bull:dlq:jobs`) or PostgreSQL table.
+  - Workers must immediately acknowledge and clear the poisoned task from the primary queue to keep the pipeline moving.
+- **Circuit Breaker for External APIs**:
+  - If an upstream API (e.g. OpenAI, Notion, Google Sheets) returns consecutive `5xx` or `429 Too Many Requests` errors exceeding 5 failures in 1 minute, the workflow should trip a circuit breaker flag in Redis to reject subsequent requests fast rather than waiting for timeouts.
+
+---
+
+## 9. CI/CD Quality Gates & Automated Verification
+
+Every commit and pull request must satisfy rigorous software engineering checks prior to deployment.
+
+### Quality Gate Hierarchy:
+1. **Python Quality Gate (`ruff check .` & `ruff format --check .`)**:
+   - Zero syntax errors, zero unused imports, zero unused local variables (`scaled`), and PEP 8 compliant formatting.
+   - Enforced via GitHub Actions (`.github/workflows/ci.yml`).
+2. **Container Security & Linting (`hadolint`)**:
+   - Validates multi-stage Dockerfiles against Docker best practices (non-root users, package manager cache cleanup, pinned image tags).
+3. **Automated Secret Scanning**:
+   - Greps workflow JSONs and scripts for hardcoded API keys (`sk-`, `AIza`, passwords).
+4. **Continuous Documentation Deployment (`peaceiris/actions-gh-pages`)**:
+   - Changes to `docs/**`, `workflows/**`, or `scripts/generate_docs_data.py` trigger automated compilation and deployment to the `gh-pages` branch.

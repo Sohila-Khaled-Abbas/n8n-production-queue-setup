@@ -14,13 +14,15 @@
 [![Qdrant](https://img.shields.io/badge/Qdrant-Vector_DB-ff1b44?logo=qdrant&logoColor=white)](https://qdrant.tech/)
 [![Docker Compose](https://img.shields.io/badge/Docker_Compose-v2-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg)](LICENSE)
+[![CI Code Quality](https://github.com/Sohila-Khaled-Abbas/n8n-production-queue-setup/actions/workflows/ci.yml/badge.svg)](https://github.com/Sohila-Khaled-Abbas/n8n-production-queue-setup/actions/workflows/ci.yml)
+[![Docs Deploy](https://github.com/Sohila-Khaled-Abbas/n8n-production-queue-setup/actions/workflows/deploy.yml/badge.svg)](https://github.com/Sohila-Khaled-Abbas/n8n-production-queue-setup/actions/workflows/deploy.yml)
 [![n8n Academy Certified](https://img.shields.io/badge/n8n_Academy-Certified-FF6D5A?logo=n8n&logoColor=white)](PORTFOLIO.md#🎓-n8n-academy-certifications)
 
-[Quick Start](#-quick-start) · [Architecture](#-architecture) · [Configuration](#-configuration) · [Autoscaling](#-autoscaling) · [Puppeteer & Playwright](#-puppeteer--playwright) · [Troubleshooting](#-troubleshooting) · [Operations Guide](docs/production_guide.md) · [SE Standards](docs/software_engineering_standards.md) · [Scripts Reference](docs/scripts.md) · [Portfolio Showcase](PORTFOLIO.md) · [Changelog](CHANGELOG.md) · [Contributing Guide](CONTRIBUTING.md)
+[Quick Start](#-quick-start) · [Architecture](#-architecture) · [Enterprise SE Stack](#-enterprise-software-engineering-stack-extensions) · [Configuration](#-configuration) · [Autoscaling](#-autoscaling) · [Puppeteer & Playwright](#-puppeteer--playwright) · [Troubleshooting](#-troubleshooting) · [Operations Guide](docs/production_guide.md) · [SE Standards](docs/software_engineering_standards.md) · [Scripts Reference](docs/scripts.md) · [Portfolio Showcase](PORTFOLIO.md) · [Changelog](CHANGELOG.md) · [Contributing Guide](CONTRIBUTING.md)
 
 </div>
 
-> 💼 **Looking for the Workflow Portfolio?** Check out our dedicated [Portfolio Showcase](PORTFOLIO.md) detailing 31 production-grade automation workflows with complete business cases and ready-to-import JSON files.
+> 💼 **Looking for the Workflow Portfolio?** Check out our dedicated [Portfolio Showcase](PORTFOLIO.md) detailing **100 production-grade automation workflows** with complete business cases, architectural tags, and ready-to-import JSON files.
 
 
 ---
@@ -35,7 +37,8 @@
 | **Queue-Mode Execution** | Workflows execute via Bull/Redis queues — no single point of failure |
 | **Dedicated Webhook Processor** | Separate `n8n-webhook` service handles inbound webhooks independently |
 | **Redis Queue Monitor** | Continuous queue depth logging for observability |
-| **PostgreSQL Backend** | Durable workflow, credential, and execution history storage |
+| **Broker Crash Self-Healing** | Redis AOF + RDB preamble durability with automated crash recovery (`aof-load-truncated yes`) |
+| **PostgreSQL Persistence** | Durable workflow, credential, and execution history storage with automated orphan run self-healing |
 | **Scheduled Backups** | Optional backup service: pg_dump + Redis + n8n volume → cloud via rclone |
 | **WhatsApp HTTP API** | Local WAHA gateway integrated + `@devlikeapro/n8n-nodes-waha` node auto-installed |
 | **HuggingFace & OpenRouter APIs** | Auto-provisioned auth for calling HF/OpenRouter models (e.g. `openai/gpt-oss-20b`) via standard and OpenAI-compatible v1 router endpoints, with built-in retry logic. |
@@ -45,7 +48,7 @@
 | **Health Checks** | All dependencies are health-checked before n8n starts |
 | **Centralized Log Rotation** | Configurable via `.env` — `LOG_DRIVER`, `LOG_MAX_SIZE`, `LOG_MAX_FILE` |
 | **Enterprise AI Assistant** | A Dockerized AI chat application (SQLite database) with conversational memory, dynamic real-time ingestion of your n8n workflows/credentials via API, self-healing JSON validation, and 1-click exporting to n8n. |
-| **Intelligently Tagged Portfolio** | Includes 74 production-ready workflows structurally parsed and tagged (`RAG`, `Data Pipeline`, `Orchestration`) and an automatically compiled Markdown Documentation Site. |
+| **Intelligently Tagged Portfolio** | Includes **100 production-ready workflows** structurally parsed and tagged (`RAG`, `Data Pipeline`, `Event-Driven`, `Orchestration`) and an automatically compiled documentation portal. |
 
 ---
 
@@ -90,6 +93,31 @@
                            └─────────────────────────────────────────────────────┘
 ```
 
+### Architecture Diagram
+
+```mermaid
+graph TD
+    Client([External Client / Webhook Ingress]) -->|HTTP 80/443| Ingress[Ingress / Reverse Proxy]
+    Ingress -->|/webhook/*| Webhook[n8n-webhook]
+    Ingress -->|/rest/*, /gui| Main[n8n-main-server]
+
+    Main -->|Enqueue Workflow Job| Redis[(Redis BullMQ Broker<br/>AOF+RDB Durable)]
+    Webhook -->|Enqueue Webhook Job| Redis
+
+    Redis -->|Poll Waiting Jobs| Autoscaler[n8n-autoscaler<br/>Python Engine]
+    Autoscaler -->|Docker Engine API: scale 1:1| WorkerPool
+
+    subgraph WorkerPool["Autoscaled Worker Pool (1 to N)"]
+        W1[n8n-worker #1] <-->|Task Broker IPC :5679| R1[n8n-worker-runner #1]
+        WN[n8n-worker #N] <-->|Task Broker IPC :5679| RN[n8n-worker-runner #N]
+    end
+
+    Redis -->|Dequeue Jobs| WorkerPool
+    WorkerPool -->|Persist State & History| Postgres[(PostgreSQL 16<br/>Tuned Storage)]
+    WorkerPool -->|Vector Embeddings & RAG| Qdrant[(Qdrant Vector DB)]
+    WorkerPool -->|WhatsApp Communications| WAHA[WAHA Gateway]
+```
+
 ### Services
 
 | Container | Image | Role |
@@ -106,6 +134,70 @@
 | `qdrant` | `qdrant/qdrant:latest` | Vector database |
 | `waha` | `devlikeapro/waha:latest` | WhatsApp HTTP API gateway |
 | `n8n-backup` | Custom (`backup/Dockerfile`) | Scheduled backups *(optional profile)* |
+
+---
+
+## 🚀 Enterprise Software Engineering Stack Extensions
+
+To operate n8n at high-scale enterprise standards (e.g. 100M+ events/month, strict SOC2/ISO27001 compliance, and 99.95% uptime), the following complementary tools and architectural extensions are recommended for integration:
+
+```
+                               ┌──────────────────────────────────────────────┐
+                               │       Enterprise Edge & Ingress Layer        │
+                               │  Traefik v3 / Caddy (ACME SSL, Rate Limiting)│
+                               └──────────────────────┬───────────────────────┘
+                                                      │
+                       ┌──────────────────────────────┼──────────────────────────────┐
+                       ▼                              ▼                              ▼
+          ┌──────────────────────────┐   ┌──────────────────────────┐   ┌──────────────────────────┐
+          │  Distributed Tracing     │   │   Metrics & Telemetry    │   │  Secrets & Governance    │
+          │  OpenTelemetry Collector │   │   Prometheus + Grafana   │   │  HashiCorp Vault / SOPS  │
+          │  (W3C Trace Context)     │   │   (Heap, BullMQ, P95)    │   │  (Zero Plaintext .env)   │
+          └──────────────────────────┘   └──────────────────────────┘   └──────────────────────────┘
+                       │                              │                              │
+                       └──────────────────────────────┼──────────────────────────────┘
+                                                      ▼
+                                       ┌──────────────────────────────┐
+                                       │   Database Connection Pool   │
+                                       │   PgBouncer (Transaction)    │
+                                       └──────────────┬───────────────┘
+                                                      ▼
+                                       ┌──────────────────────────────┐
+                                       │   PostgreSQL Storage Core    │
+                                       │   Auto-Vacuuming & Pruning   │
+                                       └──────────────────────────────┘
+```
+
+### 1. Observability & Real-Time Telemetry
+* **Prometheus & Grafana (`n8n-observability`)**:
+  - Scrapes n8n's native `/metrics` endpoint to collect Node.js runtime metrics (event loop latency, active handles, heap memory used vs limit).
+  - Grafana dashboards track real-time queue length (`bull:jobs:wait`), worker scale events, and P95/P99 execution duration.
+* **OpenTelemetry (OTel)**:
+  - Exports end-to-end distributed traces across webhook ingestion, Redis BullMQ queues, worker nodes, and external API requests (e.g. Supabase, Qdrant, OpenRouter).
+  - Provides pinpoint root-cause analysis when individual workflow executions slow down.
+
+### 2. Traffic Management & Edge Security
+* **Traefik v3 / Caddy**:
+  - Automatically provisions and renews Let's Encrypt TLS certificates.
+  - Path-based routing isolates high-volume incoming webhooks (`/webhook/*`) directly to `n8n-webhook` containers without traversing editor UI paths.
+  - Built-in rate-limiting middlewares protect webhook endpoints from denial-of-service (DoS) bursts.
+
+### 3. Database Scalability & Connection Pooling
+* **PgBouncer**:
+  - Sits between autoscaled `n8n-worker` containers and PostgreSQL.
+  - Operates in `transaction` pooling mode, reducing concurrent active database connections from 50+ to under 15, preventing PostgreSQL connection exhaustion under autoscaler scale-ups.
+
+### 4. Secrets Lifecycle Management
+* **HashiCorp Vault / Infisical / SOPS**:
+  - Replaces static plaintext `.env` files with dynamic, auditable secrets injection.
+  - Injects runtime tokens (`N8N_ENCRYPTION_KEY`, database credentials, OAuth tokens) directly into container memory via environment or volume mounts, with automated secret rotation.
+
+### 5. Continuous Reliability & Load Testing
+* **k6 / Locust**:
+  - Scriptable load testing to simulate synthetic traffic spikes (100 to 5,000 requests/second) against webhook triggers.
+  - Validates the autoscaler threshold response, Redis queue backpressure, and worker scale-down cooldown timing prior to production deployments.
+* **Sentry APM**:
+  - Catches unhandled Node.js and Python exceptions within worker sidecars and triggers dedicated n8n Error Trigger workflows for automated PagerDuty/Slack incident notifications.
 
 ---
 

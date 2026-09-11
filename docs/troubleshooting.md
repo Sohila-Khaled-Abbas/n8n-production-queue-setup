@@ -906,6 +906,67 @@ With `aof-load-truncated yes`, Redis will automatically discard any corrupt trai
 
 ---
 
+## Runner Sidecar & Broker Connectivity Issues
+
+### Task Runner Authentication Failure (`401 Unauthorized`)
+
+**Symptoms:**
+- Container `n8n-runner` or `n8n-worker-runner` logs:
+  ```text
+  [BrokerConnection] Connection rejected: 401 Unauthorized
+  ```
+- Workflow executions containing Code nodes hang or throw `Task request timeout`.
+
+**Root Cause:**
+The shared authentication token `N8N_RUNNERS_AUTH_TOKEN` does not match between the n8n server/worker and the task runner sidecar container.
+
+**Resolution:**
+1. Check `.env` and verify `N8N_RUNNERS_AUTH_TOKEN` is defined and non-empty.
+2. If changing the token, restart both services simultaneously to force credential refresh:
+   ```bash
+   docker compose up -d --no-deps n8n n8n-runner n8n-worker n8n-worker-runner
+   ```
+3. Inspect sidecar health checks:
+   ```bash
+   docker compose ps n8n-runner n8n-worker-runner
+   ```
+
+---
+
+## CI/CD Pipeline & GitHub Pages Deployment Issues
+
+### GitHub Pages Deploy Fails (`actions/deploy-pages` error)
+
+**Symptoms:**
+- GitHub Actions workflow `Deploy Docs to GitHub Pages` fails after 5 seconds at step `Deploy to GitHub Pages`.
+- GitHub error message: `HttpError: Pages site not configured for Actions`.
+
+**Root Cause:**
+The GitHub repository is configured to deploy GitHub Pages from a branch (`gh-pages`) rather than the native "GitHub Actions" source. Attempting to use `actions/deploy-pages@v4` causes an immediate configuration rejection, and having two deploy workflows creates a concurrency race on group `"pages"`.
+
+**Resolution:**
+1. Consolidate into a single workflow (`.github/workflows/deploy.yml`) using `peaceiris/actions-gh-pages@v4` targeting the `gh-pages` branch.
+2. Ensure path filtering is active so docs deploy only when relevant files change (`docs/**`, `workflows/**`, `scripts/generate_docs_data.py`).
+3. Delete the redundant `.github/workflows/deploy-docs.yml`.
+
+### Python Linting & Formatting Fails in CI (`ruff check .`)
+
+**Symptoms:**
+- GitHub Actions job `CI Code Quality / Python Linting & Formatting` fails after 9 seconds.
+- Errors cite `E501 Line too long`, `F841 Local variable assigned but unused`, or scan generated repository files inside `published_repos/`.
+
+**Resolution:**
+1. In `pyproject.toml`, place `exclude` under `[tool.ruff]` rather than `[tool.ruff.lint]`.
+2. Add `published_repos` and `mcp_server` to `exclude`.
+3. Add `"E501"` to `[tool.ruff.lint].ignore` since `ruff format` manages code line wrapping.
+4. Run locally:
+   ```bash
+   python -m ruff check --fix .
+   python -m ruff format .
+   ```
+
+---
+
 ## Getting Help
 
 1. **Check logs first:** `docker compose logs -f`
