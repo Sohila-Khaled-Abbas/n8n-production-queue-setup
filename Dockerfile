@@ -1,4 +1,6 @@
 ARG N8N_VERSION=3.0.1
+# Verified official Docker Hub publisher. Keep version pinned for main/workers.
+ARG N8N_IMAGE_REPOSITORY=n8nio/n8n
 
 # Multi-stage build to add tools to n8n image
 # This works around apk being stripped from the official image
@@ -15,7 +17,7 @@ RUN apk add --no-cache \
     curl
 
 # Stage 2: Copy to n8n image
-FROM docker.n8n.io/n8nio/n8n:${N8N_VERSION}
+FROM ${N8N_IMAGE_REPOSITORY}:${N8N_VERSION}
 
 USER root
 
