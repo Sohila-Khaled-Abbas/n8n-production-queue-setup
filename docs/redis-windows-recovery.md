@@ -250,8 +250,15 @@ $RedisMount = @($MountJson | ConvertFrom-Json | Where-Object {
     $_.Type -eq "volume" -and $_.Destination -eq "/data"
 })
 if ($RedisMount.Count -ne 1) { throw "Cannot identify original Redis volume" }
-$VolumeName = $RedisMount[0].Name
+# Strip whitespace added by Docker CLI / PowerShell output formatting.
+# Otherwise Docker errors with "invalid value for source ... has whitespace".
+$VolumeName = ([string]$RedisMount[0].Name).Trim()
+if ($VolumeName -cne "n8n_redis_data") {
+    throw "Unexpected original volume name: [$VolumeName]. Reinspect before continuing."
+}
 if ($VolumeName -eq $RecoveryVolume) { throw "Refusing to use scratch volume as original" }
+docker volume inspect $VolumeName --format '{{.Name}}'
+if ($LASTEXITCODE -ne 0) { throw "Docker cannot find original Redis volume" }
 
 $Running = docker inspect n8n-redis --format '{{.State.Running}}'
 if ($LASTEXITCODE -ne 0 -or $Running.Trim() -ne 'false') {
