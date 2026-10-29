@@ -94,6 +94,7 @@ jobs:
           assert 'N8N_ENABLED_MODULES' not in env
           assert services['redis']['healthcheck']
           assert services['n8n']['build']['args']['N8N_VERSION'] == '3.0.1'
+          assert services['n8n']['build']['args']['N8N_IMAGE_REPOSITORY'] == 'n8nio/n8n'
           assert services['n8n-runner']['build']['args']['N8N_VERSION'] == '3.0.1'
           print('Compose config and basic safety invariants OK')
           PY
