@@ -31,6 +31,134 @@ workers until the broker is healthy.
 Do not post your `.env`, passwords, encryption key, or raw credentials in an
 issue or troubleshooting chat.
 
+## Confirmed crash: `appendonly.aof.7.incr.aof` is corrupt (October 29, 2026)
+
+The recorded local logs contain:
+
+```text
+DB loaded from base file appendonly.aof.7.base.rdb
+Bad file format reading the append only file appendonly.aof.7.incr.aof
+```
+
+**This is not a slow healthcheck**. Redis successfully loads the base RDB
+(19 keys) and aborts replaying a corrupt incremental AOF. A longer
+`start_period` and more memory cannot repair malformed AOF bytes.
+
+Use the steps below in PowerShell from the root of this repository. Each
+command targets the Redis Docker **volume**, not PostgreSQL or the n8n data
+directory. Redis persistence repair can truncate commands and lose pending
+queue jobs; preserve the original files first.
+
+### A. Stop Redis and services that use the queue
+
+```powershell
+docker compose stop n8n-autoscaler redis-monitor n8n-webhook n8n-worker n8n-worker-runner n8n n8n-runner redis
+```
+
+PostgreSQL may stay running. Do **not** use `docker compose down -v`.
+Do not execute AOF repair while Redis is running or while an autoscaler is
+trying to restart queue consumers.
+
+### B. Identify and back up the exact Redis named volume
+
+```powershell
+$VolumeName = docker inspect n8n-redis --format '{{range .Mounts}}{{if eq .Destination "/data"}}{{.Name}}{{end}}{{end}}'
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($VolumeName)) {
+    throw "Cannot identify the Redis /data volume. Stop here."
+}
+$VolumeName = $VolumeName.Trim()
+Write-Host "Redis volume: $VolumeName"
+
+# Use a sibling directory OUTSIDE the Git repository; do not commit queue data.
+$BackupDir = Join-Path (Split-Path -Parent $PWD.Path) ("n8n-redis-backup-" + (Get-Date -Format 'yyyyMMdd-HHmmss'))
+New-Item -ItemType Directory -Path $BackupDir -Force | Out-Null
+
+docker run --rm `
+    --mount "type=volume,source=$VolumeName,target=/data,readonly" `
+    --mount "type=bind,source=$BackupDir,target=/backup" `
+    --entrypoint sh redis:7-alpine `
+    -c 'cd /data && tar -czf /backup/redis-data-before-repair.tar.gz .'
+if ($LASTEXITCODE -ne 0) { throw "Backup failed. STOP: do not repair Redis." }
+
+$Archive = Join-Path $BackupDir 'redis-data-before-repair.tar.gz'
+if (-not (Test-Path $Archive) -or (Get-Item $Archive).Length -eq 0) {
+    throw "Backup archive missing/empty. STOP: do not repair Redis."
+}
+
+docker run --rm `
+    --mount "type=bind,source=$BackupDir,target=/backup,readonly" `
+    --entrypoint sh redis:7-alpine `
+    -c 'tar -tzf /backup/redis-data-before-repair.tar.gz >/dev/null'
+if ($LASTEXITCODE -ne 0) { throw "Backup archive is unreadable. STOP." }
+
+Get-Item $Archive | Select-Object FullName, Length
+```
+
+This verifies that the archive exists and can be listed; it does **not**
+prove every Redis queue record is logically recoverable.
+
+### C. Inspect the multi-part AOF manifest in read-only mode
+
+```powershell
+docker run --rm `
+    --mount "type=volume,source=$VolumeName,target=/data,readonly" `
+    --entrypoint redis-check-aof redis:7-alpine `
+    /data/appendonlydir/appendonly.aof.manifest
+```
+
+A nonzero exit status is expected when corruption is detected. Read the
+reported error offset and estimate how much of the incremental AOF would be
+lost. Redis 7+ tracks a base snapshot plus incremental files in a manifest;
+**do not** delete just the damaged `.incr.aof` file or alter the manifest
+by hand.
+
+### D. Repair only after reviewing the data-loss tradeoff
+
+If the archive was successfully backed up and verified, and truncating the
+corrupt section is acceptable, invoke the repair utility against the actual
+manifest:
+
+```powershell
+docker run --rm -it `
+    --mount "type=volume,source=$VolumeName,target=/data" `
+    --entrypoint redis-check-aof redis:7-alpine `
+    --fix /data/appendonlydir/appendonly.aof.manifest
+```
+
+Review the utility's proposal **before** answering the interactive prompt.
+If corruption is early in the file, substantial queue data may be discarded;
+abort and inspect/recover from the backup instead if that is unacceptable.
+
+### E. Validate the repaired Redis broker, then start core n8n
+
+```powershell
+docker compose up -d redis
+docker compose ps redis
+docker compose logs --no-color --tail=60 redis
+docker exec n8n-redis redis-cli ping
+```
+
+`PONG` and `healthy` are expected. If Redis exits again, stop and examine
+the newly emitted error; do not repeatedly run `--fix`.
+
+Only when Redis is healthy:
+
+```powershell
+docker compose up -d n8n n8n-runner n8n-worker n8n-worker-runner
+docker compose ps
+```
+
+Additional services (webhook, queue monitor, autoscaler, Qdrant, WAHA) can
+then be started as needed after the core service is stable. Existing
+PostgreSQL data and `N8N_ENCRYPTION_KEY` must remain untouched.
+
+### References
+
+- [Redis persistence and AOF recovery](https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/)
+- [Docker named-volume backup methods](https://docs.docker.com/engine/storage/volumes/)
+
+---
+
 ## 2. Apply the non-destructive Redis configuration changes
 
 On the `fix/redis-local-startup-health` branch:
