@@ -230,6 +230,13 @@ docker rm $TestContainer
 
 ### F. Apply the same verified repair to the original Redis volume
 
+**Common pitfall:** A successfully repaired and boot-tested *scratch volume*
+does not change the Redis volume that Compose mounts. If you run
+`docker compose up -d n8n ...` immediately after testing only
+`n8n-redis-recovery-*`, Redis will still crash on its original corrupt AOF.
+The October 29 inspection confirmed `n8n_redis_data` was the Compose volume;
+re-detect the actual `/data` mount below instead of relying on a hardcoded name.
+
 Only after the isolated test succeeds and the potential loss of the last
 incomplete Redis operation is acceptable:
 
