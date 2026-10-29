@@ -4,11 +4,11 @@
 
 # n8n Production Autoscaling Stack
 
-> **n8n 3.0.1 BETA — in-place upgrade (Windows, Docker Desktop, ngrok):** Read the [upgrade/backup/rollback runbook](docs/n8n-v3-beta-in-place.md) before you pull or rebuild. This branch upgrades the **same** Docker Compose project, host port 80, PostgreSQL, Redis and existing n8n data—not an isolated instance. n8n's 3.x database migration is one-way; returning to v2 means restoring a complete pre-upgrade backup. `N8N_VERSION=3.0.1` pins custom n8n/runners images. Autoscaling and credential imports are opt-in until proven compatible. **Don't run `docker compose up -d` until Redis is healthy, the Migration Report is addressed and full backups are verified.**
+> **n8n 3.0.1 BETA — in-place upgrade (Windows, Docker Desktop, ngrok):** Read the [upgrade/backup/rollback runbook](docs/n8n-v3-beta-in-place.md) before you pull or rebuild. This branch upgrades the **same** Docker Compose project, host port 80, PostgreSQL, Redis and existing n8n data—not an isolated instance. n8n's 3.x database migration is one-way; returning to v2 means restoring a complete pre-upgrade backup. `N8N_VERSION=3.0.1` pins custom n8n/runners images. Autoscaling and credential imports are opt-in until proven compatible. **Don't run `docker compose up -d` until Redis is healthy, the Migration Report is addressed and full backups are verified.** A Docker Desktop image pull does not update this repo's custom `build:` services: verify the running version after rebuilding. n8n 2.35+ prefers `N8N_WEBHOOK_URL` for ngrok.
 
 **A production-grade, self-hosted n8n deployment with dynamic worker autoscaling, Puppeteer/Playwright browser automation, queue-mode execution, PostgreSQL persistence, and automated Redis queue monitoring.**
 
-[![n8n Version](https://img.shields.io/badge/n8n-latest-FF6D5A?logo=n8n&logoColor=white)](https://hub.docker.com/r/n8nio/n8n)
+[![n8n Version](https://img.shields.io/badge/n8n-3.0.1_beta-FF6D5A?logo=n8n&logoColor=white)](https://hub.docker.com/r/n8nio/n8n)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastMCP](https://img.shields.io/badge/FastMCP-Server-092E20?logo=fastapi&logoColor=white)](https://github.com/jlowin/fastmcp)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://hub.docker.com/_/postgres)
