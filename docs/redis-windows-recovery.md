@@ -106,30 +106,62 @@ Get-Item $Archive | Select-Object FullName, Length
 This verifies that the archive exists and can be listed; it does **not**
 prove every Redis queue record is logically recoverable.
 
-### C. Inspect the multi-part AOF manifest in read-only mode
+### C. Inspect on a *separate writable clone* (do not inspect a read-only mount)
+
+**Why:** On Redis 7, `redis-check-aof` may open the base AOF in a mode that
+requires a writable filesystem, **even without** `--fix`. A
+`Cannot open file ... Read-only file system` error is an inspection-method
+failure, not additional evidence of corruption. Never solve it by making the
+original Redis volume writable for preliminary inspection.
+
+Unpack the verified backup archive into a **new** Docker named volume. This
+example uses the dated backup path from the October 29, 2026 incident;
+adjust the path if your backup is elsewhere:
 
 ```powershell
+$BackupDir = 'D:\courses\Data Science\Data Engineering\n8n-redis-backup-20261029-222256'
+$Archive = Join-Path $BackupDir 'redis-data-before-repair.tar.gz'
+if (-not (Test-Path $Archive)) { throw "Backup missing: $Archive" }
+
+$RecoveryVolume = 'n8n-redis-recovery-' + (Get-Date -Format 'yyyyMMddHHmmss')
+docker volume create $RecoveryVolume | Out-Null
+if ($LASTEXITCODE -ne 0) { throw "Cannot create scratch Redis volume" }
+
 docker run --rm `
-    --mount "type=volume,source=$VolumeName,target=/data,readonly" `
+    --mount "type=volume,source=$RecoveryVolume,target=/data" `
+    --mount "type=bind,source=$BackupDir,target=/backup,readonly" `
+    --entrypoint sh redis:7-alpine `
+    -c 'cd /data && tar -xzf /backup/redis-data-before-repair.tar.gz && test -s /data/appendonlydir/appendonly.aof.manifest'
+
+if ($LASTEXITCODE -ne 0) { throw "Failed to extract or verify scratch copy" }
+
+docker run --rm `
+    --mount "type=volume,source=$RecoveryVolume,target=/data" `
     --entrypoint redis-check-aof redis:7-alpine `
     /data/appendonlydir/appendonly.aof.manifest
+
+Write-Host "AOF checker exit code: $LASTEXITCODE"
 ```
 
-A nonzero exit status is expected when corruption is detected. Read the
-reported error offset and estimate how much of the incremental AOF would be
-lost. Redis 7+ tracks a base snapshot plus incremental files in a manifest;
-**do not** delete just the damaged `.incr.aof` file or alter the manifest
-by hand.
+The *scratch copy* is writable to the checker; the original `$VolumeName`
+and original backup archive remain unmounted or read-only and unchanged.
+A nonzero checker exit status is expected when corruption is detected.
+Read the reported error offset and possible byte loss **before** any repair.
+
+Redis 7+ tracks a base snapshot plus incremental files in a manifest.
+**Do not** delete a damaged `.incr.aof` file or manually edit the manifest.
 
 ### D. Repair only after reviewing the data-loss tradeoff
 
 If the archive was successfully backed up and verified, and truncating the
-corrupt section is acceptable, invoke the repair utility against the actual
-manifest:
+corrupt section is acceptable, **first rehearse a repair on the scratch copy**
+using `$RecoveryVolume` in the Docker mount below. Do not run this on the
+original `$VolumeName` until you have inspected the repair impact and tested
+that the scratch Redis data can start:
 
 ```powershell
 docker run --rm -it `
-    --mount "type=volume,source=$VolumeName,target=/data" `
+    --mount "type=volume,source=$RecoveryVolume,target=/data" `
     --entrypoint redis-check-aof redis:7-alpine `
     --fix /data/appendonlydir/appendonly.aof.manifest
 ```
@@ -137,8 +169,16 @@ docker run --rm -it `
 Review the utility's proposal **before** answering the interactive prompt.
 If corruption is early in the file, substantial queue data may be discarded;
 abort and inspect/recover from the backup instead if that is unacceptable.
+The original Redis volume remains unchanged by this scratch-only rehearsal.
 
-### E. Validate the repaired Redis broker, then start core n8n
+**Do not proceed to Step E against the original Redis service yet.** First
+confirm the scratch repair results and plan the controlled application to
+the real volume, preserving the backup.
+
+### E. After applying an approved repair to the original volume, validate Redis
+
+*Only use this section after the original volume has been repaired using a
+deliberately chosen recovery procedure based on scratch-volume diagnostics.*
 
 ```powershell
 docker compose up -d redis
