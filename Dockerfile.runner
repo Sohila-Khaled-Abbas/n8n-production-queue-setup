@@ -1,3 +1,5 @@
+ARG N8N_VERSION=3.0.1
+
 # Multi-stage build to add dependencies to n8n runners
 # This works around the issue where n8nio/runners v2.1.0+ removed apk
 
@@ -17,8 +19,20 @@ RUN apk add --no-cache \
     graphicsmagick \
     imagemagick
 
+# Install optional JavaScript node packages without relying on Corepack being
+# available in n8nio/runners v3. Keep these out of the hardened base stage.
+FROM node:26-alpine AS js-dependencies
+WORKDIR /opt/extra-task-runner-js
+RUN npm install --omit=dev --no-audit --no-fund \
+    ajv \
+    ajv-formats \
+    puppeteer-core@22.15.0 \
+    puppeteer-extra \
+    puppeteer-extra-plugin-stealth \
+    playwright-core \
+    playwright-extra
+
 # Stage 2: Copy to runners image
-ARG N8N_VERSION=3.0.1
 FROM n8nio/runners:${N8N_VERSION}
 
 USER root
@@ -43,16 +57,11 @@ COPY --from=builder /usr/bin/composite /usr/bin/composite
 # Create symlink for chromium-browser wrapper script
 RUN ln -sf /usr/lib/chromium/chromium /usr/bin/chromium
 
-# Install npm packages in the task runner's node_modules directory
+# n8n v3's bundled node_modules includes symlinks (e.g. "ws").
+# Copy into a separate path to avoid overwriting framework dependencies.
+COPY --from=js-dependencies /opt/extra-task-runner-js/node_modules/ /opt/runners/custom-node-modules/
+ENV NODE_PATH=/opt/runners/custom-node-modules
 WORKDIR /opt/runners/task-runner-javascript
-RUN /usr/local/bin/node /usr/local/lib/node_modules/corepack/dist/corepack.js pnpm add \
-    ajv \
-    ajv-formats \
-    puppeteer-core@22.15.0 \
-    puppeteer-extra \
-    puppeteer-extra-plugin-stealth \
-    playwright-core \
-    playwright-extra
 
 # Install Python packages in the task runner's venv
 RUN /usr/local/bin/uv pip install --python /opt/runners/task-runner-python/.venv/bin/python --no-cache \

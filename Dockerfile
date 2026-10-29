@@ -1,3 +1,5 @@
+ARG N8N_VERSION=3.0.1
+
 # Multi-stage build to add tools to n8n image
 # This works around apk being stripped from the official image
 
@@ -13,7 +15,6 @@ RUN apk add --no-cache \
     curl
 
 # Stage 2: Copy to n8n image
-ARG N8N_VERSION=3.0.1
 FROM docker.n8n.io/n8nio/n8n:${N8N_VERSION}
 
 USER root
