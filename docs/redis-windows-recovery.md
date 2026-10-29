@@ -151,40 +151,126 @@ Read the reported error offset and possible byte loss **before** any repair.
 Redis 7+ tracks a base snapshot plus incremental files in a manifest.
 **Do not** delete a damaged `.incr.aof` file or manually edit the manifest.
 
-### D. Repair only after reviewing the data-loss tradeoff
+### D. Confirmed AOF corruption: 227-byte invalid suffix (October 29, 2026)
 
-If the archive was successfully backed up and verified, and truncating the
-corrupt section is acceptable, **first rehearse a repair on the scratch copy**
-using `$RecoveryVolume` in the Docker mount below. Do not run this on the
-original `$VolumeName` until you have inspected the repair impact and tested
-that the scratch Redis data can start:
+Observed against the independent recovery volume:
+
+```text
+BASE AOF appendonly.aof.7.base.rdb is valid
+AOF analyzed: filename=appendonly.aof.7.incr.aof,
+  size=48033949, ok_up_to=48033722, diff=227
+AOF appendonly.aof.7.incr.aof is not valid.
+```
+
+The Redis checker considers the first 48,033,722 bytes valid; the
+unparseable 227-byte suffix is 0.00047% of the incremental AOF. Repairing
+that tail has a small *byte* impact but could still remove an important
+incomplete job command. Do not treat a small truncation as proof of zero
+lost jobs.
+
+With the confirmed, verified 2,826,543-byte archive and scratch volume,
+repair **only the scratch copy** first:
 
 ```powershell
+$RecoveryVolume = "n8n-redis-recovery-20261029222615"
+
 docker run --rm -it `
     --mount "type=volume,source=$RecoveryVolume,target=/data" `
     --entrypoint redis-check-aof redis:7-alpine `
     --fix /data/appendonlydir/appendonly.aof.manifest
 ```
 
-Review the utility's proposal **before** answering the interactive prompt.
-If corruption is early in the file, substantial queue data may be discarded;
-abort and inspect/recover from the backup instead if that is unacceptable.
-The original Redis volume remains unchanged by this scratch-only rehearsal.
+Review the prompt and approve the truncation only if the expected
+227-byte suffix is proposed. Stop if the tool reports a different file,
+a substantially larger loss, or a different corruption offset.
 
-**Do not proceed to Step E against the original Redis service yet.** First
-confirm the scratch repair results and plan the controlled application to
-the real volume, preserving the backup.
+Re-check the **repaired copy**:
 
-### E. After applying an approved repair to the original volume, validate Redis
+```powershell
+docker run --rm `
+    --mount "type=volume,source=$RecoveryVolume,target=/data" `
+    --entrypoint redis-check-aof redis:7-alpine `
+    /data/appendonlydir/appendonly.aof.manifest
 
-*Only use this section after the original volume has been repaired using a
-deliberately chosen recovery procedure based on scratch-volume diagnostics.*
+if ($LASTEXITCODE -ne 0) { throw "Scratch AOF is still invalid. Stop." }
+```
+
+### E. Boot the repaired copy in an isolated test container
+
+Avoid connecting to the n8n Docker network, exposing a host port, or
+running any queue consumers against the scratch copy:
+
+```powershell
+$TestContainer = "n8n-redis-recovery-test-" + (Get-Date -Format "yyyyMMddHHmmss")
+docker run -d `
+    --network none `
+    --name $TestContainer `
+    --mount "type=volume,source=$RecoveryVolume,target=/data" `
+    --entrypoint redis-server redis:7-alpine `
+    --appendonly yes --dir /data --appenddirname appendonlydir `
+    --maxmemory 192mb --maxmemory-policy noeviction
+
+if ($LASTEXITCODE -ne 0) { throw "Cannot start isolated Redis test" }
+docker logs --tail 50 $TestContainer
+docker exec $TestContainer redis-cli ping
+docker exec $TestContainer redis-cli INFO keyspace
+```
+
+Verify `Ready to accept connections` in the logs and `PONG` from
+`redis-cli ping`. Redis may briefly return `LOADING` while it replays
+the AOF; check logs again if necessary.
+
+Once verified, stop and remove **only the test container** (do not remove
+`$RecoveryVolume`):
+
+```powershell
+docker stop $TestContainer
+docker rm $TestContainer
+```
+
+### F. Apply the same verified repair to the original Redis volume
+
+Only after the isolated test succeeds and the potential loss of the last
+incomplete Redis operation is acceptable:
+
+```powershell
+docker compose stop n8n-autoscaler redis-monitor n8n-webhook n8n-worker n8n-worker-runner n8n n8n-runner redis
+if ($LASTEXITCODE -ne 0) { throw "Failed to stop queue services" }
+
+$MountJson = docker inspect n8n-redis --format '{{json .Mounts}}'
+if ($LASTEXITCODE -ne 0) { throw "Cannot inspect original Redis mount" }
+$RedisMount = @($MountJson | ConvertFrom-Json | Where-Object {
+    $_.Type -eq "volume" -and $_.Destination -eq "/data"
+})
+if ($RedisMount.Count -ne 1) { throw "Cannot identify original Redis volume" }
+$VolumeName = $RedisMount[0].Name
+if ($VolumeName -eq $RecoveryVolume) { throw "Refusing to use scratch volume as original" }
+
+$Running = docker inspect n8n-redis --format '{{.State.Running}}'
+if ($LASTEXITCODE -ne 0 -or $Running.Trim() -ne 'false') {
+    throw "Original Redis must be stopped before repair"
+}
+
+Write-Host "Original Redis volume: $VolumeName"
+Write-Host "Recovery-only scratch volume: $RecoveryVolume"
+
+docker run --rm -it `
+    --mount "type=volume,source=$VolumeName,target=/data" `
+    --entrypoint redis-check-aof redis:7-alpine `
+    --fix /data/appendonlydir/appendonly.aof.manifest
+```
+
+Review the live-volume repair's own reported suffix before agreeing.
+Afterwards, run the checker without `--fix` against the original volume
+and ensure it exits with code 0.
+
+### G. Validate the repaired production Redis broker, then start core n8n
 
 ```powershell
 docker compose up -d redis
-docker compose ps redis
 docker compose logs --no-color --tail=60 redis
 docker exec n8n-redis redis-cli ping
+docker compose ps redis
 ```
 
 `PONG` and `healthy` are expected. If Redis exits again, stop and examine
@@ -197,9 +283,9 @@ docker compose up -d n8n n8n-runner n8n-worker n8n-worker-runner
 docker compose ps
 ```
 
-Additional services (webhook, queue monitor, autoscaler, Qdrant, WAHA) can
-then be started as needed after the core service is stable. Existing
-PostgreSQL data and `N8N_ENCRYPTION_KEY` must remain untouched.
+Review failed/queued workflow executions before restarting autoscaling or
+other optional services. Existing PostgreSQL data and
+`N8N_ENCRYPTION_KEY` must remain untouched.
 
 ### References
 
