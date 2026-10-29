@@ -14,6 +14,71 @@ Images screen showing "updated" does not prove the running service uses
 v3: this repository runs **custom-built** n8n and runner images.
 The repo now pins matching `N8N_VERSION=3.0.1` through both Dockerfiles.
 
+## Mandatory intermediate update for existing n8n 2.25.7
+
+The running version of this installation was confirmed to be **2.25.7**.
+The **Settings → Migration Report** UI does not exist in that version;
+n8n's official minimum is **2.39**. Do not skip directly to
+`N8N_VERSION=3.0.1` before viewing the report on a recent 2.x build.
+As of October 29, 2026, **2.45.6** is the published stable 2.x version.
+
+**Use the same Docker Compose project, ports, credentials, PostgreSQL and
+Redis volumes. No staging deployment or second instance is required.**
+Do NOT run `docker compose down -v` or replace `.env` with
+`.env.example`. This is a two-stage *in-place* migration:
+
+1. Restore the original Redis queue service to healthy and confirm
+   PostgreSQL is healthy. Verify the running version is 2.25.7.
+2. Make a complete pre-upgrade backup of the current data and secrets
+   **before** upgrading even within 2.x. The script under
+   `scripts/backup-pre-v3.ps1` works on 2.x while both database services
+   and the n8n main container are healthy and intentionally stops the
+   stack after export. Check backup files and keep a separate copy.
+3. Check that both versioned images exist (this tests the registries without
+   modifying running services):
+   ```powershell
+   docker manifest inspect docker.n8n.io/n8nio/n8n:2.45.6 > $null
+   if ($LASTEXITCODE -ne 0) { throw "n8n 2.45.6 image unavailable" }
+   docker manifest inspect n8nio/runners:2.45.6 > $null
+   if ($LASTEXITCODE -ne 0) { throw "Matching runner image unavailable" }
+   ```
+4. In the **existing** `.env`, set `N8N_VERSION=2.45.6` (do **not**
+   use the branch's v3 default for this intermediate stage). Keep all
+   prior PostgreSQL credentials, encryption key, task runner token,
+   `N8N_DATA_DIR`, binary-data mode and ngrok URLs as they were.
+   Use the branch's `build.args.N8N_VERSION` to keep both image bases
+   aligned, but only build if the CI build is passing. Build does not
+   change database data; running the upgraded image does.
+5. First validate Compose and rebuild **without deploying**:
+   ```powershell
+   docker compose config --quiet
+   docker compose build n8n n8n-runner n8n-worker n8n-worker-runner
+   if ($LASTEXITCODE -ne 0) { throw "Stop: custom image build failed" }
+   ```
+   If the n8n 2.45.6 custom runner build fails, **do not launch** a
+   partially updated stack: preserve backups and inspect the CI/build
+   logs first.
+6. Bring up the existing DB/Redis services, then the n8n server:
+   ```powershell
+   docker compose up -d postgres redis
+   docker compose ps postgres redis
+   docker compose up -d --no-build n8n
+   docker exec n8n-main-server n8n --version
+   ```
+   The runtime must report `2.45.6`, and Redis/Postgres must be healthy.
+   Start the aligned runner/worker services only after that succeeds.
+7. In the existing editor, open **Settings → Migration Report**. Review
+   **Workflow issues** and **Instance issues**, apply/verify any proposed
+   fixes, and publish only the workflow versions you intend.
+8. Take **another full backup** once the migration report is resolved.
+   Only then change `N8N_VERSION=3.0.1` and follow the v3 steps below.
+
+Caution: the custom runner image and community nodes need a working
+CI build and on-host checks on *each* version. Passing `docker compose
+config` by itself is insufficient. Do not assume updating Docker
+Desktop's downloaded `:latest` image changes this Compose project's
+custom-built containers.
+
 ## Before touching the current instance
 
 1. **Finish the original Redis AOF recovery** from
