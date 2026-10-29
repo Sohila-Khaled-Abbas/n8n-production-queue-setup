@@ -79,6 +79,128 @@ config` by itself is insufficient. Do not assume updating Docker
 Desktop's downloaded `:latest` image changes this Compose project's
 custom-built containers.
 
+## v3 additional breaking changes: Compression, community packages, Chat Hub, importing
+
+These apply to the **same** Docker/ngrok instance on the in-place
+upgrade branch. They are migration checks, not reasons to create a
+second Compose project.
+
+### 1. Compression node limits (smaller by default)
+
+v3 changes the maximum decompressed size from **2 GiB** to **256 MiB**
+and the maximum number of ZIP entries from **5,000** to **1,000**.
+
+The shared n8n environment in `docker-compose.yml` explicitly sets
+the safer defaults:
+
+```dotenv
+N8N_COMPRESSION_NODE_MAX_DECOMPRESSED_SIZE_BYTES=268435456
+N8N_COMPRESSION_NODE_MAX_ZIP_ENTRIES=1000
+```
+
+If an existing workflow really requires the old limits and the source
+archives are trusted, set these in the **existing** `.env` instead:
+
+```dotenv
+N8N_COMPRESSION_NODE_MAX_DECOMPRESSED_SIZE_BYTES=2147483648
+N8N_COMPRESSION_NODE_MAX_ZIP_ENTRIES=5000
+```
+
+A 2-GiB decompression limit is **not** an appropriate default for a
+16-GB host with memory-limited Docker/WSL and task runners. It is a
+maximum accepted input, not a promise that the worker has enough RAM.
+Prefer splitting archives or processing in smaller batches when possible.
+These explicit Compose defaults also apply during the intermediate v2
+upgrade; set old limits in `.env` beforehand if an active v2 workflow
+depends on them.
+
+### 2. Unverified community packages, including WAHA
+
+v3 defaults `N8N_UNVERIFIED_PACKAGES_ENABLED` to **false**, even if
+`N8N_COMMUNITY_PACKAGES_ENABLED=true`. Previously installed
+*unverified* packages can stop loading; that could impact workflows
+using `@devlikeapro/n8n-nodes-waha` if it is unverified for the version
+you are running. **Do not assume WAHA is verified or unverified.**
+
+The Compose default remains **false** for security. Inspect
+**Settings → Community Nodes**, your installed package list,
+community-package verification status and workflow dependencies
+before upgrading. To preserve an unverified package that you have
+explicitly evaluated and trust, set:
+
+```dotenv
+N8N_UNVERIFIED_PACKAGES_ENABLED=true
+```
+
+in your **existing** `.env` and recreate the n8n processes after
+the version upgrade. This also changes the behavior during the
+intermediate 2.x upgrade, so explicitly set it before restarting if
+your current workflows depend on unverified nodes. It does not
+automatically repair incompatible community node versions. Consider
+replacing an unverified package with a verified integration or an
+HTTP Request node when possible. Do not enable broadly on publicly
+reachable instances without understanding the added code-execution
+risk.
+
+### 3. Chat Hub temporary opt-in, only if actually used
+
+Chat Hub disappears from the navigation by default in v3, and will be
+removed in v4. Nothing in this repository establishes that you use
+Chat Hub, so it is **not enabled automatically**.
+
+If you need it only while migrating off it, set the following **inside
+the `x-n8n` shared environment mapping** in `docker-compose.yml`
+(uncomment the example next to Compression), and add to `.env`:
+
+```yaml
+N8N_ENABLED_MODULES: ${N8N_ENABLED_MODULES}
+```
+
+```dotenv
+N8N_ENABLED_MODULES=agents,chat-hub
+```
+
+**Preserve every module name you already enable**; the example is not
+a universal default. Back up existing chat sessions/agent workflows and
+plan their replacement before v4. Restart n8n and webhook processes
+only after the configuration passes `docker compose config --quiet`.
+Enabling the UI may not restore unsupported node versions.
+
+### 4. Editor "Import from URL" is removed
+
+Use **Import from File**, clipboard paste, CLI, or the n8n API. If
+your workflow JSON is on GitHub or another trusted HTTPS source,
+download it locally, inspect it, then import the downloaded JSON file:
+
+```powershell
+$WorkflowUrl = "https://YOUR-TRUSTED-SOURCE/workflow.json"
+$Target = Join-Path $env:TEMP "n8n-workflow-import.json"
+Invoke-WebRequest -Uri $WorkflowUrl -OutFile $Target
+Get-Content -LiteralPath $Target -TotalCount 10
+```
+
+Use the n8n editor's **Import from File** on `$Target`, without
+pasting API keys or credentials into GitHub. This import feature removal
+does not affect ngrok webhook URLs or the ability to use an HTTP
+Request node for external URLs.
+
+### Validate the four changes on the existing stack
+
+```powershell
+docker compose config --quiet
+docker compose ps -a
+docker exec n8n-main-server n8n --version
+docker compose logs --no-color --tail=80 n8n n8n-worker n8n-webhook
+```
+
+Test one ZIP archive under the new default caps, verify that existing
+community nodes appear in the editor and that a WAHA workflow executes,
+and import a trusted workflow through **Import from File**.
+Run these checks only **after the v2 Migration Report and full backups**.
+
+Official reference:
+https://docs.n8n.io/changelog/v30-breaking-changes/
+
 ## Before touching the current instance
 
 1. **Finish the original Redis AOF recovery** from
