@@ -22,6 +22,8 @@ x-n8n: &service-n8n
   build:
     context: .
     dockerfile: Dockerfile
+    args:
+      N8N_VERSION: ${N8N_VERSION:-3.0.1}
   restart: unless-stopped
   logging: *default-logging
   networks:
@@ -34,7 +36,8 @@ x-n8n: &service-n8n
   environment: &n8n-env
     # Routing & URLs
     N8N_EDITOR_BASE_URL: ${N8N_EDITOR_BASE_URL}
-    WEBHOOK_URL: ${WEBHOOK_URL}
+    # n8n 2.35+ prefers N8N_WEBHOOK_URL; retain fallback for existing .env files.
+    N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL:-${WEBHOOK_URL}}
     N8N_PROXY_HOPS: ${N8N_PROXY_HOPS:-1}
     NODE_OPTIONS: --require /polyfills/dommatrix.js --dns-result-order=ipv4first --max-old-space-size=768
     # Security
@@ -44,9 +47,10 @@ x-n8n: &service-n8n
     N8N_RUNNERS_TASK_REQUEST_TIMEOUT: ${N8N_RUNNERS_TASK_REQUEST_TIMEOUT:-120}
     N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE: ${N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE:-true}
     N8N_COMMUNITY_PACKAGES_ENABLED: "true"
-    N8N_SKIP_AUTH_ON_OAUTH_CALLBACK: ${N8N_SKIP_AUTH_ON_OAUTH_CALLBACK:-true}
-    N8N_RUNNERS_ALLOW_PROTOTYPE_MUTATION: "true"
-    N8N_RUNNERS_INSECURE_MODE: "true"
+    N8N_SKIP_AUTH_ON_OAUTH_CALLBACK: ${N8N_SKIP_AUTH_ON_OAUTH_CALLBACK:-false}
+    N8N_RUNNERS_ALLOW_PROTOTYPE_MUTATION: "false"
+    N8N_RUNNERS_TASK_TIMEOUT: ${N8N_RUNNERS_TASK_TIMEOUT:-120}
+    N8N_RUNNERS_ENABLED: "true"
     # Database
     DB_TYPE: ${DB_TYPE:-postgresdb}
     DB_POSTGRESDB_HOST: ${DB_POSTGRESDB_HOST:-postgres}
@@ -92,6 +96,8 @@ x-task-runner: &service-task-runner
   build:
     context: .
     dockerfile: Dockerfile.runner
+    args:
+      N8N_VERSION: ${N8N_VERSION:-3.0.1}
   restart: unless-stopped
   logging: *default-logging
   networks:
@@ -113,8 +119,8 @@ x-task-runner: &service-task-runner
     - N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT=${N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT:-0}
     - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
     - PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
-    - N8N_RUNNERS_ALLOW_PROTOTYPE_MUTATION=true
-    - N8N_RUNNERS_INSECURE_MODE=true
+    - N8N_RUNNERS_ALLOW_PROTOTYPE_MUTATION=false
+    - N8N_RUNNERS_TASK_TIMEOUT=${N8N_RUNNERS_TASK_TIMEOUT:-120}
     - NODE_OPTIONS=--max-old-space-size=384
 
 services:
@@ -188,13 +194,17 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
+          # Allow headroom above the 192 MB Redis data limit for AOF and overhead.
+          memory: 256M
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      # Verify an actual PONG, not merely redis-cli's process exit status.
+      # $ prevents Compose from interpolating the shell command substitution.
+      test: ["CMD-SHELL", "test \"$(redis-cli -h 127.0.0.1 ping 2>/dev/null)\" = PONG"]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 10s
+      retries: 18
+      # Give Redis time to replay a persisted AOF on slower Docker Desktop disks.
+      start_period: 60s
 
   # ──────────────────────────────────────────────────────────
   # n8n Main — Editor UI, REST API, task broker
@@ -206,7 +216,8 @@ services:
       <<: *n8n-env
     stop_grace_period: 30s
     ports:
-      - "80:5678"
+      # ngrok on the host forwards HTTPS to this loopback-only listener.
+      - "127.0.0.1:80:5678"
     deploy:
       resources:
         limits:
@@ -241,8 +252,8 @@ services:
       - N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT=${N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT:-0}
       - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
       - PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
-      - N8N_RUNNERS_ALLOW_PROTOTYPE_MUTATION=true
-      - N8N_RUNNERS_INSECURE_MODE=true
+      - N8N_RUNNERS_ALLOW_PROTOTYPE_MUTATION=false
+      - N8N_RUNNERS_TASK_TIMEOUT=${N8N_RUNNERS_TASK_TIMEOUT:-120}
     depends_on:
       n8n:
         condition: service_started
@@ -326,8 +337,8 @@ services:
       - N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT=${N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT:-0}
       - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
       - PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
-      - N8N_RUNNERS_ALLOW_PROTOTYPE_MUTATION=true
-      - N8N_RUNNERS_INSECURE_MODE=true
+      - N8N_RUNNERS_ALLOW_PROTOTYPE_MUTATION=false
+      - N8N_RUNNERS_TASK_TIMEOUT=${N8N_RUNNERS_TASK_TIMEOUT:-120}
       - NODE_OPTIONS=--max-old-space-size=384
     depends_on:
       n8n-worker:
@@ -343,6 +354,8 @@ services:
   # n8n Autoscaler — Monitors Redis queue, scales workers
   # ──────────────────────────────────────────────────────────
   n8n-autoscaler:
+    # Opt in after checking v3 queue behavior; mounts Docker socket.
+    profiles: ["autoscaling"]
     build:
       context: .
       dockerfile: autoscaler/Dockerfile
@@ -386,6 +399,7 @@ services:
   # Redis Monitor — Logs queue depth continuously
   # ──────────────────────────────────────────────────────────
   redis-monitor:
+    profiles: ["monitoring"]
     build:
       context: .
       dockerfile: monitor/monitor.Dockerfile
@@ -414,7 +428,9 @@ services:
   # n8n Init — One-shot credential provisioner
   # ──────────────────────────────────────────────────────────
   n8n-init:
-    image: docker.n8n.io/n8nio/n8n:latest
+    # Opt in only after migrations; imports credentials on shared PostgreSQL.
+    profiles: ["provision"]
+    image: docker.n8n.io/n8nio/n8n:${N8N_VERSION:-3.0.1}
     container_name: n8n-init
     restart: "no"
     networks:
@@ -483,6 +499,7 @@ services:
   # Qdrant — High-performance vector database
   # ──────────────────────────────────────────────────────────
   qdrant:
+    profiles: ["integrations"]
     image: qdrant/qdrant:latest
     container_name: qdrant
     restart: unless-stopped
@@ -494,8 +511,8 @@ services:
     networks:
       - n8n-net
     ports:
-      - "6333:6333"
-      - "6334:6334"
+      - "127.0.0.1:6333:6333"
+      - "127.0.0.1:6334:6334"
     volumes:
       - qdrant_storage:/qdrant/storage
 
@@ -503,6 +520,7 @@ services:
   # WAHA — WhatsApp HTTP API
   # ──────────────────────────────────────────────────────────
   waha:
+    profiles: ["integrations"]
     image: devlikeapro/waha:latest
     container_name: waha
     restart: unless-stopped
@@ -514,7 +532,7 @@ services:
     networks:
       - n8n-net
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       - WHATSAPP_API_KEY=${WAHA_API_KEY:-admin}
     volumes:

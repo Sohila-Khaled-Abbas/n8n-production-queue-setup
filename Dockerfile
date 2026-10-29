@@ -13,7 +13,8 @@ RUN apk add --no-cache \
     curl
 
 # Stage 2: Copy to n8n image
-FROM docker.n8n.io/n8nio/n8n:latest
+ARG N8N_VERSION=3.0.1
+FROM docker.n8n.io/n8nio/n8n:${N8N_VERSION}
 
 USER root
 
@@ -30,7 +31,7 @@ COPY --from=builder /usr/lib/libcurl*.so* /usr/lib/
 COPY --from=builder /usr/lib/libjq*.so* /usr/lib/
 COPY --from=builder /usr/lib/libonig*.so* /usr/lib/
 
-# Expose task broker port for external runners (n8n 2.0)
+# Expose task broker port for external runners (n8n 3.0)
 EXPOSE 5679
 
 USER node

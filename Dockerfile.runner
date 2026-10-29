@@ -18,7 +18,8 @@ RUN apk add --no-cache \
     imagemagick
 
 # Stage 2: Copy to runners image
-FROM n8nio/runners:latest
+ARG N8N_VERSION=3.0.1
+FROM n8nio/runners:${N8N_VERSION}
 
 USER root
 

@@ -63,3 +63,8 @@ backups/
 *.dump
 
 
+
+# In-place n8n major-version migration: no snapshots or secrets in git
+migration-backups/
+pre-v3-backups/
+*.pgdump
