@@ -188,13 +188,17 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
+          # Allow headroom above the 192 MB Redis data limit for AOF and overhead.
+          memory: 256M
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      # Verify an actual PONG, not merely redis-cli's process exit status.
+      # $ prevents Compose from interpolating the shell command substitution.
+      test: ["CMD-SHELL", "test \"$(redis-cli -h 127.0.0.1 ping 2>/dev/null)\" = PONG"]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 10s
+      retries: 18
+      # Give Redis time to replay a persisted AOF on slower Docker Desktop disks.
+      start_period: 60s
 
   # ──────────────────────────────────────────────────────────
   # n8n Main — Editor UI, REST API, task broker
