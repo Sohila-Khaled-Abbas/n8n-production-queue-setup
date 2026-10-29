@@ -24,10 +24,10 @@ function Get-Volume([string]$Container,[string]$Destination) {
 }
 function Save-Volume([string]$Volume,[string]$Name) {
     if ([string]::IsNullOrWhiteSpace($Volume)) { throw 'Empty volume name.' }
-    Invoke-Docker @('run','--rm','--mount',"type=volume,source=$Volume,target=/data,readonly",
+    Invoke-Docker -Arguments @('run','--rm','--mount',"type=volume,source=$Volume,target=/data,readonly",
         '--mount',"type=bind,source=$BackupDir,target=/backup",
         '--entrypoint','sh','redis:7-alpine','-c',"cd /data && tar -czf /backup/$Name .")
-    Invoke-Docker @('run','--rm','--mount',"type=bind,source=$BackupDir,target=/backup,readonly",
+    Invoke-Docker -Arguments @('run','--rm','--mount',"type=bind,source=$BackupDir,target=/backup,readonly",
         '--entrypoint','sh','redis:7-alpine','-c',"tar -tzf /backup/$Name >/dev/null")
     $out = Join-Path $BackupDir $Name
     if (!(Test-Path -LiteralPath $out) -or (Get-Item -LiteralPath $out).Length -le 0) {
@@ -63,18 +63,18 @@ $info = [ordered]@{
 $info | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $BackupDir 'metadata.json')
 # Export a binary Postgres dump *inside* the Linux container, then copy it out.
 # This avoids Windows PowerShell corrupting binary output via redirection.
-Invoke-Docker @('exec','n8n-postgres','sh','-c',
+Invoke-Docker -Arguments @('exec','n8n-postgres','sh','-c',
     'pg_dump -Fc -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f /tmp/n8n-pre-v3.pgdump')
-Invoke-Docker @('cp','n8n-postgres:/tmp/n8n-pre-v3.pgdump',(Join-Path $BackupDir 'n8n-pre-v3.pgdump'))
-Invoke-Docker @('exec','n8n-postgres','rm','-f','/tmp/n8n-pre-v3.pgdump')
+Invoke-Docker -Arguments @('cp','n8n-postgres:/tmp/n8n-pre-v3.pgdump',(Join-Path $BackupDir 'n8n-pre-v3.pgdump'))
+Invoke-Docker -Arguments @('exec','n8n-postgres','rm','-f','/tmp/n8n-pre-v3.pgdump')
 $dump = Join-Path $BackupDir 'n8n-pre-v3.pgdump'
 if (!(Test-Path -LiteralPath $dump) -or (Get-Item -LiteralPath $dump).Length -le 0) {
     throw 'Database dump missing or empty. Stack left running.'
 }
 Write-Host 'PostgreSQL logical dump captured. Stopping stack for consistent volume snapshot.'
-Invoke-Docker @('compose','stop','n8n-autoscaler','redis-monitor','n8n-webhook',
+Invoke-Docker -Arguments @('compose','stop','n8n-autoscaler','redis-monitor','n8n-webhook',
     'n8n-worker','n8n-worker-runner','n8n','n8n-runner','redis','postgres')
-Invoke-Docker @('cp','n8n-main-server:/home/node/.n8n',(Join-Path $BackupDir 'n8n-home'))
+Invoke-Docker -Arguments @('cp','n8n-main-server:/home/node/.n8n',(Join-Path $BackupDir 'n8n-home'))
 if (!(Test-Path -LiteralPath (Join-Path $BackupDir 'n8n-home'))) {
     throw 'n8n user-data copy missing. Do not upgrade.'
 }
