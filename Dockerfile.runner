@@ -57,10 +57,11 @@ COPY --from=builder /usr/bin/composite /usr/bin/composite
 # Create symlink for chromium-browser wrapper script
 RUN ln -sf /usr/lib/chromium/chromium /usr/bin/chromium
 
-# Merge optional dependencies into the JavaScript runner module tree.
-# A separate build stage avoids relying on removed Corepack/npm binaries.
+# n8n v3's bundled node_modules includes symlinks (e.g. "ws").
+# Copy into a separate path to avoid overwriting framework dependencies.
+COPY --from=js-dependencies /opt/extra-task-runner-js/node_modules/ /opt/runners/custom-node-modules/
+ENV NODE_PATH=/opt/runners/custom-node-modules
 WORKDIR /opt/runners/task-runner-javascript
-COPY --from=js-dependencies /opt/extra-task-runner-js/node_modules/ ./node_modules/
 
 # Install Python packages in the task runner's venv
 RUN /usr/local/bin/uv pip install --python /opt/runners/task-runner-python/.venv/bin/python --no-cache \
