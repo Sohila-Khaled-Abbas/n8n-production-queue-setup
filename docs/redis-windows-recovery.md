@@ -62,11 +62,20 @@ trying to restart queue consumers.
 ### B. Identify and back up the exact Redis named volume
 
 ```powershell
-$VolumeName = docker inspect n8n-redis --format '{{range .Mounts}}{{if eq .Destination "/data"}}{{.Name}}{{end}}{{end}}'
-if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($VolumeName)) {
-    throw "Cannot identify the Redis /data volume. Stop here."
+# Use JSON output to avoid Windows PowerShell stripping double quotes from
+# Go template expressions such as eq .Destination "/data".
+$MountJson = docker inspect n8n-redis --format '{{json .Mounts}}'
+if ($LASTEXITCODE -ne 0) {
+    throw "Cannot inspect n8n-redis. Stop here."
 }
-$VolumeName = $VolumeName.Trim()
+$Mounts = $MountJson | ConvertFrom-Json
+$RedisMount = @($Mounts | Where-Object {
+    $_.Type -eq "volume" -and $_.Destination -eq "/data"
+})
+if ($RedisMount.Count -ne 1) {
+    throw "Expected exactly one Redis named volume mounted at /data. Stop here."
+}
+$VolumeName = $RedisMount[0].Name
 Write-Host "Redis volume: $VolumeName"
 
 # Use a sibling directory OUTSIDE the Git repository; do not commit queue data.
