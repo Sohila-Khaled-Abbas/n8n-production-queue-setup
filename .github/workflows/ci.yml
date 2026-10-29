@@ -85,6 +85,13 @@ jobs:
           assert services['n8n-init']['image'].endswith(':3.0.1')
           assert 'provision' in services['n8n-init']['profiles']
           assert 'autoscaling' in services['n8n-autoscaler']['profiles']
+          # Breaking-change settings must reach the shared n8n service.
+          env = services['n8n']['environment']
+          assert str(env['N8N_COMPRESSION_NODE_MAX_DECOMPRESSED_SIZE_BYTES']) == '268435456'
+          assert str(env['N8N_COMPRESSION_NODE_MAX_ZIP_ENTRIES']) == '1000'
+          assert str(env['N8N_UNVERIFIED_PACKAGES_ENABLED']).lower() == 'false'
+          # Do not auto-enable deprecated Chat Hub.
+          assert 'N8N_ENABLED_MODULES' not in env
           assert services['redis']['healthcheck']
           assert services['n8n']['build']['args']['N8N_VERSION'] == '3.0.1'
           assert services['n8n-runner']['build']['args']['N8N_VERSION'] == '3.0.1'
