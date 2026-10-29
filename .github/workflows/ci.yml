@@ -60,3 +60,45 @@ jobs:
         with:
           dockerfile: monitor/monitor.Dockerfile
           failure-threshold: error
+
+
+  v3-compose-config:
+    name: Validate v3 Compose configuration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare dummy non-production environment
+        run: |
+          cp .env.example .env
+          printf '\nCOMPOSE_PROJECT_NAME=n8n\n' >> .env
+      - name: Validate configuration
+        run: |
+          docker compose config --quiet
+          docker compose config --format json > /tmp/n8n-compose.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          compose = json.loads(Path('/tmp/n8n-compose.json').read_text())
+          services = compose['services']
+          assert services['n8n']['ports'][0]['host_ip'] == '127.0.0.1'
+          assert services['n8n']['ports'][0]['published'] == '80'
+          assert services['n8n-init']['image'].endswith(':3.0.1')
+          assert 'provision' in services['n8n-init']['profiles']
+          assert 'autoscaling' in services['n8n-autoscaler']['profiles']
+          assert services['redis']['healthcheck']
+          assert services['n8n']['build']['args']['N8N_VERSION'] == '3.0.1'
+          assert services['n8n-runner']['build']['args']['N8N_VERSION'] == '3.0.1'
+          print('Compose config and basic safety invariants OK')
+          PY
+
+  v3-custom-images:
+    name: Build custom n8n v3 / runner images
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    needs: [v3-compose-config]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare dummy environment
+        run: cp .env.example .env
+      - name: Build v3 main and task runner
+        run: docker compose build --pull n8n n8n-runner
