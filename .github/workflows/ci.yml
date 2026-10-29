@@ -73,8 +73,8 @@ jobs:
           printf '\nCOMPOSE_PROJECT_NAME=n8n\n' >> .env
       - name: Validate configuration
         run: |
-          docker compose config --quiet
-          docker compose config --format json > /tmp/n8n-compose.json
+          docker compose --profile provision --profile autoscaling --profile integrations --profile monitoring config --quiet
+          docker compose --profile provision --profile autoscaling --profile integrations --profile monitoring config --format json > /tmp/n8n-compose.json
           python3 - <<'PY'
           import json
           from pathlib import Path
