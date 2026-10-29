@@ -94,6 +94,7 @@ jobs:
           assert 'N8N_ENABLED_MODULES' not in env
           assert services['redis']['healthcheck']
           assert services['n8n']['build']['args']['N8N_VERSION'] == '3.0.1'
+          assert services['n8n']['build']['args']['N8N_IMAGE_REPOSITORY'] == 'n8nio/n8n'
           assert services['n8n-runner']['build']['args']['N8N_VERSION'] == '3.0.1'
           print('Compose config and basic safety invariants OK')
           PY
@@ -105,17 +106,51 @@ jobs:
     needs: [v3-compose-config]
     steps:
       - uses: actions/checkout@v4
-      - name: Prepare dummy environment
-        run: cp .env.example .env
-      - name: Build v3 main and task runner
-        run: docker compose build --pull n8n n8n-runner
+      - name: Prepare disposable environment with writable n8n home
+        run: |
+          cp .env.example .env
+          # n8n's hardened image runs as uid 1000. Docker would otherwise
+          # create the missing bind-mount directory as root on Ubuntu CI.
+          mkdir -p n8n-data
+          sudo chown 1000:1000 n8n-data
+      - name: Build every custom n8n and task-runner service
+        # The Compose services have no shared "image:" tag. Each receives a
+        # distinct project-scoped image, even when two use the same Dockerfile.
+        # --no-build startup below requires ALL FOUR images to exist.
+        run: docker compose build --pull n8n n8n-runner n8n-worker n8n-worker-runner
+      # The subsequent --no-build startup is the real verification that
+      # the generated image for every Compose service is available locally.
       - name: Smoke test the core queue-mode stack with disposable CI data
         run: |
           docker compose up -d --no-build postgres redis n8n
-          docker compose ps
           test "$(docker exec n8n-redis redis-cli ping | tr -d '\r')" = "PONG"
           docker exec n8n-main-server n8n --version | grep -x '3.0.1'
+          # A version response doesn't guarantee n8n booted: verify health.
+          for attempt in $(seq 1 90); do
+            status="$(docker inspect n8n-main-server --format '{{.State.Health.Status}}')"
+            if [ "$status" = healthy ]; then break; fi
+            if [ "$status" = unhealthy ]; then
+              echo "::error::n8n main container is unhealthy"
+              exit 1
+            fi
+            sleep 2
+          done
+          test "$status" = healthy
           docker compose up -d --no-build n8n-runner n8n-worker n8n-worker-runner
+          for service in n8n-runner n8n-worker n8n-worker-runner; do
+            container="$(docker compose ps -q "$service")"
+            test -n "$container"
+            for attempt in $(seq 1 60); do
+              status="$(docker inspect "$container" --format '{{.State.Health.Status}}')"
+              if [ "$status" = healthy ]; then break; fi
+              if [ "$status" = unhealthy ]; then
+                echo "::error::$service is unhealthy"
+                exit 1
+              fi
+              sleep 2
+            done
+            test "$status" = healthy
+          done
           docker compose ps
       - name: Debug failed local stack
         if: failure()

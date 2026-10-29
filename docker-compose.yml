@@ -24,6 +24,7 @@ x-n8n: &service-n8n
     dockerfile: Dockerfile
     args:
       N8N_VERSION: ${N8N_VERSION:-3.0.1}
+      N8N_IMAGE_REPOSITORY: ${N8N_IMAGE_REPOSITORY:-n8nio/n8n}
   restart: unless-stopped
   logging: *default-logging
   networks:
