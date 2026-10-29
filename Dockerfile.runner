@@ -1,3 +1,5 @@
+ARG N8N_VERSION=3.0.1
+
 # Multi-stage build to add dependencies to n8n runners
 # This works around the issue where n8nio/runners v2.1.0+ removed apk
 
@@ -18,7 +20,6 @@ RUN apk add --no-cache \
     imagemagick
 
 # Stage 2: Copy to runners image
-ARG N8N_VERSION=3.0.1
 FROM n8nio/runners:${N8N_VERSION}
 
 USER root
