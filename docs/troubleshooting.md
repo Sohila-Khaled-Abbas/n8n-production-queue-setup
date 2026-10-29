@@ -2,6 +2,10 @@
 
 Extended troubleshooting guide. For a quick reference, see the [README](../README.md#-troubleshooting).
 
+> **Windows Docker Desktop: `n8n-redis is unhealthy` / dependency failed?**
+> Follow the [non-destructive Redis startup recovery guide](redis-windows-recovery.md)
+> before restarting services or attempting AOF repairs.
+
 ---
 
 ## Diagnostic Checklist
@@ -325,8 +329,8 @@ docker compose logs redis
 | Problem | Fix |
 |---|---|
 | `postgres` unhealthy | Check `DB_POSTGRESDB_PASSWORD` matches volume initialization. If wrong, destroy volume: `docker compose down -v` |
-| `redis` unhealthy | Check disk space: `df -h` |
-| `redis` crash-looping / AOF error | Append-only file manifest corruption. Fix with `redis-check-aof --fix /data/appendonlydir/appendonly.aof.manifest` |
+| `redis` unhealthy | Inspect `docker compose logs --tail=120 redis` and Docker healthcheck output; see [Windows Redis recovery](redis-windows-recovery.md) |
+| `redis` crash-looping / AOF error | Back up the Redis volume before any repair; confirm the exact error and file path in logs first |
 | Port conflict | Another service using port 5432 or 6379 on the host |
 
 ---
@@ -343,12 +347,8 @@ docker compose logs redis
 **Cause:**
 Redis experienced an abrupt shutdown or crash of the host PC while writing to disk, leaving the Append Only File (AOF) in an invalid/corrupt format.
 
-**Fix:**
-Run the `redis-check-aof` utility inside a temporary Redis container to repair the AOF manifest:
-```bash
-docker compose run --rm redis redis-check-aof --fix /data/appendonlydir/appendonly.aof.manifest
-```
-Confirm the truncation when prompted (`y`). The utility will remove the corrupt tail block and let Redis start normally.
+**Safe recovery:**
+Do **not** run `redis-check-aof --fix` against an unbacked-up Redis volume. Repair can truncate queue data. First stop Redis and make a verified backup of the volume (including the AOF manifest). Only attempt a file-specific repair when the logs identify the failing AOF and the backup exists. For the full Windows PowerShell diagnostic and recovery sequence, see [Redis startup recovery](redis-windows-recovery.md).
 
 ---
 
