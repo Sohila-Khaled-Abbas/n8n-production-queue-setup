@@ -98,6 +98,14 @@ services:
       - sandbox-tls:/tls:ro
     networks:
       - n8n-net
+    # A healthy API does not imply that the Docker-in-Docker runner is ready.
+    # Match the upstream sandbox runner's HTTPS readiness endpoint.
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "--no-check-certificate", "https://localhost:8080/readyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 20s
     # Privileged engine; NEVER publish ports or mount the host Docker socket.
 
   searxng:
