@@ -10,7 +10,8 @@
              Compose syntax, then launches only the opt-in sandbox services
              and recreates only the n8n main service (without rebuilding).
   Status:    prints non-secret service state.
-  Never changes N8N_VERSION, N8N_ENCRYPTION_KEY, the base Compose file,
+  Preserves existing N8N_VERSION (pins only when absent, using installed image),
+  N8N_ENCRYPTION_KEY, the base Compose file,
   existing volumes, or any database.
 .EXAMPLE
   .\scripts\install-assistant.ps1 -Mode Configure
@@ -118,13 +119,55 @@ function Assert-Docker {
 }
 
 function Assert-ExistingStack([System.Collections.Generic.List[string]] $Lines) {
+  # Old .env files can omit N8N_VERSION because Compose supplied a default.
+  # Never adopt a NEW Compose default as a substitute for the installed image.
   foreach ($key in @('N8N_ENCRYPTION_KEY','N8N_RUNNERS_AUTH_TOKEN',
                      'DB_POSTGRESDB_PASSWORD','DB_POSTGRESDB_DATABASE',
-                     'DB_POSTGRESDB_USER','N8N_VERSION')) {
+                     'DB_POSTGRESDB_USER')) {
     if ([string]::IsNullOrWhiteSpace((Get-EnvValue $Lines $key))) {
       throw "Existing required setting $key is missing. Do not guess or re-generate it."
     }
   }
+}
+
+function Resolve-ExistingN8nVersion {
+  # Include stopped containers: Redis corruption may prevent n8n starting.
+  # Inspect only the exact existing n8n container (NOT Compose's new fallback).
+  $containerIds = @(& docker compose -f $BasePath ps --all --quiet n8n 2>$null |
+    Where-Object { $_ -match '^[a-fA-F0-9]{12,64}$' })
+  Stop-IfFailed 'Identify the existing n8n container'
+  if ($containerIds.Count -ne 1) {
+    throw 'Cannot safely determine N8N_VERSION: expected exactly one n8n container. No defaults were used and .env has not been written. Run: docker compose ps -a'
+  }
+  $containerId = [string] $containerIds[0]
+  $stateOutput = @(& docker inspect --format '{{.State.Status}}' $containerId)
+  Stop-IfFailed 'Inspect existing n8n container state'
+  $state = ($stateOutput -join '').Trim()
+  if ($state -eq 'running') {
+    $versionOutput = @(& docker exec $containerId n8n --version 2>$null)
+    if ($LASTEXITCODE -eq 0) {
+      $version = ($versionOutput -join ' ').Trim()
+      if ($version -match '^\d+\.\d+\.\d+$') { return $version }
+    }
+  }
+
+  # If stopped, run ONLY "n8n --version" from the exact local image ID.
+  # No volumes, no network, no n8n .env, and no database connections.
+  $imageOutput = @(& docker inspect --format '{{.Image}}' $containerId)
+  Stop-IfFailed 'Read original n8n image ID'
+  $imageId = ($imageOutput -join '').Trim()
+  if ($imageId -notmatch '^sha256:[a-fA-F0-9]{64}$') {
+    throw 'Existing container image ID is unavailable. Refusing to guess the installed version.'
+  }
+  $versionOutput = @(& docker run --rm --network none --entrypoint n8n $imageId --version 2>$null)
+  if ($LASTEXITCODE -ne 0) {
+    throw 'Cannot execute n8n --version against existing local image. No version was guessed or written.'
+  }
+  $version = ($versionOutput -join ' ').Trim()
+  if ($version -notmatch '^\d+\.\d+\.\d+$') {
+    throw 'Existing n8n image reported an unexpected version; refusing to guess.'
+  }
+  return $version
 }
 
 function Assert-ServiceHealthy([string] $Service) {
@@ -176,6 +219,19 @@ try {
   Assert-Docker
 
   if ($Mode -eq 'Configure') {
+    $existingVersion = Get-EnvValue $lines 'N8N_VERSION'
+    if ([string]::IsNullOrWhiteSpace($existingVersion)) {
+      $detectedVersion = Resolve-ExistingN8nVersion
+      Set-EnvValue $lines 'N8N_VERSION' $detectedVersion
+      Write-Host "Pinned missing N8N_VERSION=$detectedVersion from existing container/image." -ForegroundColor Yellow
+      if ([version] $detectedVersion -lt [version] '2.39.0') {
+        Write-Warning "Existing n8n $detectedVersion requires the migration runbook before -Mode Install. Configure never upgrades it."
+      }
+    }
+    elseif ($existingVersion -notmatch '^\d+\.\d+\.\d+$') {
+      throw 'Existing N8N_VERSION is not a pinned x.y.z release. Refusing to overwrite it.'
+    }
+
     & git check-ignore -q -- .env
     if ($LASTEXITCODE -ne 0) {
       throw 'The .env file is not ignored by Git. Refusing to store secrets until .gitignore is correct.'
