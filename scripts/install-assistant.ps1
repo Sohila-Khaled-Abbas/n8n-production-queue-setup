@@ -337,6 +337,30 @@ try {
     exit 1
   }
 
+  # The API can be healthy before the privileged runner registers or its
+  # nested Docker engine is ready. Never recreate n8n main on API health alone.
+  $runnerID = ((@(& docker compose @Overlay ps -q sandbox-runner-1)) -join '').Trim()
+  if (-not $runnerID) {
+    throw 'No sandbox-runner-1 container. Inspect: docker compose -f docker-compose.yml -f compose.assistant.yml logs sandbox-runner-1'
+  }
+  $runnerHealth = 'starting'
+  Write-Host 'Checking sandbox-runner-1 readiness (HTTPS /readyz; up to 2 minutes)...'
+  for ($attempt = 1; $attempt -le 24; $attempt++) {
+    $runnerHealth = ((@(& docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}missing{{end}}' $runnerID)) -join '').Trim()
+    Stop-IfFailed 'Inspect sandbox runner health'
+    if ($runnerHealth -eq 'healthy') { break }
+    if ($runnerHealth -eq 'missing') {
+      throw 'sandbox-runner-1 has no healthcheck. Apply the updated compose.assistant.yml before running Install.'
+    }
+    if ($attempt -lt 24) { Start-Sleep -Seconds 5 }
+  }
+  if ($runnerHealth -ne 'healthy') {
+    & docker compose @Overlay ps -a sandbox-api sandbox-runner-1
+    Write-Warning 'Sandbox runner is not ready. The existing n8n main service was NOT recreated.'
+    throw "sandbox-runner-1 did not become healthy (status: $runnerHealth). Inspect runner logs and Docker disk/network health before retrying."
+  }
+  Write-Host 'Sandbox runner is healthy.' -ForegroundColor Green
+
   Write-Host 'Activating Assistant with a controlled n8n main-server recreation...'
   # Docker Desktop can reject Compose's implicit replace when the original
   # n8n-main-server is still running. Stop the SINGLE n8n service first.
