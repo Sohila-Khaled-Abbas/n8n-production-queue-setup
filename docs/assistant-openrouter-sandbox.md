@@ -94,6 +94,58 @@ The health endpoint should return `{"status":"ok"}`. The one-shot `sandbox-certs
 
 Open your existing local editor on **http://localhost** (the original port 80, not a new 5678 port), then check **Settings → Assistant** and try a disposable, non-sensitive task. OpenRouter `openrouter/free` automatically selects a free model, but limits and tool-calling compatibility vary by model.
 
+## Recovery: Docker refuses to recreate a running n8n main container
+
+Symptom after a successful sandbox pull/start:
+
+```
+cannot remove container "...": container is running: stop the container before removing or force remove
+```
+
+The sandbox API may already be healthy; the only failed step is applying
+the new Assistant environment variables to the existing n8n main process.
+Do **not** rerun Configure, reset Docker Desktop, remove volumes, or use
+`docker rm -f`. Restarting the container alone cannot apply new
+Compose environment variables.
+
+In Windows PowerShell from the original checkout:
+
+```powershell
+$files = @('-f','docker-compose.yml','-f','compose.assistant.yml')
+docker compose @files ps -a
+docker inspect n8n-main-server --format 'Name={{.Name}} Status={{.State.Status}} Restart={{.HostConfig.RestartPolicy.Name}}'
+docker compose @files config --quiet
+if ($LASTEXITCODE -ne 0) { throw 'Stop: invalid Compose config' }
+```
+
+Check that n8n main is the failing container and that your existing
+PostgreSQL/Redis are healthy, as verified earlier. If it is running, schedule
+a brief editor interruption and perform a **single-service graceful stop**:
+
+```powershell
+docker compose @files stop --timeout 300 n8n
+if ($LASTEXITCODE -ne 0) { throw 'Stop failed: inspect Docker status before continuing' }
+
+$state = (docker inspect n8n-main-server --format '{{.State.Status}}').Trim()
+if ($LASTEXITCODE -ne 0 -or $state -ne 'exited') {
+    throw "Not safely stopped ($state). No removal attempted."
+}
+
+docker compose @files up -d --no-build --no-deps n8n
+if ($LASTEXITCODE -ne 0) { throw 'Recreate failed; inspect docker compose ps -a; do not force-remove.' }
+
+docker compose @files ps -a n8n sandbox-api sandbox-runner-1 searxng
+```
+
+This stops **only** the n8n editor/main service, preserving the PostgreSQL,
+Redis, queues, workers and named volumes. The 300-second timeout gives n8n
+time to shut down gracefully. If it cannot stop, stop here and diagnose the
+Docker daemon and possible external restarts before attempting removal.
+
+From the latest version of the installer, `-Mode Install` now performs
+the graceful stop automatically after the sandbox API is healthy. Image
+downloads are cached and do not have to be manually repeated.
+
 ## Troubleshooting and safety
 
 - **Redis unhealthy**: read the existing Redis recovery runbook, don't run `docker compose down -v`.
