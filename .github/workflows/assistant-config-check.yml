@@ -1,0 +1,42 @@
+name: Assistant sandbox configuration validation
+
+on:
+  pull_request:
+    paths:
+      - 'compose.assistant.yml'
+      - '.env.example'
+      - 'searxng-settings.yml'
+      - 'scripts/install-assistant.ps1'
+      - '.github/workflows/assistant-config-check.yml'
+  workflow_dispatch:
+
+jobs:
+  validate-powershell:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse installer with Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path 'scripts/install-assistant.ps1').Path,
+              [ref] $tokens, [ref] $errors) | Out-Null
+          if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error $_.Message }
+              throw "PowerShell parser reported $($errors.Count) errors"
+          }
+          Write-Host 'PowerShell 5.1 parser: OK'
+  validate-compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Render combined configuration with safe placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp .env.example .env
+          docker compose -f docker-compose.yml -f compose.assistant.yml config --quiet
+          printf '%s\n' 'Merged Docker Compose YAML: OK'
+          # Never dump expanded Compose config; it contains secrets in real installs.
