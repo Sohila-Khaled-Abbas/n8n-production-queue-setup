@@ -94,6 +94,39 @@ The health endpoint should return `{"status":"ok"}`. The one-shot `sandbox-certs
 
 Open your existing local editor on **http://localhost** (the original port 80, not a new 5678 port), then check **Settings → Assistant** and try a disposable, non-sensitive task. OpenRouter `openrouter/free` automatically selects a free model, but limits and tool-calling compatibility vary by model.
 
+
+## Recovery: GHCR SearXNG image pull failed with unexpected EOF
+
+If the installer reports `short read ... unexpected EOF` while pulling
+`ghcr.io/searxng/searxng:latest`, your n8n and sandbox images are not
+necessarily damaged. This is a truncated registry download, often transient.
+
+This repo now defaults SearXNG to the **official Docker Hub mirror**, pinned to
+`docker.io/searxng/searxng:2026.10.30-1cd13d98d`. It remains overrideable
+with `SEARXNG_IMAGE` for deployments that prefer GHCR. This only changes
+the optional search container's image source; no data volumes are touched.
+
+On the existing checkout in Windows PowerShell:
+
+```powershell
+git status --short --branch
+# Ensure local tracked files are clean before pulling.
+git fetch origin main
+git pull --ff-only origin main
+
+docker pull docker.io/searxng/searxng:2026.10.30-1cd13d98d
+if ($LASTEXITCODE -ne 0) { throw 'Docker Hub pull also failed: check network, Docker Desktop disk and proxy' }
+
+.\scripts\install-assistant.ps1 -Mode Install
+```
+
+Docker layer downloads already completed are normally reused by the registry
+cache. Avoid `docker system prune`, `docker compose down -v` or clearing
+Docker Desktop data just for an EOF during image download. If Docker Hub also
+fails, check free disk space, Docker Desktop proxy configuration, and
+`Test-NetConnection registry-1.docker.io -Port 443` before retrying. The
+Assistant's web search is optional, but this installer starts it by default.
+
 ## Troubleshooting and safety
 
 - **Redis unhealthy**: read the existing Redis recovery runbook, don't run `docker compose down -v`.
