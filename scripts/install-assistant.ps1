@@ -337,9 +337,37 @@ try {
     exit 1
   }
 
-  Write-Host 'Enabling Assistant in the existing n8n main server without rebuilding or touching dependencies...'
+  Write-Host 'Activating Assistant with a controlled n8n main-server recreation...'
+  # Docker Desktop can reject Compose's implicit replace when the original
+  # n8n-main-server is still running. Stop the SINGLE n8n service first.
+  # A manual stop also suppresses its "unless-stopped" restart policy.
+  $originalIds = @(& docker compose @Overlay ps --all --quiet n8n |
+      Where-Object { $_ -match '^[a-fA-F0-9]{12,64}$' })
+  Stop-IfFailed 'Find existing n8n main container'
+  if ($originalIds.Count -ne 1) {
+    throw 'Expected one existing n8n main container. Stop: inspect docker compose ps -a; no containers were removed.'
+  }
+  $originalId = [string] $originalIds[0]
+  $oldStatus = ((@(& docker inspect --format '{{.State.Status}}' $originalId)) -join '').Trim()
+  Stop-IfFailed 'Inspect n8n main state'
+  if ($oldStatus -eq 'running' -or $oldStatus -eq 'restarting') {
+    Write-Host 'Stopping ONLY n8n main gracefully (up to 300 seconds); workers/databases untouched...'
+    & docker compose @Overlay stop --timeout 300 n8n
+    Stop-IfFailed 'Gracefully stop n8n main'
+  }
+  $afterStop = ((@(& docker inspect --format '{{.State.Status}}' $originalId)) -join '').Trim()
+  Stop-IfFailed 'Confirm n8n main is stopped'
+  if ($afterStop -notin @('exited','created')) {
+    throw "Refusing to recreate: old n8n main status is $afterStop, expected exited/created. Do NOT force remove."
+  }
+
   & docker compose @Overlay up -d --no-build --no-deps n8n
-  Stop-IfFailed 'n8n main server recreation'
+  if ($LASTEXITCODE -ne 0) {
+    # Do not use force-removal, prune, or down -v. The original n8n
+    # container may still exist, stopped, allowing manual recovery.
+    Write-Warning 'n8n recreation failed after graceful stop. Inspect docker compose ps -a and Docker events before retrying.'
+    throw "n8n main recreation failed (exit code $LASTEXITCODE). Do not force-remove containers."
+  }
   & docker compose @Overlay ps n8n sandbox-api sandbox-runner-1 searxng
   & docker compose @Overlay logs --tail 25 sandbox-api sandbox-runner-1
   Write-Host 'Verify in the n8n Editor -> Settings -> Assistant and test a disposable workflow.' -ForegroundColor Green
