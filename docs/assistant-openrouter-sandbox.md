@@ -1,107 +1,113 @@
-# n8n Assistant with OpenRouter and local sandbox
+# n8n Assistant + OpenRouter + sandbox v1.13.0 — automated PowerShell setup
 
-> **Opt-in feature, local development only.** This does not replace the existing queue-mode Compose project, Redis, Postgres, workers, volumes, external task runners or ngrok port. Never run this on a production-facing instance without reviewing the privileged Docker-in-Docker risk. n8n recommends Daytona for production.
+**For the existing Windows 11 + Docker Desktop queue-mode deployment.** This is an additive installation for **local development only**. It preserves PostgreSQL, Redis, ngrok port 80, workers, existing task runners, and all existing volumes.
 
-## 0. Prerequisites and safety
+## Confirmed release
 
-- **Revoke the OpenRouter key previously shared in chat.** Create a fresh key and set limits/restrictions in OpenRouter. Never paste or commit it to GitHub.
-- Follow [Redis recovery](redis-windows-recovery.md) until Redis is healthy. Corrupt AOF must be recovered separately; the Assistant overlay does not fix it.
-- Follow [in-place n8n version migration](n8n-v3-beta-in-place.md). Confirm the currently running image is n8n 2.35+ and compatible with the Assistant. **Do not let the 3.0.1 default in .env.example unintentionally upgrade production data.** Use the version verified for your stack.
-- Back up Postgres, the n8n bind mount, your existing private .env, and Redis queue data before any version change. Keep `N8N_ENCRYPTION_KEY` unchanged. Never run `docker compose down -v`.
-- Docker Desktop + WSL2 must have adequate CPU, memory and disk. Keep backups outside the repo.
-- The Assistant is a preview feature. Review all changes it proposes, especially workflows that access credentials.
+The published **service/v1.13.0** release (October 30, 2026) uses these three stable Docker Hub images (all exactly `1.13.0`):
 
-## 1. Private .env only
+- `docker.io/n8nio/n8n-sandbox-service-api:1.13.0`
+- `docker.io/n8nio/n8n-sandbox-service-runner-dind:1.13.0`
+- `docker.io/n8nio/n8n-sandbox-service-sandbox:1.13.0`
 
-Edit your EXISTING .env; **do not replace it with .env.example**.
+**Release:** https://github.com/n8n-io/n8n-sandbox-service/releases/tag/service/v1.13.0 . The optional Firecracker runner is not used on Docker Desktop.
 
-```dotenv
-# Pin the release verified against https://github.com/n8n-io/n8n-sandbox-service/releases
-N8N_SANDBOX_VERSION=REPLACE_WITH_VERIFIED_STABLE_SERVICE_VERSION
+## Prerequisites: do these before installing
 
-# Use the exact OpenRouter model identifier; confirm its tool-calling
-# compatibility and free-tier limits at https://openrouter.ai/models
-N8N_INSTANCE_AI_MODEL=openrouter/openrouter/free
-N8N_INSTANCE_AI_MODEL_API_KEY=REPLACE_WITH_NEW_ROTATED_OPENROUTER_KEY
+1. **Revoke the OpenRouter API key previously pasted in chat** and create a new key: https://openrouter.ai/settings/keys . The script prompts for the new key *without echoing it*; no hand-editing of files is needed. Never publish the key.
+2. If Redis still has a corrupt AOF, finish [Redis recovery](redis-windows-recovery.md). Do not erase the Redis volume, pending queue jobs, or PostgreSQL data.
+3. If the installation is still running n8n 2.25.7, finish the [two-stage in-place version migration](n8n-v3-beta-in-place.md). The installer **refuses to recreate n8n below 2.39.0**, or if the running n8n version differs from `N8N_VERSION` in your private `.env`.
+4. Keep a complete verified database and n8n-data backup before any version migration. The installer backs up **only the local .env** automatically and does **not** replace full database backups.
+5. Docker Desktop must be running. Use the existing repository checkout containing your existing ignored `.env`; do not create a second instance or overwrite it with `.env.example`.
 
-# If you have existing explicitly enabled modules, list all of them too.
-N8N_ENABLED_MODULES=instance-ai
+## PowerShell: fetch the opt-in feature branch (existing checkout)
 
-# Secrets: generate separate random values for these fields.
-SANDBOX_API_KEYS=REPLACE_WITH_RANDOM_API_KEY
-N8N_SANDBOX_SERVICE_API_KEY=REPLACE_WITH_SAME_API_KEY
-SANDBOX_API_RUNNER_REGISTRATION_TOKEN=REPLACE_WITH_RANDOM_REGISTRATION_TOKEN
-SANDBOX_API_RUNNER_API_KEY=REPLACE_WITH_RANDOM_RUNNER_KEY
-SEARXNG_SECRET=REPLACE_WITH_RANDOM_SEARCH_SECRET
-```
-
-PowerShell to generate each random secret (run separately and paste only into local .env):
+Open PowerShell **inside your existing repository directory**. You can do this without editing any files: in Windows File Explorer open the repository folder, click its address bar, type `powershell` and press Enter.
 
 ```powershell
-# Run this once per independent secret.
-[Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32)).ToLowerInvariant()
-```
-
-Avoid providing model keys to other services via `env_file: .env`; the override injects only required variables into each sandbox container.
-
-## 2. Inspect before launch
-
-From the existing repository folder, in PowerShell:
-
-```powershell
+# Read-only discovery: the path must end in n8n-production-queue-setup
+(Get-Location).Path
 git status --short --branch
 docker compose ps -a
-docker compose logs --tail 80 redis postgres
-docker compose exec n8n n8n --version
-docker compose -f docker-compose.yml -f compose.assistant.yml config --quiet
+
+# Do not switch branches when there are tracked local changes.
+if (@(git status --porcelain --untracked-files=no).Count -gt 0) {
+    throw 'Tracked local changes found. Stop and preserve them before switching branches.'
+}
+$branch = 'feat/opt-in-n8n-assistant-openrouter-sandbox'
+git fetch origin $branch
+if ($LASTEXITCODE -ne 0) { throw 'Git fetch failed' }
+git show-ref --verify --quiet "refs/heads/$branch"
+if ($LASTEXITCODE -eq 0) {
+    git switch $branch
+} else {
+    git switch --track "origin/$branch"
+}
+if ($LASTEXITCODE -ne 0) { throw 'Cannot switch to the feature branch' }
 ```
 
-Check the status/versions; stop if existing data services are unhealthy or a migration is outstanding. **Do not print `docker compose config` to a public log**: it expands secret values. A successful `--quiet` validation confirms syntax only, not runtime compatibility.
-
-## 3. Launch opt-in services, then restart n8n
+## Phase A: automatically update local .env (no manual editing)
 
 ```powershell
+.\scripts\install-assistant.ps1 -Mode Configure
+```
+
+Enter the **new** OpenRouter key when prompted, without pasting it into chat. This command:
+
+- Preserves `N8N_VERSION`, `N8N_ENCRYPTION_KEY`, existing database passwords and worker tokens.
+- Backs up the existing private `.env` **outside** the Git checkout in sibling folder `n8n-env-private-backups` (this backup also contains secrets; keep it private).
+- Adds/replaces `N8N_SANDBOX_VERSION=1.13.0`, `N8N_INSTANCE_AI_MODEL=openrouter/openrouter/free`, `N8N_INSTANCE_AI_MODEL_API_KEY`.
+- Appends `instance-ai` to any existing `N8N_ENABLED_MODULES` instead of discarding other module names.
+- Creates unique 32-byte random secrets for `SANDBOX_API_KEYS`, `SANDBOX_API_RUNNER_REGISTRATION_TOKEN`, `SANDBOX_API_RUNNER_API_KEY`, and `SEARXNG_SECRET`, preserving valid existing values on subsequent runs.
+- Makes `N8N_SANDBOX_SERVICE_API_KEY` match `SANDBOX_API_KEYS`.
+- Validates the merged Compose configuration with `docker compose config --quiet`; rolls back `.env` on failure.
+
+**No Compose containers are launched by Configure.** Only `.env` changes on your PC; no secret is pushed to GitHub.
+
+## Phase B: verify and install the sandbox
+
+Run only after the existing n8n migration is complete and **Redis/PostgreSQL are healthy**:
+
+```powershell
+.\scripts\install-assistant.ps1 -Mode Install
+```
+
+This checks that both database services are healthy, that the running n8n version is at least 2.39 and exactly equals the existing pinned `N8N_VERSION`, and that all secrets match. It then:
+
+1. Pulls sandbox API and DIND runner images `1.13.0`, plus SearXNG (these downloads require free disk space).
+2. Starts only `sandbox-certs`, `sandbox-api`, `sandbox-runner-1` and `searxng`.
+3. Checks sandbox API health.
+4. Recreates **only** the existing main `n8n` container, with `--no-build --no-deps`, to activate the Assistant. The task runner / worker services are not rebuilt.
+
+If any prerequisite is not met, the script stops **without updating your existing n8n version or dropping any volumes**.
+
+## Phase C: verify
+
+```powershell
+.\scripts\install-assistant.ps1 -Mode Status
 $files = @('-f','docker-compose.yml','-f','compose.assistant.yml')
-docker compose @files pull sandbox-certs sandbox-api sandbox-runner-1 searxng
-docker compose @files up -d sandbox-certs sandbox-api sandbox-runner-1 searxng
-docker compose @files ps sandbox-api sandbox-runner-1 searxng
-docker compose @files logs --tail 80 sandbox-certs sandbox-api sandbox-runner-1
+docker compose @files logs --tail 60 sandbox-certs sandbox-api sandbox-runner-1
+docker compose @files exec -T n8n wget -qO- http://sandbox-api:8080/healthz
 ```
 
-Wait for sandbox-api healthy and runner registration. If all sandbox services work and your n8n version prerequisites pass:
+The health endpoint should return `{"status":"ok"}`. The one-shot `sandbox-certs` service exiting **0** is normal. Inspect the logs for successful runner registration.
 
-```powershell
-docker compose @files up -d --no-build n8n
-docker compose @files exec n8n wget -qO- http://sandbox-api:8080/healthz
-docker compose @files ps n8n sandbox-api sandbox-runner-1
-```
+Open your existing local editor on **http://localhost** (the original port 80, not a new 5678 port), then check **Settings → Assistant** and try a disposable, non-sensitive task. OpenRouter `openrouter/free` automatically selects a free model, but limits and tool-calling compatibility vary by model.
 
-The n8n service has an existing host-bound port 80 and external task runners. Don't add a new port 5678 mapping or launch the one-line installer against this project. If your custom n8n image does not have wget, test through `docker compose @files exec n8n node -e "..."` only after checking the installed runtime.
+## Troubleshooting and safety
 
-Open your existing editor at http://localhost or your configured secure ngrok URL; use **Settings → Assistant** to check the selected model provider and sandbox configuration. Build a disposable test workflow only, run it and confirm outputs. OpenRouter free models can be unavailable, rate-limited, or lack required tool-call behavior. Try an explicitly supported, tool-capable free model if the router fails.
+- **Redis unhealthy**: read the existing Redis recovery runbook, don't run `docker compose down -v`.
+- **n8n version mismatch**: finish the migration guide first. Do not change `N8N_VERSION` automatically.
+- **Sandbox API unhealthy**: inspect `docker compose @files logs sandbox-certs sandbox-api`; don't publish secret-bearing config.
+- **Runner crash loops**: verify registration/API key variables and mTLS certificate mounts. Don't publish sandbox API ports.
+- **Insufficient disk space**: the DIND runner downloads a nested sandbox image too.
+- **Stop optional components**: `docker compose @files stop sandbox-runner-1 sandbox-api searxng`; disable the Assistant with a deliberate main-container recreation using only the base Compose configuration after checking versions.
 
-## 4. Verify and troubleshoot
-
-- `sandbox-certs` should complete successfully. API should be **healthy**.
-- Verify the runner is registered in `sandbox-api` logs.
-- If a connection is refused, check internal service DNS and logs; don't expose port 8080/9090.
-- Runner launch may require pulling a nested sandbox image (disk usage).
-- Only the main n8n process needs the Assistant UI settings; keep main/worker versions and runner images aligned.
-- For runtime problems check service-specific logs without publishing secrets.
-- Stop just the optional services with:
-```powershell
-docker compose @files stop sandbox-runner-1 sandbox-api searxng
-```
-To disable the Assistant, remove the override from startup commands and recreate **only n8n** using the base Compose after verifying its config. Do not destroy any volumes.
-
-## Production hardening notes
-
-The bundled sandbox runner is **privileged**; reserve it for a trusted local development machine and never publish its ports. The upstream certificate bootstrap currently sets broad read access, so this example should **not** be taken as an independently audited hardened mTLS deployment. For production, evaluate [Daytona](https://docs.n8n.io/deploy/host-n8n/configure-n8n/set-up-n8n-assistant/#setup-3-daytona-managed-sandbox-recommended-for-production), tighter firewall boundaries, secrets management and verified TLS permissions. Keep the sandbox version pinned across API, runner and nested sandbox images; never use `latest` for them.
+**Security:** This bundled sandbox uses `privileged: true` Docker-in-Docker. It is for trusted local testing, **not a hardened production deployment**. n8n recommends [Daytona](https://docs.n8n.io/deploy/host-n8n/configure-n8n/set-up-n8n-assistant/) for production. The current upstream `bootstrap-mtls.sh --world-readable` example exposes wider certificate readability than a hardened system should; review certificate file ownership/permissions before production use.
 
 ## References
 
+- https://github.com/n8n-io/n8n-sandbox-service/releases/tag/service/v1.13.0
 - https://docs.n8n.io/deploy/host-n8n/configure-n8n/set-up-n8n-assistant/
 - https://docs.n8n.io/deploy/host-n8n/install-options/install-using-docker-compose/
 - https://github.com/n8n-io/n8n/blob/master/docker/get-n8n-compose.yml
-- https://github.com/n8n-io/n8n-sandbox-service/releases
-- https://openrouter.ai/models
