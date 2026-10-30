@@ -74,7 +74,8 @@ function Read-EnvLines {
   foreach ($line in ($raw -split '\r?\n')) {
     [void] $result.Add($line)
   }
-  return $result
+  # Do not let PowerShell enumerate the List into a string array.
+  return ,$result
 }
 
 function Get-EnvValue([System.Collections.Generic.List[string]] $Lines, [string] $Key) {
