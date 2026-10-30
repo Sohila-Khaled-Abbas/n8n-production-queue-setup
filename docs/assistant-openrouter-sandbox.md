@@ -146,6 +146,40 @@ From the latest version of the installer, `-Mode Install` now performs
 the graceful stop automatically after the sandbox API is healthy. Image
 downloads are cached and do not have to be manually repeated.
 
+## Weather Log / sandbox dependency-install cancellation
+
+If Assistant reports:
+
+```text
+SandboxWorkspaceSetupError: Sandbox workspace setup failed during install-dependencies: canceled
+```
+
+this happens while the Assistant prepares its isolated development workspace, **before** the Weather Log nodes run. The message by itself does not prove that Redis, PostgreSQL, the weather endpoint, or the workflow are defective. The sandbox API can be healthy even while the Docker-in-Docker runner is not yet ready or its nested sandbox image is still downloading.
+
+From the **existing repository checkout**, run these read-only checks. Redact API keys, credentials, and private workflow data before sharing any logs:
+
+```powershell
+$files = @('-f', 'docker-compose.yml', '-f', 'compose.assistant.yml')
+docker compose @files ps -a n8n postgres redis sandbox-certs sandbox-api sandbox-runner-1
+docker compose @files logs --since 30m --tail 150 sandbox-api sandbox-runner-1 n8n
+docker compose @files exec -T n8n wget -qO- http://sandbox-api:8080/healthz
+docker compose @files exec -T sandbox-runner-1 docker info --format '{{.ServerVersion}}'
+docker system df
+Get-PSDrive C,D | Select-Object Name,@{Name='FreeGB';Expression={[math]::Round($_.Free / 1GB, 1)}}
+```
+
+- API healthy and runner starting/unhealthy: inspect runner registration, mTLS, Docker-in-Docker and nested image-pull logs. The installer now waits for runner `/readyz` health before recreating n8n main.
+- `no space left on device` or `ENOSPC`: free space safely after reviewing `docker system df`; never use `docker compose down -v`, indiscriminate `docker system prune --volumes`, or remove PostgreSQL/Redis/n8n volumes.
+- `ECONNRESET`, DNS errors, npm registry timeout, or image-pull errors: check outbound connectivity from Docker Desktop and the runner. The sandbox must download dependencies and sometimes its nested image on first use.
+- Request/session cancelled while the runner stays healthy: retry once with a new Assistant chat. Preserve and inspect logs if it repeats.
+- `sandbox-runner-1` not registered: verify the registration token, runner key, and certificate setup **without printing secret values**.
+
+Don't confuse the Assistant's development sandbox with the existing n8n Code-node task-runner sidecar: restarting `n8n-worker-runner` won't repair a failed `sandbox-runner-1` workspace.
+
+**Weather Log fallback:** n8n's [official first-workflow guide](https://docs.n8n.io/build-your-first-workflow/) uses the Mockingbird fields `city`, `temp_c`, and `condition`. The report expression is `The temperature in {{ $json.city }} is {{ $json.temp_c }}°C. It's currently {{ $json.condition }}.` (don't use `$json.temperature` or `$json.conditions`). You can create a Data Table from the project UI or the row-insertion node while the Assistant is unavailable.
+
+See also the [self-hosted Assistant setup](https://docs.n8n.io/deploy/host-n8n/configure-n8n/set-up-n8n-assistant/) and upstream [sandbox Compose guide](https://docs.n8n.io/deploy/host-n8n/install-options/install-using-docker-compose/).
+
 ## Troubleshooting and safety
 
 - **Redis unhealthy**: read the existing Redis recovery runbook, don't run `docker compose down -v`.
