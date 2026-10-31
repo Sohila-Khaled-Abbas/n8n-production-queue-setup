@@ -101,7 +101,7 @@ services:
     # A healthy API does not imply that the Docker-in-Docker runner is ready.
     # Match the upstream sandbox runner's HTTPS readiness endpoint.
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "--no-check-certificate", "https://localhost:8080/readyz"]
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "--no-check-certificate", "https://127.0.0.1:8080/readyz"]
       interval: 5s
       timeout: 5s
       retries: 24
