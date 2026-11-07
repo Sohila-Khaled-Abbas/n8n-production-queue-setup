@@ -337,9 +337,61 @@ try {
     exit 1
   }
 
-  Write-Host 'Enabling Assistant in the existing n8n main server without rebuilding or touching dependencies...'
+  # The API can be healthy before the privileged runner registers or its
+  # nested Docker engine is ready. Never recreate n8n main on API health alone.
+  $runnerID = ((@(& docker compose @Overlay ps -q sandbox-runner-1)) -join '').Trim()
+  if (-not $runnerID) {
+    throw 'No sandbox-runner-1 container. Inspect: docker compose -f docker-compose.yml -f compose.assistant.yml logs sandbox-runner-1'
+  }
+  $runnerHealth = 'starting'
+  Write-Host 'Checking sandbox-runner-1 readiness (HTTPS /readyz; up to 2 minutes)...'
+  for ($attempt = 1; $attempt -le 24; $attempt++) {
+    $runnerHealth = ((@(& docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}missing{{end}}' $runnerID)) -join '').Trim()
+    Stop-IfFailed 'Inspect sandbox runner health'
+    if ($runnerHealth -eq 'healthy') { break }
+    if ($runnerHealth -eq 'missing') {
+      throw 'sandbox-runner-1 has no healthcheck. Apply the updated compose.assistant.yml before running Install.'
+    }
+    if ($attempt -lt 24) { Start-Sleep -Seconds 5 }
+  }
+  if ($runnerHealth -ne 'healthy') {
+    & docker compose @Overlay ps -a sandbox-api sandbox-runner-1
+    Write-Warning 'Sandbox runner is not ready. The existing n8n main service was NOT recreated.'
+    throw "sandbox-runner-1 did not become healthy (status: $runnerHealth). Inspect runner logs and Docker disk/network health before retrying."
+  }
+  Write-Host 'Sandbox runner is healthy.' -ForegroundColor Green
+
+  Write-Host 'Activating Assistant with a controlled n8n main-server recreation...'
+  # Docker Desktop can reject Compose's implicit replace when the original
+  # n8n-main-server is still running. Stop the SINGLE n8n service first.
+  # A manual stop also suppresses its "unless-stopped" restart policy.
+  $originalIds = @(& docker compose @Overlay ps --all --quiet n8n |
+      Where-Object { $_ -match '^[a-fA-F0-9]{12,64}$' })
+  Stop-IfFailed 'Find existing n8n main container'
+  if ($originalIds.Count -ne 1) {
+    throw 'Expected one existing n8n main container. Stop: inspect docker compose ps -a; no containers were removed.'
+  }
+  $originalId = [string] $originalIds[0]
+  $oldStatus = ((@(& docker inspect --format '{{.State.Status}}' $originalId)) -join '').Trim()
+  Stop-IfFailed 'Inspect n8n main state'
+  if ($oldStatus -eq 'running' -or $oldStatus -eq 'restarting') {
+    Write-Host 'Stopping ONLY n8n main gracefully (up to 300 seconds); workers/databases untouched...'
+    & docker compose @Overlay stop --timeout 300 n8n
+    Stop-IfFailed 'Gracefully stop n8n main'
+  }
+  $afterStop = ((@(& docker inspect --format '{{.State.Status}}' $originalId)) -join '').Trim()
+  Stop-IfFailed 'Confirm n8n main is stopped'
+  if ($afterStop -notin @('exited','created')) {
+    throw "Refusing to recreate: old n8n main status is $afterStop, expected exited/created. Do NOT force remove."
+  }
+
   & docker compose @Overlay up -d --no-build --no-deps n8n
-  Stop-IfFailed 'n8n main server recreation'
+  if ($LASTEXITCODE -ne 0) {
+    # Do not use force-removal, prune, or down -v. The original n8n
+    # container may still exist, stopped, allowing manual recovery.
+    Write-Warning 'n8n recreation failed after graceful stop. Inspect docker compose ps -a and Docker events before retrying.'
+    throw "n8n main recreation failed (exit code $LASTEXITCODE). Do not force-remove containers."
+  }
   & docker compose @Overlay ps n8n sandbox-api sandbox-runner-1 searxng
   & docker compose @Overlay logs --tail 25 sandbox-api sandbox-runner-1
   Write-Host 'Verify in the n8n Editor -> Settings -> Assistant and test a disposable workflow.' -ForegroundColor Green

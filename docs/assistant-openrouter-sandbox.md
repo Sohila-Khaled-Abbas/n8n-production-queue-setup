@@ -77,7 +77,8 @@ This checks that both database services are healthy, that the running n8n versio
 1. Pulls sandbox API and DIND runner images `1.13.0`, plus SearXNG (these downloads require free disk space).
 2. Starts only `sandbox-certs`, `sandbox-api`, `sandbox-runner-1` and `searxng`.
 3. Checks sandbox API health.
-4. Recreates **only** the existing main `n8n` container, with `--no-build --no-deps`, to activate the Assistant. The task runner / worker services are not rebuilt.
+4. Waits for `sandbox-runner-1` to pass its HTTPS `/readyz` health check (up to two minutes).
+5. Gracefully stops and recreates **only** the existing main `n8n` container, with `--no-build --no-deps`, to activate the Assistant. The existing task runners, workers, PostgreSQL, Redis, and named volumes are left untouched.
 
 If any prerequisite is not met, the script stops **without updating your existing n8n version or dropping any volumes**.
 
@@ -94,6 +95,92 @@ The health endpoint should return `{"status":"ok"}`. The one-shot `sandbox-certs
 
 Open your existing local editor on **http://localhost** (the original port 80, not a new 5678 port), then check **Settings → Assistant** and try a disposable, non-sensitive task. OpenRouter `openrouter/free` automatically selects a free model, but limits and tool-calling compatibility vary by model.
 
+## Recovery: Docker refuses to recreate a running n8n main container
+
+Symptom after a successful sandbox pull/start:
+
+```
+cannot remove container "...": container is running: stop the container before removing or force remove
+```
+
+The sandbox API may already be healthy; the only failed step is applying
+the new Assistant environment variables to the existing n8n main process.
+Do **not** rerun Configure, reset Docker Desktop, remove volumes, or use
+`docker rm -f`. Restarting the container alone cannot apply new
+Compose environment variables.
+
+In Windows PowerShell from the original checkout:
+
+```powershell
+$files = @('-f','docker-compose.yml','-f','compose.assistant.yml')
+docker compose @files ps -a
+docker inspect n8n-main-server --format 'Name={{.Name}} Status={{.State.Status}} Restart={{.HostConfig.RestartPolicy.Name}}'
+docker compose @files config --quiet
+if ($LASTEXITCODE -ne 0) { throw 'Stop: invalid Compose config' }
+```
+
+Check that n8n main is the failing container and that your existing
+PostgreSQL/Redis are healthy, as verified earlier. If it is running, schedule
+a brief editor interruption and perform a **single-service graceful stop**:
+
+```powershell
+docker compose @files stop --timeout 300 n8n
+if ($LASTEXITCODE -ne 0) { throw 'Stop failed: inspect Docker status before continuing' }
+
+$state = (docker inspect n8n-main-server --format '{{.State.Status}}').Trim()
+if ($LASTEXITCODE -ne 0 -or $state -ne 'exited') {
+    throw "Not safely stopped ($state). No removal attempted."
+}
+
+docker compose @files up -d --no-build --no-deps n8n
+if ($LASTEXITCODE -ne 0) { throw 'Recreate failed; inspect docker compose ps -a; do not force-remove.' }
+
+docker compose @files ps -a n8n sandbox-api sandbox-runner-1 searxng
+```
+
+This stops **only** the n8n editor/main service, preserving the PostgreSQL,
+Redis, queues, workers and named volumes. The 300-second timeout gives n8n
+time to shut down gracefully. If it cannot stop, stop here and diagnose the
+Docker daemon and possible external restarts before attempting removal.
+
+From the latest version of the installer, `-Mode Install` waits for both
+the sandbox API and runner readiness checks, then performs the graceful
+single-service stop automatically. Image downloads are cached and do not
+have to be manually repeated.
+
+## Weather Log / sandbox dependency-install cancellation
+
+If Assistant reports:
+
+```text
+SandboxWorkspaceSetupError: Sandbox workspace setup failed during install-dependencies: canceled
+```
+
+this happens while the Assistant prepares its isolated development workspace, **before** the Weather Log nodes run. The message by itself does not prove that Redis, PostgreSQL, the weather endpoint, or the workflow are defective. The sandbox API can be healthy even while the Docker-in-Docker runner is not yet ready or its nested sandbox image is still downloading.
+
+From the **existing repository checkout**, run these read-only checks. Redact API keys, credentials, and private workflow data before sharing any logs:
+
+```powershell
+$files = @('-f', 'docker-compose.yml', '-f', 'compose.assistant.yml')
+docker compose @files ps -a n8n postgres redis sandbox-certs sandbox-api sandbox-runner-1
+docker compose @files logs --since 30m --tail 150 sandbox-api sandbox-runner-1 n8n
+docker compose @files exec -T n8n wget -qO- http://sandbox-api:8080/healthz
+docker compose @files exec -T sandbox-runner-1 docker info --format '{{.ServerVersion}}'
+docker system df
+Get-PSDrive C,D | Select-Object Name,@{Name='FreeGB';Expression={[math]::Round($_.Free / 1GB, 1)}}
+```
+
+- API healthy and runner starting/unhealthy: inspect runner registration, mTLS, Docker-in-Docker and nested image-pull logs. The installer now waits for runner `/readyz` health before recreating n8n main.
+- `no space left on device` or `ENOSPC`: free space safely after reviewing `docker system df`; never use `docker compose down -v`, indiscriminate `docker system prune --volumes`, or remove PostgreSQL/Redis/n8n volumes.
+- `ECONNRESET`, DNS errors, npm registry timeout, or image-pull errors: check outbound connectivity from Docker Desktop and the runner. The sandbox must download dependencies and sometimes its nested image on first use.
+- Request/session cancelled while the runner stays healthy: retry once with a new Assistant chat. Preserve and inspect logs if it repeats.
+- `sandbox-runner-1` not registered: verify the registration token, runner key, and certificate setup **without printing secret values**.
+
+Don't confuse the Assistant's development sandbox with the existing n8n Code-node task-runner sidecar: restarting `n8n-worker-runner` won't repair a failed `sandbox-runner-1` workspace.
+
+**Weather Log fallback:** n8n's [official first-workflow guide](https://docs.n8n.io/build-your-first-workflow/) uses the Mockingbird fields `city`, `temp_c`, and `condition`. The report expression is `The temperature in {{ $json.city }} is {{ $json.temp_c }}°C. It's currently {{ $json.condition }}.` (don't use `$json.temperature` or `$json.conditions`). You can create a Data Table from the project UI or the row-insertion node while the Assistant is unavailable.
+
+See also the [self-hosted Assistant setup](https://docs.n8n.io/deploy/host-n8n/configure-n8n/set-up-n8n-assistant/) and upstream [sandbox Compose guide](https://docs.n8n.io/deploy/host-n8n/install-options/install-using-docker-compose/).
 
 ## Recovery: GHCR SearXNG image pull failed with unexpected EOF
 
