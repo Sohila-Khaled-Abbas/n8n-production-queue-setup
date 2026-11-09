@@ -10,6 +10,7 @@
 
 **A production-grade, self-hosted n8n deployment with dynamic worker autoscaling, Puppeteer/Playwright browser automation, queue-mode execution, PostgreSQL persistence, and automated Redis queue monitoring.**
 
+[![Architecture diagram](https://gitdiagram.com/diagram-badge.svg)](https://gitdiagram.com/sohila-khaled-abbas/n8n-production-queue-setup?utm_source=readme&utm_medium=badge)
 [![n8n Version](https://img.shields.io/badge/n8n-3.0.1_beta-FF6D5A?logo=n8n&logoColor=white)](https://hub.docker.com/r/n8nio/n8n)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastMCP](https://img.shields.io/badge/FastMCP-Server-092E20?logo=fastapi&logoColor=white)](https://github.com/jlowin/fastmcp)
